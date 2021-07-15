@@ -40,6 +40,7 @@
 	else
 		living_mob_list += src
 	lastarea = get_area(src)
+	set_focus(src) // VOREStation Add - Key Handling
 	hook_vr("mob_new",list(src)) //VOREStation Code
 	update_transform() // Some mobs may start bigger or smaller than normal.
 	return ..()
@@ -84,9 +85,6 @@
 		else
 			exclude_mobs = list(src)
 		src.show_message(self_message, 1, blind_message, 2)
-	// Transfer messages about what we are doing to upstairs
-	if(shadow)
-		shadow.visible_message(message, self_message, blind_message, exclude_mobs, range)
 	if(isnull(runemessage))
 		runemessage = -1
 	. = ..(message, blind_message, exclude_mobs, range, runemessage) // Really not ideal that atom/visible_message has different arg numbering :(
@@ -367,7 +365,7 @@
 
 	// Final chance to abort "respawning"
 	if(mind && timeofdeath) // They had spawned before
-		var/choice = alert(usr, "Returning to the menu will prevent your character from being revived in-round. Are you sure?", "Confirmation", "No, wait", "Yes, leave")
+		var/choice = tgui_alert(usr, "Returning to the menu will prevent your character from being revived in-round. Are you sure?", "Confirmation", list("No, wait", "Yes, leave"))
 		if(choice == "No, wait")
 			return
 
@@ -433,7 +431,7 @@
 	var/eye_name = null
 
 	var/ok = "[is_admin ? "Admin Observe" : "Observe"]"
-	eye_name = input("Please, select a player!", ok, null, null) as null|anything in targets
+	eye_name = tgui_input_list(usr, "Select something to [ok]:", "Select Target", targets)
 
 	if (!eye_name)
 		return
@@ -619,6 +617,9 @@
 				stat("CPU:","[world.cpu]")
 				stat("Instances:","[world.contents.len]")
 				stat(null, "Time Dilation: [round(SStime_track.time_dilation_current,1)]% AVG:([round(SStime_track.time_dilation_avg_fast,1)]%, [round(SStime_track.time_dilation_avg,1)]%, [round(SStime_track.time_dilation_avg_slow,1)]%)")
+				stat("Keys Held", keys2text(client.move_keys_held | client.mod_keys_held))
+				stat("Next Move ADD", dirs2text(client.next_move_dir_add))
+				stat("Next Move SUB", dirs2text(client.next_move_dir_sub))
 
 			if(statpanel("MC"))
 				stat("Location:", "([x], [y], [z]) [loc]")
@@ -692,6 +693,7 @@
 
 /mob/proc/facedir(var/ndir)
 	if(!canface() || (client && (client.moving || !checkMoveCooldown())))
+		DEBUG_INPUT("Denying Facedir for [src] (moving=[client?.moving])")
 		return 0
 	set_dir(ndir)
 	if(buckled && buckled.buckle_movable)
@@ -853,7 +855,7 @@
 /mob/proc/embedded_needs_process()
 	return (embedded.len > 0)
 
-mob/proc/yank_out_object()
+/mob/proc/yank_out_object()
 	set category = "Object"
 	set name = "Yank out object"
 	set desc = "Remove an embedded item at the cost of bleeding and pain."
@@ -887,7 +889,7 @@ mob/proc/yank_out_object()
 			to_chat(U, "[src] has nothing stuck in their wounds that is large enough to remove.")
 		return
 
-	var/obj/item/weapon/selection = input("What do you want to yank out?", "Embedded objects") in valid_objects
+	var/obj/item/weapon/selection = tgui_input_list(usr, "What do you want to yank out?", "Embedded objects", valid_objects)
 
 	if(self)
 		to_chat(src, "<span class='warning'>You attempt to get a good grip on [selection] in your body.</span>")
@@ -1038,7 +1040,7 @@ mob/proc/yank_out_object()
 		pixel_x--
 		is_shifted = TRUE
 
-mob/verb/shifteast()
+/mob/verb/shifteast()
 	set hidden = TRUE
 	if(!canface())
 		return FALSE

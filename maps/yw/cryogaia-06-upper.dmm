@@ -204,6 +204,9 @@
 /area/borealis2/outdoors/grounds/checkpoint)
 "aB" = (
 /obj/machinery/computer/ship/helm,
+/obj/structure/panic_button{
+	pixel_x = -30
+	},
 /turf/simulated/floor/tiled,
 /area/shuttle/excursion)
 "aC" = (
@@ -1603,14 +1606,10 @@
 /turf/simulated/floor/plating/snow/plating,
 /area/cryogaia/station/hallway/primary/upper/south)
 "dJ" = (
-/obj/structure/railing/grey{
-	dir = 1
+/obj/effect/floor_decal/industrial/warning/dust/corner{
+	dir = 8
 	},
-/obj/structure/railing/grey{
-	dir = 4
-	},
-/obj/effect/overlay/snow/floor,
-/turf/simulated/floor/tiled/cryogaia/cryogaia,
+/turf/simulated/floor/plating/snow/plating/cryogaia,
 /area/borealis2/outdoors/grounds/upper)
 "dK" = (
 /obj/structure/cable/green{
@@ -4705,7 +4704,7 @@
 "kd" = (
 /obj/structure/table/woodentable,
 /obj/machinery/atmospherics/unary/vent_scrubber/on,
-/obj/item/device/instrument/harmonica,
+/obj/item/instrument/harmonica,
 /turf/simulated/floor/wood,
 /area/chapel/monastery/music)
 "ke" = (
@@ -4769,12 +4768,9 @@
 /turf/simulated/floor/tiled/steel_grid,
 /area/cryogaia/station/explorer_prep)
 "kl" = (
-/obj/structure/railing/grey{
-	dir = 4
-	},
-/obj/effect/overlay/snow/floor,
-/turf/simulated/floor/tiled/cryogaia/cryogaia,
-/area/borealis2/outdoors/grounds/upper)
+/obj/structure/sign/painting/public,
+/turf/simulated/wall,
+/area/civilian/atrium/upper)
 "km" = (
 /obj/item/device/geiger/wall{
 	dir = 8;
@@ -5571,12 +5567,6 @@
 /obj/structure/ladder,
 /turf/simulated/floor/plating/snow/plating/cryogaia,
 /area/cryogaia/station/ert_arrival)
-"lV" = (
-/obj/machinery/door/airlock/glass_external/freezable{
-	req_one_access = list()
-	},
-/turf/simulated/wall/titanium,
-/area/borealis2/outdoors/grounds/tower/southeast)
 "lW" = (
 /obj/structure/table/woodentable,
 /obj/machinery/atmospherics/unary/vent_pump/on{
@@ -7034,7 +7024,7 @@
 /area/constructionsite/medical/upper)
 "pV" = (
 /obj/structure/table/woodentable,
-/obj/item/device/instrument/trombone,
+/obj/item/instrument/trombone,
 /turf/simulated/floor/wood,
 /area/chapel/monastery/music)
 "pW" = (
@@ -8090,7 +8080,7 @@
 /area/constructionsite/cryogaia/upper)
 "wb" = (
 /obj/structure/table/woodentable,
-/obj/item/device/instrument/eguitar,
+/obj/item/instrument/eguitar,
 /turf/simulated/floor/wood,
 /area/chapel/monastery/music)
 "wd" = (
@@ -8846,7 +8836,7 @@
 /area/medical/medbayupper)
 "Aj" = (
 /obj/structure/table/woodentable,
-/obj/item/device/instrument/accordion,
+/obj/item/instrument/accordion,
 /turf/simulated/floor/wood,
 /area/chapel/monastery/music)
 "Al" = (
@@ -10134,9 +10124,8 @@
 /turf/simulated/floor/wood,
 /area/chapel/monastery/upper)
 "Hs" = (
-/obj/effect/overlay/snow/floor,
 /obj/effect/floor_decal/industrial/warning/dust/corner,
-/turf/simulated/floor/tiled/cryogaia/cryogaia,
+/turf/simulated/floor/plating/snow/plating/cryogaia,
 /area/borealis2/outdoors/grounds/upper)
 "Hu" = (
 /obj/machinery/light,
@@ -10331,7 +10320,7 @@
 /obj/machinery/atmospherics/unary/vent_pump/on{
 	dir = 1
 	},
-/obj/item/device/instrument/violin,
+/obj/item/instrument/violin,
 /turf/simulated/floor/wood,
 /area/chapel/monastery/music)
 "IH" = (
@@ -11119,7 +11108,7 @@
 /area/civilian/atrium/upper)
 "Nl" = (
 /obj/structure/table/woodentable,
-/obj/item/device/instrument/saxophone,
+/obj/item/instrument/saxophone,
 /turf/simulated/floor/wood,
 /area/chapel/monastery/music)
 "Nn" = (
@@ -11285,7 +11274,7 @@
 /turf/simulated/floor/reinforced/cryogaia,
 /area/borealis2/outdoors/grounds/upper)
 "Oh" = (
-/obj/structure/device/piano,
+/obj/structure/musician/piano,
 /turf/simulated/floor/wood,
 /area/chapel/monastery/music)
 "Ok" = (
@@ -11691,7 +11680,7 @@
 /obj/machinery/atmospherics/pipe/simple/hidden/supply{
 	dir = 6
 	},
-/obj/item/device/instrument/guitar,
+/obj/item/instrument/guitar,
 /turf/simulated/floor/wood,
 /area/chapel/monastery/music)
 "Qo" = (
@@ -12206,7 +12195,7 @@
 /area/borealis2/outdoors/grounds/upper)
 "SP" = (
 /obj/structure/table/woodentable,
-/obj/item/device/instrument/recorder,
+/obj/item/instrument/recorder,
 /turf/simulated/floor/wood,
 /area/chapel/monastery/music)
 "SZ" = (
@@ -12756,7 +12745,7 @@
 	dir = 1
 	},
 /obj/structure/table/woodentable,
-/obj/item/device/instrument/keytar,
+/obj/item/instrument/piano_synth,
 /turf/simulated/floor/wood,
 /area/chapel/monastery/music)
 "Wa" = (
@@ -13137,13 +13126,13 @@
 /turf/simulated/floor/tiled/white,
 /area/cryogaia/station/medical/upper)
 "Yc" = (
-/obj/structure/catwalk,
 /obj/structure/railing/grey{
 	dir = 8
 	},
 /obj/structure/railing/grey{
 	flags = null
 	},
+/obj/structure/catwalk,
 /turf/simulated/open/cryogaia,
 /area/borealis2/outdoors/exterior/upper)
 "Yf" = (
@@ -25497,11 +25486,11 @@ sa
 nH
 lP
 Nj
+kl
 Nj
+kl
 Nj
-Nj
-Nj
-Nj
+kl
 Nj
 Nj
 DF
@@ -26957,8 +26946,8 @@ sa
 iU
 sa
 sa
-vx
 sa
+vx
 sa
 iU
 sa
@@ -27117,11 +27106,11 @@ sa
 kp
 lP
 Nj
+kl
 Nj
+kl
 Nj
-Nj
-Nj
-Nj
+kl
 Nj
 Nj
 di
@@ -28883,7 +28872,7 @@ nQ
 nQ
 kW
 AN
-aH
+AN
 Nj
 wp
 PG
@@ -29044,8 +29033,8 @@ nQ
 nQ
 nQ
 kW
-aH
-aH
+AN
+AN
 Nj
 Nj
 Kr
@@ -29205,9 +29194,9 @@ nQ
 nQ
 nQ
 nQ
-SN
-aH
-aH
+kW
+AN
+AN
 Pi
 pa
 IS
@@ -29367,8 +29356,8 @@ nQ
 nQ
 nQ
 nQ
-SN
-aH
+kW
+AN
 Hs
 Pi
 BW
@@ -29529,9 +29518,9 @@ nQ
 nQ
 nQ
 nQ
-SN
-aH
-aH
+kW
+AN
+AN
 sj
 yN
 wJ
@@ -29691,9 +29680,9 @@ nQ
 nQ
 nQ
 nQ
-SN
-aH
-cr
+kW
+AN
+dJ
 Nj
 Pi
 Pi
@@ -29854,12 +29843,12 @@ nQ
 nQ
 nQ
 ab
-aH
-aH
-aH
-aH
-aH
-aH
+AN
+AN
+AN
+AN
+AN
+AN
 AN
 AN
 AN
@@ -30015,13 +30004,13 @@ WV
 WV
 WV
 WV
-aH
-aH
-aH
-aH
-aH
-aH
-aH
+AN
+AN
+AN
+AN
+AN
+AN
+AN
 AN
 AN
 AN
@@ -30178,11 +30167,11 @@ nQ
 nQ
 nQ
 ie
-kl
-aH
-aH
-aH
-aH
+Sq
+AN
+AN
+AN
+AN
 AN
 AN
 AN
@@ -30341,9 +30330,9 @@ nQ
 nQ
 nQ
 nQ
-dJ
-aH
-aH
+cN
+AN
+AN
 AN
 AN
 AN
@@ -37395,7 +37384,7 @@ Op
 Op
 Op
 kI
-lV
+aY
 SZ
 MB
 SZ

@@ -3,6 +3,9 @@
 	layer = MOB_LAYER
 	plane = MOB_PLANE
 	animate_movement = 2
+	blocks_emissive = EMISSIVE_BLOCK_GENERIC
+	///when this be added to vis_contents of something it inherit something.plane, important for visualisation of mob in openspace.
+	vis_flags = VIS_INHERIT_PLANE
 	var/datum/mind/mind
 
 	var/stat = 0 //Whether a mob is alive or dead. TODO: Move this to living - Nodrak
@@ -110,7 +113,6 @@
 	var/stunned = 0.0
 	var/weakened = 0.0
 	var/losebreath = 0.0//Carbon
-	var/intent = null//Living
 	var/shakecamera = 0
 	var/a_intent = I_HELP//Living
 	var/m_int = null//Living
@@ -229,3 +231,5 @@
 	var/in_enclosed_vehicle = 0	//For mechs and fighters ambiance. Can be used in other cases.
 
 	var/list/progressbars = null //VOREStation Edit
+
+	var/datum/focus //What receives our keyboard inputs. src by default // VOREStation Add - Key Handling

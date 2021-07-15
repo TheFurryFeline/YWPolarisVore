@@ -26,9 +26,16 @@
 	///Chemistry.
 
 	// Overlays
-	var/list/our_overlays	//our local copy of (non-priority) overlays without byond magic. Use procs in SSoverlays to manipulate
-	var/list/priority_overlays	//overlays that should remain on top and not normally removed when using cut_overlay functions, like c4.
+	///Our local copy of (non-priority) overlays without byond magic. Use procs in SSoverlays to manipulate
+	var/list/our_overlays	
+	///Overlays that should remain on top and not normally removed when using cut_overlay functions, like c4.
+	var/list/priority_overlays
+	///vis overlays managed by SSvis_overlays to automaticaly turn them like other overlays
+	var/list/managed_vis_overlays
 
+	///Our local copy of filter data so we can add/remove it
+	var/list/filter_data
+	
 	//Detective Work, used for the duplicate data points kept in the scanners
 	var/list/original_atom
 	// Track if we are already had initialize() called to prevent double-initialization.
@@ -76,11 +83,18 @@
 // Must return an Initialize hint. Defined in code/__defines/subsystems.dm
 /atom/proc/Initialize(mapload, ...)
 	if(QDELETED(src))
-		crash_with("GC: -- [type] had initialize() called after qdel() --")
+		stack_trace("GC: -- [type] had initialize() called after qdel() --")
 	if(initialized)
-		crash_with("Warning: [src]([type]) initialized multiple times!")
+		stack_trace("Warning: [src]([type]) initialized multiple times!")
 	initialized = TRUE
 	return INITIALIZE_HINT_NORMAL
+
+/atom/Destroy()
+	if(reagents)
+		QDEL_NULL(reagents)
+	if(light)
+		QDEL_NULL(light)
+	return ..()
 
 // Called after all object's normal initialize() if initialize() returns INITIALIZE_HINT_LATELOAD
 /atom/proc/LateInitialize()
@@ -635,6 +649,42 @@
 	var/turf/T = get_turf(src)
 	. += "<br><font size='1'>[ADMIN_COORDJMP(T)]</font>"
 
+/atom/vv_edit_var(var_name, var_value)
+	switch(var_name)
+		if(NAMEOF(src, light_range))
+			if(light_system == STATIC_LIGHT)
+				set_light(l_range = var_value)
+			else
+				set_light_range(var_value)
+			. =  TRUE
+		if(NAMEOF(src, light_power))
+			if(light_system == STATIC_LIGHT)
+				set_light(l_power = var_value)
+			else
+				set_light_power(var_value)
+			. =  TRUE
+		if(NAMEOF(src, light_color))
+			if(light_system == STATIC_LIGHT)
+				set_light(l_color = var_value)
+			else
+				set_light_color(var_value)
+			. =  TRUE
+		if(NAMEOF(src, light_on))
+			set_light_on(var_value)
+			. =  TRUE
+		if(NAMEOF(src, light_flags))
+			set_light_flags(var_value)
+			. =  TRUE
+		if(NAMEOF(src, opacity))
+			set_opacity(var_value)
+			. =  TRUE
+
+	if(!isnull(.))
+		datum_flags |= DF_VAR_EDITED
+		return
+		
+	. = ..()
+
 /atom/proc/atom_say(message)
 	if(!message)
 		return
@@ -669,3 +719,6 @@
 
 /atom/proc/get_visible_gender()
 	return gender
+
+/atom/proc/interact(mob/user)
+	return

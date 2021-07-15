@@ -15,16 +15,16 @@
 	//Species-specific stuff.
 	species_restricted = list("Human", "Promethean")
 	sprite_sheets_refit = list(
-		SPECIES_UNATHI = 'icons/mob/species/unathi/helmet.dmi',
-		SPECIES_TAJ = 'icons/mob/species/tajaran/helmet.dmi',
-		SPECIES_SKRELL = 'icons/mob/species/skrell/helmet.dmi'
+		SPECIES_UNATHI = 'icons/inventory/head/mob_unathi.dmi',
+		SPECIES_TAJ = 'icons/inventory/head/mob_tajaran.dmi',
+		SPECIES_SKRELL = 'icons/inventory/head/mob_skrell.dmi'
 		//Teshari have a general sprite sheet defined in modules/clothing/clothing.dm
 		)
 	sprite_sheets_obj = list(
-		SPECIES_UNATHI = 'icons/obj/clothing/species/unathi/hats.dmi',
-		SPECIES_TAJ = 'icons/obj/clothing/species/tajaran/hats.dmi',
-		SPECIES_SKRELL = 'icons/obj/clothing/species/skrell/hats.dmi',
-		SPECIES_TESHARI = 'icons/obj/clothing/species/teshari/hats.dmi'
+		SPECIES_UNATHI = 'icons/inventory/head/item_unathi.dmi',
+		SPECIES_TAJ = 'icons/inventory/head/item_tajaran.dmi',
+		SPECIES_SKRELL = 'icons/inventory/head/item_skrell.dmi',
+		SPECIES_TESHARI = 'icons/inventory/head/item_teshari.dmi'
 		)
 
 	light_overlay = "helmet_light"
@@ -45,16 +45,16 @@
 
 	species_restricted = list("Human", SPECIES_SKRELL, "Promethean")
 	sprite_sheets_refit = list(
-		SPECIES_UNATHI = 'icons/mob/species/unathi/suit.dmi',
-		SPECIES_TAJ = 'icons/mob/species/tajaran/suit.dmi',
-		SPECIES_SKRELL = 'icons/mob/species/skrell/suit.dmi'
+		SPECIES_UNATHI = 'icons/inventory/suit/mob_unathi.dmi',
+		SPECIES_TAJ = 'icons/inventory/suit/mob_tajaran.dmi',
+		SPECIES_SKRELL = 'icons/inventory/suit/mob_skrell.dmi'
 		//Teshari have a general sprite sheet defined in modules/clothing/clothing.dm
 		)
 	sprite_sheets_obj = list(
-		SPECIES_UNATHI = 'icons/obj/clothing/species/unathi/suits.dmi',
-		SPECIES_TAJ = 'icons/obj/clothing/species/tajaran/suits.dmi',
-		SPECIES_SKRELL = 'icons/obj/clothing/species/skrell/suits.dmi',
-		SPECIES_TESHARI = 'icons/obj/clothing/species/teshari/suits.dmi'
+		SPECIES_UNATHI = 'icons/inventory/suit/item_unathi.dmi',
+		SPECIES_TAJ = 'icons/inventory/suit/item_tajaran.dmi',
+		SPECIES_SKRELL = 'icons/inventory/suit/item_skrell.dmi',
+		SPECIES_TESHARI = 'icons/inventory/suit/item_teshari.dmi'
 		)
 
 	//Breach thresholds, should ideally be inherited by most (if not all) voidsuits.
@@ -120,7 +120,6 @@
 			to_chat(M, "Your suit's cooling unit deploys.")
 			cooler.canremove = 0
 
-
 /obj/item/clothing/suit/space/void/dropped()
 	..()
 
@@ -149,6 +148,22 @@
 	if(cooler)
 		cooler.canremove = 1
 		cooler.forceMove(src)
+
+/obj/item/clothing/suit/space/void/proc/attach_helmet(var/obj/item/clothing/head/helmet/space/void/helm)
+	if(!istype(helm) || helmet)
+		return
+
+	helm.forceMove(src)
+	helm.set_light_flags(helm.light_flags | LIGHT_ATTACHED)
+	helmet = helm
+
+/obj/item/clothing/suit/space/void/proc/remove_helmet()
+	if(!helmet)
+		return
+
+	helmet.forceMove(get_turf(src))
+	helmet.set_light_flags(helmet.light_flags & ~LIGHT_ATTACHED)
+	helmet = null
 
 /obj/item/clothing/suit/space/void/verb/toggle_helmet()
 
@@ -184,7 +199,9 @@
 			helmet.pickup(H)
 			helmet.canremove = 0
 			to_chat(H, "<span class='info'>You deploy your suit helmet, sealing you off from the world.</span>")
-	helmet.update_light(H)
+	
+	if(helmet.light_system == STATIC_LIGHT)
+		helmet.update_light()
 
 /obj/item/clothing/suit/space/void/verb/eject_tank()
 
@@ -228,7 +245,7 @@
 
 	if(W.is_screwdriver())
 		if(helmet || boots || tank)
-			var/choice = input("What component would you like to remove?") as null|anything in list(helmet,boots,tank,cooler)
+			var/choice = tgui_input_list(usr, "What component would you like to remove?", "Remove Component", list(helmet,boots,tank,cooler))
 			if(!choice) return
 
 			if(choice == tank)	//No, a switch doesn't work here. Sorry. ~Techhead
@@ -243,9 +260,8 @@
 				src.cooler = null
 			else if(choice == helmet)
 				to_chat(user, "You detach \the [helmet] from \the [src]'s helmet mount.")
-				helmet.forceMove(get_turf(src))
+				remove_helmet()
 				playsound(src, W.usesound, 50, 1)
-				src.helmet = null
 			else if(choice == boots)
 				to_chat(user, "You detach \the [boots] from \the [src]'s boot mounts.")
 				boots.forceMove(get_turf(src))
@@ -260,8 +276,7 @@
 		else
 			to_chat(user, "You attach \the [W] to \the [src]'s helmet mount.")
 			user.drop_item()
-			W.forceMove(src)
-			src.helmet = W
+			attach_helmet(W)
 		return
 	else if(istype(W,/obj/item/clothing/shoes/magboots))
 		if(boots)

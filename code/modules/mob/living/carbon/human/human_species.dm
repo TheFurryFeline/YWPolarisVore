@@ -2,6 +2,7 @@
 	real_name = "Test Dummy"
 	status_flags = GODMODE|CANPUSH
 	has_huds = FALSE
+	blocks_emissive = FALSE
 
 /mob/living/carbon/human/dummy/Initialize()
 	. = ..()
@@ -20,6 +21,17 @@
 /mob/living/carbon/human/dummy/mannequin/Initialize()
 	. = ..()
 	delete_inventory()
+
+/mob/living/carbon/human/dummy/mannequin/autoequip
+	icon = 'icons/effects/species.dmi'
+	icon_state = "lizard_f_s_full"
+
+/mob/living/carbon/human/dummy/mannequin/autoequip/Initialize()
+	icon = null
+	icon_state = ""
+	. = ..()
+	for(var/obj/item/I in loc)
+		equip_to_appropriate_slot(I)
 
 /mob/living/carbon/human/skrell/Initialize(var/new_loc)
 	h_style = "Skrell Short Tentacles"

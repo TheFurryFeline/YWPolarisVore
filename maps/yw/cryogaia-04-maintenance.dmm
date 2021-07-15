@@ -3888,6 +3888,10 @@
 	},
 /turf/simulated/floor/carpet,
 /area/library)
+"cFq" = (
+/obj/structure/sign/painting/chapel_secure,
+/turf/simulated/wall,
+/area/chapel/main)
 "cFM" = (
 /obj/machinery/light{
 	dir = 8
@@ -6464,6 +6468,10 @@
 /obj/structure/disposalpipe/segment,
 /turf/simulated/floor/tiled,
 /area/security/perma)
+"ekN" = (
+/obj/structure/sign/painting/library_secure,
+/turf/simulated/wall,
+/area/library)
 "elo" = (
 /obj/machinery/atmospherics/pipe/simple/hidden/supply{
 	dir = 9
@@ -10891,6 +10899,10 @@
 	},
 /turf/simulated/open,
 /area/borealis2/elevator/dorms)
+"hes" = (
+/obj/structure/sign/painting/library_private,
+/turf/simulated/wall,
+/area/library)
 "hex" = (
 /obj/structure/reagent_dispensers/fueltank,
 /turf/simulated/floor/plating,
@@ -15044,7 +15056,7 @@
 	},
 /obj/structure/grille,
 /obj/structure/window/reinforced/full,
-/turf/simulated/floor/tiled/monofloor{
+/turf/simulated/floor/tiled/monotile{
 	dir = 1
 	},
 /area/crew_quarters/sleep/cryo)
@@ -16267,10 +16279,6 @@
 /turf/simulated/floor/tiled/white,
 /area/medical/virology)
 "keb" = (
-/obj/machinery/alarm{
-	frequency = 1441;
-	pixel_y = 22
-	},
 /obj/machinery/atmospherics/pipe/simple/hidden/supply{
 	dir = 4
 	},
@@ -18871,7 +18879,7 @@
 	d2 = 2;
 	icon_state = "1-2"
 	},
-/turf/simulated/floor/tiled/monofloor{
+/turf/simulated/floor/tiled/monotile{
 	dir = 4
 	},
 /area/library)
@@ -21189,7 +21197,7 @@
 	req_access = list()
 	},
 /obj/effect/floor_decal/steeldecal/steel_decals_central1,
-/turf/simulated/floor/tiled/monofloor,
+/turf/simulated/floor/tiled/monotile,
 /area/crew_quarters/sleep/cryo)
 "mWo" = (
 /obj/structure/table/rack{
@@ -24314,7 +24322,7 @@
 /area/ai_upload_foyer)
 "oVM" = (
 /obj/structure/table/woodentable,
-/obj/item/device/instrument/guitar,
+/obj/item/instrument/guitar,
 /turf/simulated/floor/carpet,
 /area/crew_quarters/recreation_area)
 "oVX" = (
@@ -32496,7 +32504,7 @@
 /turf/simulated/wall/r_wall,
 /area/maintenance/aft)
 "tSp" = (
-/obj/item/device/instrument/harmonica,
+/obj/item/instrument/harmonica,
 /turf/simulated/floor/plating,
 /area/maintenance/security_lower)
 "tSx" = (
@@ -34226,7 +34234,7 @@
 	},
 /obj/machinery/door/firedoor/glass,
 /obj/machinery/atmospherics/pipe/simple/hidden/scrubbers,
-/turf/simulated/floor/tiled/monofloor{
+/turf/simulated/floor/tiled/monotile{
 	dir = 8
 	},
 /area/library)
@@ -49587,7 +49595,7 @@ pqI
 pqI
 obA
 pqI
-pqI
+ekN
 pqI
 pqI
 pqI
@@ -50077,7 +50085,7 @@ wbx
 xuy
 nux
 oFC
-pqI
+ekN
 rIJ
 wQb
 cZL
@@ -51200,7 +51208,7 @@ ceH
 qWZ
 rij
 pqI
-pqI
+hes
 epH
 jTx
 pqI
@@ -53428,7 +53436,7 @@ rLL
 rLL
 rLL
 rLL
-xyQ
+oms
 dAN
 dmq
 iBj
@@ -53752,7 +53760,7 @@ rLL
 rLL
 rLL
 rLL
-oms
+xyQ
 fMM
 dxV
 tjs
@@ -53909,7 +53917,7 @@ ldt
 ldt
 qxD
 noc
-vku
+cFq
 rLL
 rLL
 rLL
@@ -54233,7 +54241,7 @@ nwk
 nwk
 qdE
 noc
-vku
+cFq
 rLL
 rLL
 rLL

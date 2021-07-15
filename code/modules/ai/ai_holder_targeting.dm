@@ -69,6 +69,10 @@
 // Step 4, give us our selected target.
 /datum/ai_holder/proc/give_target(new_target, urgent = FALSE)
 	ai_log("give_target() : Given '[new_target]', urgent=[urgent].", AI_LOG_TRACE)
+	
+	if(target)
+		remove_target()
+	
 	target = new_target
 
 	if(target != null)
@@ -218,17 +222,17 @@
 		lose_target_position()
 
 	if(last_turf_display && target_last_seen_turf)
-		target_last_seen_turf.overlays -= last_turf_overlay
+		target_last_seen_turf.cut_overlay(last_turf_overlay)
 
 	target_last_seen_turf = get_turf(target)
 
 	if(last_turf_display)
-		target_last_seen_turf.overlays += last_turf_overlay
+		target_last_seen_turf.add_overlay(last_turf_overlay)
 
 // Resets the last known position to null.
 /datum/ai_holder/proc/lose_target_position()
 	if(last_turf_display && target_last_seen_turf)
-		target_last_seen_turf.overlays -= last_turf_overlay
+		target_last_seen_turf.cut_overlay(last_turf_overlay)
 	ai_log("lose_target_position() : Last position is being reset.", AI_LOG_INFO)
 	target_last_seen_turf = null
 

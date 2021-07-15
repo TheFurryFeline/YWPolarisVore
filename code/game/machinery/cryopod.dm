@@ -491,6 +491,19 @@
 	for(var/datum/data/record/G in data_core.general)
 		if((G.fields["name"] == to_despawn.real_name))
 			qdel(G)
+	
+	// Also check the hidden version of each datacore, if they're an offmap role.
+	var/datum/job/J = SSjob.get_job(job)
+	if(J?.offmap_spawn)
+		for(var/datum/data/record/R in data_core.hidden_general)
+			if((R.fields["name"] == to_despawn.real_name))
+				qdel(R)
+		for(var/datum/data/record/T in data_core.hidden_security)
+			if((T.fields["name"] == to_despawn.real_name))
+				qdel(T)
+		for(var/datum/data/record/G in data_core.hidden_medical)
+			if((G.fields["name"] == to_despawn.real_name))
+				qdel(G)
 
 	icon_state = base_icon_state
 
@@ -664,7 +677,7 @@
 	var/willing = null //We don't want to allow people to be forced into despawning.
 
 	if(M.client)
-		if(alert(M,"Would you like to enter long-term storage?",,"Yes","No") == "Yes")
+		if(tgui_alert(M,"Would you like to enter long-term storage?","Cryopod",list("Yes","No")) == "Yes")
 			if(!M) return
 			willing = 1
 	else

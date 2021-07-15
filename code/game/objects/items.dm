@@ -2,6 +2,7 @@
 	name = "item"
 	icon = 'icons/obj/items.dmi'
 	w_class = ITEMSIZE_NORMAL
+	blocks_emissive = EMISSIVE_BLOCK_GENERIC
 
 	var/image/blood_overlay = null //this saves our blood splatter overlay, which will be processed not to go over the edges of the sprite
 	var/randpixel = 6
@@ -240,11 +241,12 @@
 			return
 
 	var/old_loc = src.loc
-	src.pickup(user)
 	if (istype(src.loc, /obj/item/weapon/storage))
 		var/obj/item/weapon/storage/S = src.loc
-		S.remove_from_storage(src)
-
+		if(!S.remove_from_storage(src))
+			return
+	
+	src.pickup(user)
 	src.throwing = 0
 	if (src.loc == user)
 		if(!user.unEquip(src))
@@ -252,6 +254,7 @@
 	else
 		if(isliving(src.loc))
 			return
+			
 	if(user.put_in_active_hand(src))
 		if(isturf(old_loc))
 			var/obj/effect/temporary_effect/item_pickup_ghost/ghost = new(old_loc)
@@ -269,6 +272,7 @@
 		R.hud_used.update_robot_modules_display()
 
 /obj/item/attackby(obj/item/weapon/W as obj, mob/user as mob)
+	. = ..()
 	if(istype(W, /obj/item/weapon/storage))
 		var/obj/item/weapon/storage/S = W
 		if(S.use_to_pickup)
@@ -632,7 +636,7 @@ var/list/global/slot_flags_enumeration = list(
 
 	//Make the blood_overlay have the proper color then apply it.
 	blood_overlay.color = blood_color
-	overlays += blood_overlay
+	add_overlay(blood_overlay)
 
 	//if this blood isn't already in the list, add it
 	if(istype(M))
@@ -824,6 +828,9 @@ modules/mob/living/carbon/human/life.dm if you die, you will be zoomed out.
 	if(!inhands)
 		apply_blood(standing)			//Some items show blood when bloodied
 		apply_accessories(standing)		//Some items sport accessories like webbing
+	
+	//Apply overlays to our...overlay
+	apply_overlays(standing)
 
 	//Return our icon
 	return standing
@@ -836,9 +843,9 @@ modules/mob/living/carbon/human/life.dm if you die, you will be zoomed out.
 		return icon_override
 
 	//2: species-specific sprite sheets (skipped for inhands)
-	if(LAZYLEN(sprite_sheets))
+	if(LAZYLEN(sprite_sheets) && !inhands)
 		var/sheet = sprite_sheets[body_type]
-		if(sheet && !inhands)
+		if(sheet)
 			return sheet
 
 	//3: slot-specific sprite sheets
@@ -905,6 +912,15 @@ modules/mob/living/carbon/human/life.dm if you die, you will be zoomed out.
 /obj/item/proc/apply_accessories(var/image/standing)
 	return standing
 
+/obj/item/proc/apply_overlays(var/image/standing)
+	if(!blocks_emissive)
+		return standing
+
+	var/mutable_appearance/blocker_overlay = mutable_appearance(standing.icon, standing.icon_state, plane = PLANE_EMISSIVE, appearance_flags = KEEP_APART)
+	blocker_overlay.color = GLOB.em_block_color
+	standing.add_overlay(blocker_overlay)
+	return standing
+
 /obj/item/MouseEntered(location,control,params)
 	. = ..()
 	if(usr.is_preference_enabled(/datum/client_preference/inv_tooltips) && ((src in usr) || isstorage(loc))) // If in inventory or in storage we're looking at
@@ -927,3 +943,8 @@ modules/mob/living/carbon/human/life.dm if you die, you will be zoomed out.
 // Like the above, but used for RPED sorting of parts.
 /obj/item/proc/rped_rating()
 	return get_rating()
+
+/// How are you described if at all when in pockets (or other 'usually not visible' places)
+/obj/item/proc/pocket_description(mob/haver, mob/examiner)
+	return null // most things are hidden
+	

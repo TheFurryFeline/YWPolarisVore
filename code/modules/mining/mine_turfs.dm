@@ -82,6 +82,30 @@ var/list/mining_overlay_cache = list()
 	rock_icon_state = "rock-light"
 	random_icon = 1
 
+/turf/simulated/mineral/alt
+	icon_state = "rock-alt"
+	rock_side_icon_state = "rock_side-alt"
+	sand_icon_state = "asteroid"
+	rock_icon_state = "rock-alt"
+
+/turf/simulated/mineral/icey
+	icon_state = "rock-icey"
+	rock_side_icon_state = "rock_side-icey"
+	sand_icon_state = "sand-icey" // to be replaced
+	rock_icon_state = "rock-icey"
+
+/turf/simulated/mineral/crystal
+	icon_state = "rock-crystal"
+	rock_side_icon_state = "rock_side-crystal"
+	sand_icon_state = "sand-icey" // to be replaced
+	rock_icon_state = "rock-crystal"
+
+/turf/simulated/mineral/crystal_shiny
+	icon_state = "rock-crystal-shiny"
+	rock_side_icon_state = "rock_side-crystal"
+	sand_icon_state = "sand-icey" // to be replaced
+	rock_icon_state = "rock-crystal-shiny"
+
 /turf/simulated/mineral/ignore_mapgen
 	ignore_mapgen = 1
 
@@ -95,19 +119,23 @@ var/list/mining_overlay_cache = list()
 	can_build_into_floor = TRUE
 
 //Alternative sand floor sprite.
-turf/simulated/mineral/floor/light
+/turf/simulated/mineral/floor/light
 	icon_state = "sand-light"
 	sand_icon_state = "sand-light"
 
-turf/simulated/mineral/floor/light_border
+/turf/simulated/mineral/floor/icey
+	icon_state = "sand-icey"
+	sand_icon_state = "sand-icey" // to be replaced
+
+/turf/simulated/mineral/floor/light_border
 	icon_state = "sand-light-border"
 	sand_icon_state = "sand-light-border"
 
-turf/simulated/mineral/floor/light_nub
+/turf/simulated/mineral/floor/light_nub
 	icon_state = "sand-light-nub"
 	sand_icon_state = "sand-light-nub"
 
-turf/simulated/mineral/floor/light_corner
+/turf/simulated/mineral/floor/light_corner
 	icon_state = "sand-light-corner"
 	sand_icon_state = "sand-light-corner"
 
@@ -134,7 +162,7 @@ turf/simulated/mineral/floor/light_corner
 
 /turf/simulated/mineral/proc/update_general()
 	update_icon(1)
-	recalc_atom_opacity()
+	recalculate_directional_opacity()
 	if(ticker && ticker.current_state == GAME_STATE_PLAYING)
 		reconsider_lights()
 		if(air_master)
@@ -407,7 +435,7 @@ turf/simulated/mineral/floor/light_corner
 
 		if (istype(W, /obj/item/device/measuring_tape))
 			var/obj/item/device/measuring_tape/P = W
-			user.visible_message("<span class='notice'>\The [user] extends \a [P] towards \the [src].</span>","<span class='notice'>You extend \the [P] towards \the [src].</span>")
+			user.visible_message("<b>\The [user]</b> extends \a [P] towards \the [src].","<span class='notice'>You extend \the [P] towards \the [src].</span>")
 			if(do_after(user, 15))
 				to_chat(user, "<span class='notice'>\The [src] has been excavated to a depth of [excavation_level]cm.</span>")
 			return
@@ -417,7 +445,7 @@ turf/simulated/mineral/floor/light_corner
 			if(C.mode) //Mode means scanning
 				C.depth_scanner.scan_atom(user, src)
 			else
-				user.visible_message("<span class='notice'>\The [user] extends \the [C] over \the [src], a flurry of red beams scanning \the [src]'s surface!</span>", "<span class='notice'>You extend \the [C] over \the [src], a flurry of red beams scanning \the [src]'s surface!</span>")
+				user.visible_message("<b>\The [user]</b> extends \the [C] over \the [src], a flurry of red beams scanning \the [src]'s surface!", "<span class='notice'>You extend \the [C] over \the [src], a flurry of red beams scanning \the [src]'s surface!</span>")
 				if(do_after(user, 15))
 					to_chat(user, "<span class='notice'>\The [src] has been excavated to a depth of [excavation_level]cm.</span>")
 			return

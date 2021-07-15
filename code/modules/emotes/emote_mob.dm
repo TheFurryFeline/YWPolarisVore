@@ -53,7 +53,7 @@
 			if(!message)
 				return
 			if (!m_type)
-				if(alert(src, "Is this an audible emote?", "Emote", "Yes", "No") == "No")
+				if(tgui_alert(src, "Is this an audible emote?", "Emote", list("Yes", "No")) == "No")
 					m_type = VISIBLE_MESSAGE
 				else
 					m_type = AUDIBLE_MESSAGE
@@ -79,7 +79,7 @@
 		return
 
 	if(!use_emote.mob_can_use(src))
-		to_chat(src, SPAN_WARNING("You cannot use the emote '[act]'. Type <b>say *help</b> for  a list of usable emotes."))
+		to_chat(src, SPAN_WARNING("You cannot use the emote '[act]'. Type <b>say *help</b> for a list of usable emotes."))
 		return
 
 	if(m_type != use_emote.message_type && use_emote.conscious && stat != CONSCIOUS)
@@ -168,6 +168,8 @@
 	var/runemessage
 	if(input)
 		formatted = format_emote(src, message)
+		if(!islist(formatted))
+			return
 		message = formatted["pretext"] + formatted["nametext"] + formatted["subtext"]
 		runemessage = formatted["subtext"]
 		// This is just personal preference (but I'm objectively right) that custom emotes shouldn't have periods at the end in runechat

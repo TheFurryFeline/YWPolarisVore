@@ -182,7 +182,7 @@
 	icon = 'icons/vore/custom_clothes_vr.dmi'
 	icon_state = "solara_dress"
 
-	icon_override = 'icons/mob/uniform.dmi'
+	icon_override = 'icons/inventory/uniform/mob.dmi'
 	item_state = "solara_dress"
 
 //For general use
@@ -197,7 +197,7 @@
 	item_state = "brittrenchcoat"
 
 //For general use
-/obj/item/clothing/suit/storage/vest/hoscoat/axis_greatcoat
+/obj/item/clothing/suit/storage/vest/hoscoat/nazi_greatcoat
 	name = "Greatcoat"
 	desc = "Perfect attire for kicking down the doors of suspected dissidents; this coat gives off an imposing look, while offering a luxuriously plush fur liner."
 
@@ -698,10 +698,10 @@
 	desc = " This is Lethe's Hat! A little tag attached inside reads: 'If found please return to Lethe! Or else!' It looks rather worn in. It also lacks armor."
 	armor = list(melee = 0, bullet = 0, laser = 0,energy = 0, bomb = 0, bio = 0, rad = 0)
 
-	icon = 'icons/obj/clothing/hats.dmi'
+	icon = 'icons/inventory/head/item.dmi'
 	icon_state = "hoscap"
 
-	icon_override = 'icons/mob/head.dmi'
+	icon_override = 'icons/inventory/head/mob.dmi'
 	item_state = "hoscap"
 
 /obj/item/weapon/storage/belt/utility/fluff/vulpine
@@ -751,9 +751,9 @@
 	item_state = "pom_mob"
 
 	w_class = ITEMSIZE_SMALL
-	on = 0
-	brightness_on = 5
+	light_range = 5
 	light_overlay = null
+	light_system = MOVABLE_LIGHT
 
 	action_button_name = "Toggle pom-pom"
 
@@ -768,15 +768,13 @@
 	//	to_chat(user, "You cannot turn the light on while in this [user.loc]")
 	//	return
 
-	switch(on)
+	switch(light_on)
 		if(0)
-			on = 1
 			to_chat(user, "You light up your pom-pom.")
 			icon_state = "pom-on"
 			item_state = "pom-on_mob"
 
 		if(1)
-			on = 0
 			to_chat(user, "You dim your pom-pom.")
 			icon_state = "pom"
 			item_state = "pom_mob"
@@ -788,7 +786,7 @@
 		var/mob/living/carbon/human/H = user
 		if(H.head == src)
 			H.update_inv_head()
-/*
+
 /obj/item/weapon/rig/light/hacker/fluff/aronai
 	name = "KHI-99-AAR suit module"
 	suit_type = "nano"
@@ -805,8 +803,6 @@
 		/obj/item/rig_module/teleporter
 		)
 
-No. With a teleporter? Just *no*. - Hawk, YW
-*/
 //Viveret:Keturah
 /obj/item/clothing/under/dress/maid
 	name = "Maid Outfit"
@@ -884,81 +880,63 @@ No. With a teleporter? Just *no*. - Hawk, YW
 	desc = "ROW ROW, FIGHT THE POWER."
 	flash_prot = 1 //Why not.
 
-//Kitsuhana Uniforms - Despite the fact that we removed KHI, we're keeping these. -YW
+//Kitsuhana Uniforms
 /obj/item/clothing/under/rank/khi
 	name = "Delete Me"
 	desc = "Why did you spawn this one? Dork."
 	//catalogue_data = list(/datum/category_item/catalogue/information/organization/khi)
 	sensor_mode = 3
 
-	icon = 'icons/vore/custom_clothes_vr.dmi'
-	icon_state = "khi_uniform_i"
-
-	icon_override = 'icons/vore/custom_clothes_vr.dmi'
-	item_state = ""
+	icon = 'icons/inventory/uniform/item_vr.dmi'
+	default_worn_icon = 'icons/inventory/uniform/mob_vr.dmi'
+	icon_state = "khi_uniform"
 
 /obj/item/clothing/under/rank/khi/cmd //Command version
 	name = "KHI command suit"
-	desc = "An outdated command uniform, branded with the logo of a defunct spacer organization"
-	icon_state = "khi_uniform_cmd_i"
-	item_state = "khi_uniform_cmd"
-	worn_state = "khi_uniform_cmd"
+	desc = "Kitsuhana Heavy Industries uniform. An extra-comfortable command one, at that. I guess if you DON'T want anarchy for some reason."
+	icon_state = "khi_uniform_cmd"
 	armor = list(melee = 0, bullet = 0, laser = 0, energy = 0, bomb = 0, bio = 0, rad = 0)
 
 /obj/item/clothing/under/rank/khi/sec //Security version
 	name = "KHI security suit"
-	desc = "An outdated security uniform, branded with the logo of a defunct spacer organization"
-	icon_state = "khi_uniform_sec_i"
-	item_state = "khi_uniform_sec"
-	worn_state = "khi_uniform_sec"
+	desc = "Kitsuhana Heavy Industries uniform. This one has angry red security stripes. Keepin' the peace in style."
+	icon_state = "khi_uniform_sec"
 	armor = list(melee = 10, bullet = 0, laser = 0, energy = 0, bomb = 0, bio = 0, rad = 0)
 
 /obj/item/clothing/under/rank/khi/med //Medical version
 	name = "KHI medical suit"
-	desc = "An outdated medical uniform, branded with the logo of a defunct spacer organization"
-	icon_state = "khi_uniform_med_i"
-	item_state = "khi_uniform_med"
-	worn_state = "khi_uniform_med"
+	desc = "Kitsuhana Heavy Industries uniform. The medical version. Why not just get a new body, anyway?"
+	icon_state = "khi_uniform_med"
 	armor = list(melee = 0, bullet = 0, laser = 0, energy = 0, bomb = 0, bio = 10, rad = 0)
 
 /obj/item/clothing/under/rank/khi/eng //Engineering version
 	name = "KHI engineering suit"
-	desc = "An outdated engineer uniform, branded with the logo of a defunct spacer organization."
-	icon_state = "khi_uniform_eng_i"
-	item_state = "khi_uniform_eng"
-	worn_state = "khi_uniform_eng"
+	desc = "Kitsuhana Heavy Industries uniform. One fit for an engineer, by the looks of it. Building the future, one disaster at a time."
+	icon_state = "khi_uniform_eng"
 	armor = list(melee = 0, bullet = 0, laser = 0, energy = 0, bomb = 0, bio = 0, rad = 10)
 
 /obj/item/clothing/under/rank/khi/sci //Science version
 	name = "KHI science suit"
-	desc = "An outdated science uniform, branded with the logo of a defunct spacer organization"
-	icon_state = "khi_uniform_sci_i"
-	item_state = "khi_uniform_sci"
-	worn_state = "khi_uniform_sci"
+	desc = "Kitsuhana Heavy Industries uniform. For performing science in, based on the color! Only SCIENCE can save us now."
+	icon_state = "khi_uniform_sci"
 	armor = list(melee = 0, bullet = 0, laser = 0, energy = 0, bomb = 10, bio = 0, rad = 0)
 
 /obj/item/clothing/under/rank/khi/crg //Cargo version
 	name = "KHI cargo suit"
 	desc = "Kitsuhana Heavy Industries uniform. Looks like it's in supply and cargo division colors. Even post-scarcity societies need things moved and mined sometimes."
-	icon_state = "khi_uniform_crg_i"
-	item_state = "khi_uniform_crg"
-	worn_state = "khi_uniform_crg"
+	icon_state = "khi_uniform_crg"
 	armor = list(melee = 0, bullet = 0, laser = 0, energy = 0, bomb = 0, bio = 0, rad = 0)
 
 /obj/item/clothing/under/rank/khi/civ //Science version
 	name = "KHI civilian suit"
 	desc = "Kitsuhana Heavy Industries uniform. Snazzy silver trim marks this is as the general civilian branch. Smells like paperwork and bureaucracy."
-	icon_state = "khi_uniform_civ_i"
-	item_state = "khi_uniform_civ"
-	worn_state = "khi_uniform_civ"
+	icon_state = "khi_uniform_civ"
 	armor = list(melee = 0, bullet = 0, laser = 0, energy = 0, bomb = 0, bio = 0, rad = 0)
 
 /obj/item/clothing/under/rank/khi/fluff/aronai //Aro fluff version
 	name = "KHI meditech suit"
-	desc = "An outdated uniform of some sort. You get the sense that whoever wore this must've been very full of themselves"
-	icon_state = "khi_uniform_aro_i"
-	item_state = "khi_uniform_aro"
-	worn_state = "khi_uniform_aro"
+	desc = "Kitsuhana Heavy Industries uniform. This one has the colors of a resleeving or mnemonics engineer. It has 'Aronai' written inside the top."
+	icon_state = "khi_uniform_aro"
 	armor = list(melee = 0, bullet = 0, laser = 0, energy = 0, bomb = 0, bio = 10, rad = 0)
 
 //jacobdragon:Earthen Breath
@@ -1191,30 +1169,26 @@ Departamental Swimsuits, for general use
 /obj/item/clothing/under/rank/trek
 	name = "Section 31 Uniform"
 	desc = "Oooh... right."
-	icon = 'icons/vore/custom_clothes_vr.dmi'
-	icon_override = 'icons/vore/custom_clothes_vr.dmi'
-	item_state = ""
+	icon = 'icons/inventory/uniform/item_vr.dmi'
+	default_worn_icon = 'icons/inventory/uniform/mob_vr.dmi'
 
 //TOS
 /obj/item/clothing/under/rank/trek/command
 	name = "Command Uniform"
 	desc = "The uniform worn by command officers in the mid 2260s."
 	icon_state = "trek_command"
-	item_state = "trek_command"
 	armor = list(melee = 0, bullet = 0, laser = 0,energy = 0, bomb = 0, bio = 0, rad = 0) // Considering only staff heads get to pick it
 
 /obj/item/clothing/under/rank/trek/engsec
 	name = "Operations Uniform"
 	desc = "The uniform worn by operations officers of the mid 2260s. You feel strangely vulnerable just seeing this..."
 	icon_state = "trek_engsec"
-	item_state = "trek_engsec"
 	armor = list(melee = 10, bullet = 0, laser = 0,energy = 0, bomb = 0, bio = 0, rad = 0) // since they're shared between jobs and kinda moot.
 
 /obj/item/clothing/under/rank/trek/medsci
 	name = "MedSci Uniform"
 	desc = "The uniform worn by medsci officers in the mid 2260s."
 	icon_state = "trek_medsci"
-	item_state = "trek_medsci"
 	permeability_coefficient = 0.50
 	armor = list(melee = 0, bullet = 0, laser = 0,energy = 0, bomb = 0, bio = 10, rad = 0) // basically a copy of vanilla sci/med
 
@@ -1222,59 +1196,48 @@ Departamental Swimsuits, for general use
 /obj/item/clothing/under/rank/trek/command/next
 	desc = "The uniform worn by command officers. This one's from the mid 2360s."
 	icon_state = "trek_next_command"
-	item_state = "trek_next_command"
 
 /obj/item/clothing/under/rank/trek/engsec/next
 	desc = "The uniform worn by operation officers. This one's from the mid 2360s."
 	icon_state = "trek_next_engsec"
-	item_state = "trek_next_engsec"
 
 /obj/item/clothing/under/rank/trek/medsci/next
 	desc = "The uniform worn by medsci officers. This one's from the mid 2360s."
 	icon_state = "trek_next_medsci"
-	item_state = "trek_next_medsci"
 
 //ENT
 /obj/item/clothing/under/rank/trek/command/ent
 	desc = "The uniform worn by command officers of the 2140s."
 	icon_state = "trek_ent_command"
-	item_state = "trek_ent_command"
 
 /obj/item/clothing/under/rank/trek/engsec/ent
 	desc = "The uniform worn by operations officers of the 2140s."
 	icon_state = "trek_ent_engsec"
-	item_state = "trek_ent_engsec"
 
 /obj/item/clothing/under/rank/trek/medsci/ent
 	desc = "The uniform worn by medsci officers of the 2140s."
 	icon_state = "trek_ent_medsci"
-	item_state = "trek_ent_medsci"
 
 //VOY
 /obj/item/clothing/under/rank/trek/command/voy
 	desc = "The uniform worn by command officers of the 2370s."
 	icon_state = "trek_voy_command"
-	item_state = "trek_voy_command"
 
 /obj/item/clothing/under/rank/trek/engsec/voy
 	desc = "The uniform worn by operations officers of the 2370s."
 	icon_state = "trek_voy_engsec"
-	item_state = "trek_voy_engsec"
 
 /obj/item/clothing/under/rank/trek/medsci/voy
 	desc = "The uniform worn by medsci officers of the 2370s."
 	icon_state = "trek_voy_medsci"
-	item_state = "trek_voy_medsci"
 
 //DS9
-
 /obj/item/clothing/suit/storage/trek/ds9
 	name = "Padded Overcoat"
 	desc = "The overcoat worn by all officers of the 2380s."
+	icon = 'icons/inventory/suit/item_vr.dmi'
+	default_worn_icon = 'icons/inventory/suit/mob_vr.dmi'
 	icon_state = "trek_ds9_coat"
-	icon = 'icons/vore/custom_clothes_vr.dmi'
-	item_state = "trek_ds9_coat_mob"
-	icon_override = 'icons/vore/custom_clothes_vr.dmi'
 	body_parts_covered = UPPER_TORSO|LOWER_TORSO|ARMS
 	permeability_coefficient = 0.50
 	allowed = list(
@@ -1291,23 +1254,21 @@ Departamental Swimsuits, for general use
 	name = "Admiral Overcoat"
 	desc = "Admirality specialty coat to keep flag officers fashionable and protected."
 	icon_state = "trek_ds9_coat_adm"
-	item_state = "trek_ds9_coat_adm_mob"
 	armor = list(melee = 45, bullet = 35, laser = 35, energy = 20, bomb = 0, bio = 40, rad = 55)
-
 
 /obj/item/clothing/under/rank/trek/command/ds9
 	desc = "The uniform worn by command officers of the 2380s."
-	icon_state = "trek_command"
+	icon_state = "trek_command" // no unique state for this one
 	item_state = "trek_ds9_command"
 
 /obj/item/clothing/under/rank/trek/engsec/ds9
 	desc = "The uniform worn by operations officers of the 2380s."
-	icon_state = "trek_engsec"
+	icon_state = "trek_engsec" // no unique state for this one
 	item_state = "trek_ds9_engsec"
 
 /obj/item/clothing/under/rank/trek/medsci/ds9
 	desc = "The uniform undershit worn by medsci officers of the 2380s."
-	icon_state = "trek_medsci"
+	icon_state = "trek_medsci" // no unique state for this one
 	item_state = "trek_ds9_medsci"
 
 //For general use maybe
@@ -1765,13 +1726,13 @@ Departamental Swimsuits, for general use
 	item_state = "hasd_helm"
 	species_restricted = null
 
-	mob_can_equip(var/mob/living/carbon/human/H, slot, disable_warning = 0)
-		if(..())
-			if(H.ckey != "silencedmp5a5")
-				to_chat(H, "<span class='warning'>...The faceplate is clearly not made for your anatomy, thus, does not fit.</span>")
-				return 0
-			else
-				return 1
+/obj/item/clothing/head/helmet/space/void/security/hasd/mob_can_equip(var/mob/living/carbon/human/H, slot, disable_warning = 0)
+	if(..())
+		if(H.ckey != "silencedmp5a5")
+			to_chat(H, "<span class='warning'>...The faceplate is clearly not made for your anatomy, thus, does not fit.</span>")
+			return 0
+		else
+			return 1
 
 /obj/item/clothing/suit/space/void/security/hasd
 	name = "HASD EVA bodyplates"
@@ -1783,12 +1744,12 @@ Departamental Swimsuits, for general use
 	item_state = "hasd_suit"
 	pixel_x = -16
 
-	mob_can_equip(var/mob/living/carbon/human/H, slot, disable_warning = 0)
-		if(..() && istype(H) && H.ckey == "silencedmp5a5")
-			return 1
-		else
-			to_chat(H, "<span class='warning'>This suit is not designed for you.</span>")
-			return 0
+/obj/item/clothing/suit/space/void/security/hasd/mob_can_equip(var/mob/living/carbon/human/H, slot, disable_warning = 0)
+	if(..() && istype(H) && H.ckey == "silencedmp5a5")
+		return 1
+	else
+		to_chat(H, "<span class='warning'>This suit is not designed for you.</span>")
+		return 0
 
 //Zigfe:Zaoozaoo Xrimxuqmqixzix
 /obj/item/clothing/head/fluff/zao
@@ -1943,7 +1904,7 @@ Departamental Swimsuits, for general use
 	item_icons = list()
 	default_worn_icon = 'icons/vore/custom_clothes_vr.dmi'
 	color = COLOR_NAVY
-	sprite_sheets = null
+	sprite_sheets = list()
 
 //SweetBlueSylveon:Pip Shyner
 /obj/item/clothing/accessory/poncho/roles/cloak/hop/fluff/pip
@@ -2125,7 +2086,7 @@ Departamental Swimsuits, for general use
 		user.visible_message("<span class='notice'>[user] harmlessly bops [target] with \the [src].</span>", \
 		"<span class='notice'>\The [src] harmlessly bops [target]. The hat seems... unwilling?</span>")
 	else
-		user.visible_message("<span class='notice'>\The [src] flops over [user]'s' head for a moment, but they seem alright.</span>", \
+		user.visible_message("<b>\The [src]</b> flops over [user]'s' head for a moment, but they seem alright.", \
 		"<span class='notice'>\The [src] flops over your head for a moment, but you correct it without issue. There we go!</span>")
 
 /obj/item/clothing/head/fluff/nikki/proc/hat_warp_checks(var/mob/living/target, mob/user, proximity_flag)
@@ -2323,7 +2284,7 @@ Departamental Swimsuits, for general use
 			item_state = "rgb"
 			overlay_state = "rgb"
 			to_chat(user, "The polychromic plates in your cloak activate, turning it white.")
-		has_suit.update_clothing_icon()
+		has_suit?.update_clothing_icon()
 
 /obj/item/clothing/accessory/poncho/roles/cloak/fluff/cloakglowing/verb/color_verb()
 	set name = "Swap color"
@@ -2333,3 +2294,50 @@ Departamental Swimsuits, for general use
 	if(usr.stat) return
 
 	colorswap(usr)
+
+//Pandora029 : Evelyn Tareen
+/obj/item/clothing/suit/storage/hooded/wintercoat/security/fluff/evelyn
+	name = "warden's navy winter coat"
+	desc = "A custom tailored security winter coat in navy blue colors, this one has the rank markings of a warden on it."
+	icon = 'icons/vore/custom_clothes_vr.dmi'
+	icon_state = "evelyncoat"
+
+	icon_override = 'icons/vore/custom_onmob_vr.dmi'
+	item_state = "evelyncoat_mob"
+
+/obj/item/clothing/suit/storage/hooded/wintercoat/security/fluff/evelyn/ui_action_click()
+	ToggleHood_evelyn()
+
+/obj/item/clothing/suit/storage/hooded/wintercoat/security/fluff/evelyn/equipped(mob/user, slot)
+	if(slot != slot_wear_suit)
+		RemoveHood_evelyn()
+	..()
+
+/obj/item/clothing/suit/storage/hooded/wintercoat/security/fluff/evelyn/proc/RemoveHood_evelyn()
+	icon_state = "evelyncoat"
+	item_state = "evelyncoat_mob"
+	hood_up = 0
+	if(ishuman(hood.loc))
+		var/mob/living/carbon/H = hood.loc
+		H.unEquip(hood, 1)
+		H.update_inv_wear_suit()
+	hood.loc = src
+
+/obj/item/clothing/suit/storage/hooded/wintercoat/security/fluff/evelyn/proc/ToggleHood_evelyn()
+	if(!hood_up)
+		if(ishuman(loc))
+			var/mob/living/carbon/human/H = loc
+			if(H.wear_suit != src)
+				to_chat(H, "<span class='warning'>You must be wearing [src] to put up the hood!</span>")
+				return
+			if(H.head)
+				to_chat(H, "<span class='warning'>You're already wearing something on your head!</span>")
+				return
+			else
+				H.equip_to_slot_if_possible(hood,slot_head,0,0,1)
+				hood_up = 1
+				icon_state = "evelyncoat_t"
+				item_state = "evelyncoat_mob_t"
+				H.update_inv_wear_suit()
+	else
+		RemoveHood_evelyn()

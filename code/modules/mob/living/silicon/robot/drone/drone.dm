@@ -143,13 +143,13 @@ var/list/mob_hat_cache = list()
 
 /mob/living/silicon/robot/drone/updateicon()
 
-	overlays.Cut()
+	cut_overlays()
 	if(stat == 0)
-		overlays += "eyes-[icon_state]"
+		add_overlay("eyes-[icon_state]")
 	else
-		overlays -= "eyes"
+		cut_overlay("eyes")
 	if(hat) // Let the drones wear hats.
-		overlays |= get_hat_icon(hat, hat_x_offset, hat_y_offset)
+		add_overlay(get_hat_icon(hat, hat_x_offset, hat_y_offset))
 
 /mob/living/silicon/robot/drone/choose_icon()
 	return
@@ -173,7 +173,7 @@ var/list/mob_hat_cache = list()
 			return
 		user.unEquip(W)
 		wear_hat(W)
-		user.visible_message("<span class='notice'>\The [user] puts \the [W] on \the [src].</span>")
+		user.visible_message("<b>\The [user]</b> puts \the [W] on \the [src].")
 		return
 	else if(istype(W, /obj/item/borg/upgrade/))
 		to_chat(user, "<span class='danger'>\The [src] is not compatible with \the [W].</span>")
@@ -314,7 +314,7 @@ var/list/mob_hat_cache = list()
 /mob/living/silicon/robot/drone/proc/question(var/client/C)
 	spawn(0)
 		if(!C || jobban_isbanned(C,"Cyborg"))	return
-		var/response = alert(C, "Someone is attempting to reboot a maintenance drone. Would you like to play as one?", "Maintenance drone reboot", "Yes", "No", "Never for this round")
+		var/response = tgui_alert(C, "Someone is attempting to reboot a maintenance drone. Would you like to play as one?", "Maintenance drone reboot", list("Yes", "No", "Never for this round"))
 		if(!C || ckey)
 			return
 		if(response == "Yes")

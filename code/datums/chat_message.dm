@@ -167,7 +167,7 @@ var/list/runechat_image_cache = list()
 	approx_lines = max(1, mheight / CHAT_MESSAGE_APPROX_LHEIGHT)
 
 	// Translate any existing messages upwards, apply exponential decay factors to timers
-	message_loc = target
+	message_loc = target.runechat_holder(src)
 	RegisterSignal(message_loc, COMSIG_PARENT_QDELETING, .proc/qdel_self)
 	if(owned_by.seen_messages)
 		var/idx = 1
@@ -190,12 +190,15 @@ var/list/runechat_image_cache = list()
 	message.plane = PLANE_RUNECHAT
 	message.appearance_flags = APPEARANCE_UI_IGNORE_ALPHA | KEEP_APART
 	message.alpha = 0
-	message.pixel_y = (owner.bound_height * 0.95)*owner.size_multiplier
 	message.maptext_width = msgwidth
 	message.maptext_height = mheight
-	message.maptext_x = (msgwidth - owner.bound_width) * -0.5
+	message.maptext_x = message_loc.runechat_x_offset(msgwidth, mheight)
+	message.maptext_y = message_loc.runechat_y_offset(msgwidth, mheight)
 	message.maptext = complete_text
 
+	if(!owner)
+		qdel(src)
+		return
 	if(owner.contains(target)) // Special case, holding an atom speaking (pAI, recorder...)
 		message.plane = PLANE_PLAYER_HUD_ABOVE
 
@@ -236,7 +239,8 @@ var/list/runechat_image_cache = list()
 	// Doesn't want to hear
 	if(ismob(speaker) && !client.is_preference_enabled(/datum/client_preference/runechat_mob))
 		return
-	else if(isobj(speaker) && !client.is_preference_enabled(/datum/client_preference/runechat_obj))
+	// I know the pref is 'obj' but people dunno what turfs are
+	else if(!client.is_preference_enabled(/datum/client_preference/runechat_obj))
 		return
 
 	// Incapable of receiving
@@ -324,13 +328,46 @@ var/list/runechat_image_cache = list()
 		if(5)
 			return rgb(c,m,x)
 
-/atom/proc/runechat_message(message, range = world.view, italics, list/classes = list(), audible = TRUE)
-	var/list/hear = get_mobs_and_objs_in_view_fast(get_turf(src), range, remote_ghosts = FALSE)
-
-	var/list/hearing_mobs = hear["mobs"]
+/atom/proc/runechat_message(message, range = world.view, italics, list/classes = list(), audible = TRUE, list/specific_viewers)
+	var/hearing_mobs
+	if(islist(specific_viewers))
+		hearing_mobs = specific_viewers.Copy()
+	else
+		var/list/hear = get_mobs_and_objs_in_view_fast(get_turf(src), range, remote_ghosts = FALSE)
+		hearing_mobs = hear["mobs"]
 
 	for(var/mob in hearing_mobs)
 		var/mob/M = mob
 		if(!M.client)
 			continue
 		M.create_chat_message(src, message, italics, classes, audible)
+
+// Allows you to specify your desired offset for messages from yourself
+/atom/proc/runechat_x_offset(width, height)
+	return (width - world.icon_size) * -0.5
+
+/atom/proc/runechat_y_offset(width, height)
+	return world.icon_size * 0.95
+
+/atom/movable/runechat_x_offset(width, height)
+	return (width - bound_width) * -0.5
+
+/atom/movable/runechat_y_offset(width, height)
+	return bound_height * 0.95
+
+/* Nothing special
+/mob/runechat_x_offset(width, height)
+	return (width - bound_width) * -0.5
+*/
+
+/mob/runechat_y_offset(width, height)
+	return ..()*size_multiplier
+
+// Allows you to specify a different attachment point for messages from yourself
+/atom/proc/runechat_holder(datum/chatmessage/CM)
+	return src
+
+/mob/runechat_holder(datum/chatmessage/CM)
+	if(istype(loc, /obj/item/weapon/holder))
+		return loc
+	return ..()

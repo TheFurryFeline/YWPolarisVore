@@ -351,7 +351,7 @@ var/global/list/latejoin_tram   = list()
 //Freezable Airlock Door
 /obj/machinery/door/airlock/glass_external/freezable
 	maxhealth = 600
-	var/frozen = 0
+	var/frozen = FALSE
 	var/freezing = 0 //see process().
 	var/deiceTools[0]
 	var/nextWeatherCheck
@@ -415,20 +415,21 @@ var/global/list/latejoin_tram   = list()
 		to_chat(user, "<span class='notice'>You finish chipping the ice off \the [src]</span>")
 
 /obj/machinery/door/airlock/glass_external/freezable/proc/unFreeze()
-	frozen = 0
+	frozen = FALSE
 	update_icon()
 	return
 
 /obj/machinery/door/airlock/glass_external/freezable/proc/freeze()
-	frozen = 1
+	frozen = TRUE
 	update_icon()
 	return
 
 /obj/machinery/door/airlock/glass_external/freezable/update_icon()
 	..()
 	if(frozen)
-		overlays += image(icon = 'icons/turf/overlays.dmi', icon_state = "snowairlock")
-	return
+		add_overlay(image(icon = 'icons/turf/overlays.dmi', icon_state = "snowairlock"), priority = TRUE,)
+	if(!frozen)
+		cut_overlays(priority = TRUE)
 
 /obj/machinery/door/airlock/glass_external/freezable/proc/handleFreezeUnfreeze()
 
@@ -581,7 +582,7 @@ var/global/list/latejoin_tram   = list()
 	anchored = TRUE
 	catalogue_data = list(/datum/category_item/catalogue/material/trail_blazer)
 
-obj/machinery/trailblazer/Initialize()
+/obj/machinery/trailblazer/Initialize()
 	randomize_color()
 	return ..()
 
