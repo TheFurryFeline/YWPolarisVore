@@ -17,7 +17,7 @@
 	slowdown = 1
 	armor = list(melee = 0, bullet = 0, laser = 0,energy = 0, bomb = 0, bio = 100, rad = 70)
 	siemens_coefficient = 1
-	allowed = list(/obj/item/device/flashlight,/obj/item/weapon/tank)
+	allowed = list(/obj/item/flashlight,/obj/item/tank)
 	icon_state = "zaddat_hegemony"
 	helmet = new/obj/item/clothing/head/helmet/space/void/zaddat //shrouds come with helmets built-in
 	var/has_been_customized = FALSE
@@ -38,7 +38,7 @@
 		to_chat(M, "This Shroud has already been customized!")
 		return 0
 
-	suit_style = input(M, "Which suit style would you like?") in list("Engineer", "Spacer", "Knight", "Fashion", "Bishop", "Hegemony", "Rugged", "Soft")
+	suit_style = tgui_input_list(M, "Which suit style would you like?", "Suit Style", list("Engineer", "Spacer", "Knight", "Fashion", "Bishop", "Hegemony", "Rugged", "Soft"))
 	switch(suit_style)
 		if("Engineer")
 			name = "\improper Engineer's Guild Shroud"

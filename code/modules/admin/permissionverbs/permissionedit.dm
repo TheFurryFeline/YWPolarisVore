@@ -1,5 +1,5 @@
 /client/proc/edit_admin_permissions()
-	set category = "Admin"
+	set category = "Admin.Secrets"
 	set name = "Permissions Panel"
 	set desc = "Edit admin permissions"
 	if(!check_rights(R_PERMISSIONS))	return
@@ -18,7 +18,7 @@
 <body onload='selectTextField();updateSearch();'>
 <div id='main'><table id='searchable' cellspacing='0'>
 <tr class='title'>
-<th style='width:125px;text-align:right;'>CKEY <a class='small' href='?src=\ref[src];editrights=add'>\[+\]</a></th>
+<th style='width:125px;text-align:right;'>CKEY <a class='small' href='?src=\ref[src];[HrefToken()];editrights=add'>\[+\]</a></th>
 <th style='width:125px;'>RANK</th><th style='width:100%;'>PERMISSIONS</th>
 </tr>
 "}
@@ -31,9 +31,9 @@
 		if(!rights)	rights = "*none*"
 
 		output += "<tr>"
-		output += "<td style='text-align:right;'>[adm_ckey] <a class='small' href='?src=\ref[src];editrights=remove;ckey=[adm_ckey]'>\[-\]</a></td>"
-		output += "<td><a href='?src=\ref[src];editrights=rank;ckey=[adm_ckey]'>[rank]</a></td>"
-		output += "<td><a class='small' href='?src=\ref[src];editrights=permissions;ckey=[adm_ckey]'>[rights]</a></td>"
+		output += "<td style='text-align:right;'>[adm_ckey] <a class='small' href='?src=\ref[src];[HrefToken()];editrights=remove;ckey=[adm_ckey]'>\[-\]</a></td>"
+		output += "<td><a href='?src=\ref[src];[HrefToken()];editrights=rank;ckey=[adm_ckey]'>[rank]</a></td>"
+		output += "<td><a class='small' href='?src=\ref[src];[HrefToken()];editrights=permissions;ckey=[adm_ckey]'>[rights]</a></td>"
 		output += "</tr>"
 
 	output += {"
@@ -45,19 +45,19 @@
 	usr << browse(output,"window=editrights;size=600x500")
 
 /datum/admins/proc/log_admin_rank_modification(var/adm_ckey, var/new_rank)
-	if(config.admin_legacy_system)	return
+	if(CONFIG_GET(flag/admin_legacy_system))	return
 
 	if(!usr.client)
 		return
 
 	if(!usr.client.holder || !(usr.client.holder.rights & R_PERMISSIONS))
-		to_chat(usr, "<span class='filter_adminlog'><font color='red'>You do not have permission to do this!</font></span>")
+		to_chat(usr, span_filter_adminlog("[span_red("You do not have permission to do this!")]"))
 		return
 
 	establish_db_connection()
 
 	if(!dbcon.IsConnected())
-		to_chat(usr, "<span class='filter_adminlog'><font color='red'>Failed to establish database connection</font></span>")
+		to_chat(usr, span_filter_adminlog("[span_red("Failed to establish database connection")]"))
 		return
 
 	if(!adm_ckey || !new_rank)
@@ -85,28 +85,28 @@
 		insert_query.Execute()
 		var/DBQuery/log_query = dbcon.NewQuery("INSERT INTO `test`.`erro_admin_log` (`id` ,`datetime` ,`adminckey` ,`adminip` ,`log` ) VALUES (NULL , NOW( ) , '[usr.ckey]', '[usr.client.address]', 'Added new admin [adm_ckey] to rank [new_rank]');")
 		log_query.Execute()
-		to_chat(usr, "<span class='filter_adminlog'><font color='blue'>New admin added.</font></span>")
+		to_chat(usr, span_filter_adminlog("[span_blue("New admin added.")]"))
 	else
 		if(!isnull(admin_id) && isnum(admin_id))
 			var/DBQuery/insert_query = dbcon.NewQuery("UPDATE `erro_admin` SET rank = '[new_rank]' WHERE id = [admin_id]")
 			insert_query.Execute()
 			var/DBQuery/log_query = dbcon.NewQuery("INSERT INTO `test`.`erro_admin_log` (`id` ,`datetime` ,`adminckey` ,`adminip` ,`log` ) VALUES (NULL , NOW( ) , '[usr.ckey]', '[usr.client.address]', 'Edited the rank of [adm_ckey] to [new_rank]');")
 			log_query.Execute()
-			to_chat(usr, "<span class='filter_adminlog'><font color='blue'>Admin rank changed.</font></span>")
+			to_chat(usr, span_filter_adminlog("[span_blue("Admin rank changed.")]"))
 
 /datum/admins/proc/log_admin_permission_modification(var/adm_ckey, var/new_permission)
-	if(config.admin_legacy_system)	return
+	if(CONFIG_GET(flag/admin_legacy_system))	return
 
 	if(!usr.client)
 		return
 
 	if(!usr.client.holder || !(usr.client.holder.rights & R_PERMISSIONS))
-		to_chat(usr, "<span class='filter_adminlog'><font color='red'>You do not have permission to do this!</font></span>")
+		to_chat(usr, span_filter_adminlog("[span_red(">You do not have permission to do this!")]"))
 		return
 
 	establish_db_connection()
 	if(!dbcon.IsConnected())
-		to_chat(usr, "<span class='filter_adminlog'><font color='red'>Failed to establish database connection</font></span>")
+		to_chat(usr, span_filter_adminlog("[span_red("Failed to establish database connection!")]"))
 		return
 
 	if(!adm_ckey || !new_permission)
@@ -140,10 +140,10 @@
 		insert_query.Execute()
 		var/DBQuery/log_query = dbcon.NewQuery("INSERT INTO `test`.`erro_admin_log` (`id` ,`datetime` ,`adminckey` ,`adminip` ,`log` ) VALUES (NULL , NOW( ) , '[usr.ckey]', '[usr.client.address]', 'Removed permission [rights2text(new_permission)] (flag = [new_permission]) to admin [adm_ckey]');")
 		log_query.Execute()
-		to_chat(usr, "<span class='filter_adminlog'><font color='blue'>Permission removed.</font></span>")
+		to_chat(usr, span_filter_adminlog("[span_blue("Permission removed.")]"))
 	else //This admin doesn't have this permission, so we are adding it.
 		var/DBQuery/insert_query = dbcon.NewQuery("UPDATE `erro_admin` SET flags = '[admin_rights | new_permission]' WHERE id = [admin_id]")
 		insert_query.Execute()
 		var/DBQuery/log_query = dbcon.NewQuery("INSERT INTO `test`.`erro_admin_log` (`id` ,`datetime` ,`adminckey` ,`adminip` ,`log` ) VALUES (NULL , NOW( ) , '[usr.ckey]', '[usr.client.address]', 'Added permission [rights2text(new_permission)] (flag = [new_permission]) to admin [adm_ckey]')")
 		log_query.Execute()
-		to_chat(usr, "<span class='filter_adminlog'><font color='blue'>Permission added.</font></span>")
+		to_chat(usr, span_filter_adminlog("[span_blue("Permission added.")]"))

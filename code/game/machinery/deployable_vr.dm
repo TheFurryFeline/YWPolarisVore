@@ -5,7 +5,7 @@
 	icon_state = "cutout_basic"
 
 	maxhealth = 15 //Weaker than normal barricade
-	anchored = 0
+	anchored = FALSE
 
 	var/fake_name = "unknown"
 	var/fake_desc = "You have to be closer to examine this creature."
@@ -15,7 +15,7 @@
 	var/human_name = TRUE
 
 	var/static/list/cutout_types
-	var/static/list/painters = list(/obj/item/weapon/reagent_containers/glass/paint, /obj/item/device/floor_painter)//, /obj/item/device/closet_painter)
+	var/static/list/painters = list(/obj/item/reagent_containers/glass/paint, /obj/item/floor_painter)//, /obj/item/closet_painter)
 
 /obj/structure/barricade/cutout/New()
 	. = ..()
@@ -36,20 +36,20 @@
 		return
 	toppled = TRUE
 	icon_state = "cutout_pushed_over"
-	density = 0
+	density = FALSE
 	name = initial(name)
 	desc = initial(desc)
-	visible_message("<span class='warning'>[src] topples over!</span>")
+	visible_message(span_warning("[src] topples over!"))
 
 /obj/structure/barricade/cutout/proc/untopple()
 	if(!toppled)
 		return
 	toppled = FALSE
 	icon_state = initial(icon_state)
-	density = 1
+	density = TRUE
 	name = fake_name
 	desc = fake_desc
-	visible_message("<span class='warning'>[src] is uprighted to their proper position.</span>")
+	visible_message(span_warning("[src] is uprighted to their proper position."))
 
 /obj/structure/barricade/cutout/CheckHealth()
 	if(!toppled && (health < (maxhealth/2)))
@@ -67,12 +67,12 @@
 	. = ..()
 
 	if(Adjacent(user))
-		. += "<span class='notice'>... from this distance, they seem to be made of [material.name] ...</span>"
+		. += span_notice("... from this distance, they seem to be made of [material.name] ...")
 
 /obj/structure/barricade/cutout/attackby(var/obj/I, var/mob/user)
 	if(is_type_in_list(I, painters))
-		var/choice = input(user, "What would you like to paint the cutout as?", "Cutout Painting") as null|anything in cutout_types
-		if(!choice || !Adjacent(user, src) || I != user.get_active_hand())
+		var/choice = tgui_input_list(user, "What would you like to paint the cutout as?", "Cutout Painting", cutout_types)
+		if(!choice || !Adjacent(user) || I != user.get_active_hand())
 			return TRUE
 		if(do_after(user, 10 SECONDS, src))
 			var/picked_type = cutout_types[choice]

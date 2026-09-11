@@ -5,9 +5,9 @@
 	desc = "An oxygen generator using algae to convert carbon dioxide to oxygen."
 	icon = 'icons/obj/machines/algae_vr.dmi'
 	icon_state = "algae-off"
-	circuit = /obj/item/weapon/circuitboard/algae_farm
-	anchored = 1
-	density = 1
+	circuit = /obj/item/circuitboard/algae_farm
+	anchored = TRUE
+	density = TRUE
 	power_channel = EQUIP
 	use_power = USE_POWER_IDLE
 	idle_power_usage = 100		// Minimal lights to keep algae alive
@@ -44,10 +44,10 @@
 	// TODO - Make these in actual icon states so its not silly like this
 	var/image/I = image(icon = icon, icon_state = "algae-pipe-overlay", dir = dir)
 	I.color = PIPE_COLOR_BLUE
-	overlays += I
+	add_overlay(I)
 	I = image(icon = icon, icon_state = "algae-pipe-overlay", dir = reverse_dir[dir])
 	I.color = PIPE_COLOR_BLACK
-	overlays += I
+	add_overlay(I)
 
 /obj/machinery/atmospherics/binary/algae_farm/Destroy()
 	. = ..()
@@ -123,7 +123,7 @@
 		icon_state = "algae-on"
 	return 1
 
-/obj/machinery/atmospherics/binary/algae_farm/attackby(obj/item/weapon/W as obj, mob/user as mob)
+/obj/machinery/atmospherics/binary/algae_farm/attackby(obj/item/W as obj, mob/user as mob)
 	add_fingerprint(user)
 	if(default_deconstruction_screwdriver(user, W))
 		return
@@ -134,7 +134,7 @@
 	if(try_load_materials(user, W))
 		return
 	else
-		to_chat(user, "<span class='notice'>You cannot insert this item into \the [src]!</span>")
+		to_chat(user, span_notice("You cannot insert this item into \the [src]!"))
 		return
 
 /obj/machinery/atmospherics/binary/algae_farm/attack_hand(mob/user)
@@ -149,12 +149,12 @@
 	var/bin_rating = 0
 	var/manip_rating = 0
 
-	for(var/obj/item/weapon/stock_parts/P in component_parts)
-		if(istype(P, /obj/item/weapon/stock_parts/capacitor))
+	for(var/obj/item/stock_parts/P in component_parts)
+		if(istype(P, /obj/item/stock_parts/capacitor))
 			cap_rating += P.rating
-		if(istype(P, /obj/item/weapon/stock_parts/matter_bin))
+		if(istype(P, /obj/item/stock_parts/matter_bin))
 			bin_rating += P.rating
-		if(istype(P, /obj/item/weapon/stock_parts/manipulator))
+		if(istype(P, /obj/item/stock_parts/manipulator))
 			manip_rating += P.rating
 
 	power_per_mole = round(initial(power_per_mole) / cap_rating)
@@ -206,10 +206,10 @@
 
 	return data
 
-/obj/machinery/atmospherics/binary/algae_farm/tgui_act(action, params)
+/obj/machinery/atmospherics/binary/algae_farm/tgui_act(action, params, datum/tgui/ui)
 	if(..())
 		return TRUE
-	add_fingerprint(usr)
+	add_fingerprint(ui.user)
 
 	switch(action)
 		if("toggle")
@@ -238,9 +238,7 @@
 	if(amount <= 0)
 		amount = S.max_amount
 	var/ejected = min(round(stored_material[material_name] / S.perunit), amount)
-	S.amount = min(ejected, amount)
-	if(S.amount <= 0)
-		qdel(S)
+	if(!S.set_amount(min(ejected, amount)))
 		return
 	stored_material[material_name] -= ejected * S.perunit
 	if(recursive && stored_material[material_name] >= S.perunit)
@@ -251,19 +249,19 @@
 	if(!istype(S))
 		return 0
 	if(!(S.material.name in stored_material))
-		to_chat(user, "<span class='warning'>\The [src] doesn't accept [material_display_name(S.material)]!</span>")
+		to_chat(user, span_warning("\The [src] doesn't accept [material_display_name(S.material)]!"))
 		return 1
 	var/max_res_amount = storage_capacity[S.material.name]
 	if(stored_material[S.material.name] + S.perunit <= max_res_amount)
 		var/count = 0
-		while(stored_material[S.material.name] + S.perunit <= max_res_amount && S.amount >= 1)
+		while(stored_material[S.material.name] + S.perunit <= max_res_amount && S.get_amount() >= 1)
 			stored_material[S.material.name] += S.perunit
 			S.use(1)
 			count++
-		user.visible_message("\The [user] inserts [S.name] into \the [src].", "<span class='notice'>You insert [count] [S.name] into \the [src].</span>")
+		user.visible_message("\The [user] inserts [S.name] into \the [src].", span_notice("You insert [count] [S.name] into \the [src]."))
 		updateUsrDialog()
 	else
-		to_chat(user, "<span class='warning'>\The [src] cannot hold more [S.name].</span>")
+		to_chat(user, span_warning("\The [src] cannot hold more [S.name]."))
 	return 1
 
 /datum/material/algae

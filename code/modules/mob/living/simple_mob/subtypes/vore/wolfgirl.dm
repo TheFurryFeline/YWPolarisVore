@@ -8,7 +8,7 @@
 	icon_dead = "wolfgirl-dead"
 	icon = 'icons/mob/vore.dmi'
 
-	faction = "wolfgirl"
+	faction = FACTION_WOLFGIRL
 	maxHealth = 30
 	health = 30
 
@@ -29,6 +29,9 @@
 	vore_active = 1
 	vore_pounce_chance = 40
 	vore_icons = SA_ICON_LIVING
+
+/datum/ai_holder/simple_mob/retaliate/cooperative/wolfgirl
+	belly_attack = FALSE
 
 /datum/ai_holder/simple_mob/retaliate/cooperative/wolfgirl/on_hear_say(mob/living/speaker, message)
 

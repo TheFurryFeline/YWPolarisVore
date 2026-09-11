@@ -16,6 +16,7 @@
 	if(owner)
 		my_mob = owner
 		update_abilities(0, owner)
+		overlays.Add(closed_state)
 	else
 		message_admins("ERROR: ability_master's New() was not given an owner argument.  This is a bug.")
 
@@ -183,6 +184,13 @@
 	if(!ability_master)	//VOREStation Edit: S H A D E K I N
 		ability_master = new /obj/screen/movable/ability_master(src)
 
+
+/mob/Destroy()
+	..()
+	if(ability_master)
+		QDEL_NULL(ability_master)
+
+
 ///////////ACTUAL ABILITIES////////////
 //This is what you click to do things//
 ///////////////////////////////////////
@@ -218,7 +226,7 @@
 //	if((last_charge == spell.charge_counter || !handle_icon_updates) && !forced_update)
 //		return //nothing to see here
 
-//	overlays -= spell.hud_state
+//	cut_overlay(spell.hud_state)
 
 //	if(spell.charge_type == Sp_RECHARGE || spell.charge_type == Sp_CHARGES)
 //		if(spell.charge_counter < spell.charge_max)
@@ -228,27 +236,27 @@
 //				partial_charge.Crop(1, 1, partial_charge.Width(), round(partial_charge.Height() * spell.charge_counter / spell.charge_max))
 //				overlays += partial_charge
 //				if(last_charged_icon)
-//					overlays -= last_charged_icon
+//					cut_overlay(last_charged_icon)
 //				last_charged_icon = partial_charge
 //			else if(last_charged_icon)
-//				overlays -= last_charged_icon
+//				cut_overlay(last_charged_icon)
 //				last_charged_icon = null
 //		else
 //			icon_state = "[spell_base]_spell_ready"
 //			if(last_charged_icon)
-//				overlays -= last_charged_icon
+//				cut_overlay(last_charged_icon)
 //	else
 //		icon_state = "[spell_base]_spell_ready"
-	overlays.Cut()
+	cut_overlays()
 	icon_state = "[background_base_state]_spell_base"
 
 	overlays += ability_icon_state
 
 //	last_charge = spell.charge_counter
 
-//	overlays -= "silence"
+//	cut_overlay("silence")
 //	if(spell.silenced)
-//		overlays += "silence"
+//		add_overlay("silence")
 
 /obj/screen/ability/Click()
 	if(!usr)
@@ -283,7 +291,7 @@
 	if(!mob)
 		return // Paranoid.
 	if(isnull(slot) || !isnum(slot))
-		to_chat(src, "<span class='warning'>.activate_ability requires a number as input, corrisponding to the slot you wish to use.</span>")
+		to_chat(src, span_warning(".activate_ability requires a number as input, corrisponding to the slot you wish to use."))
 		return // Bad input.
 	if(!mob.ability_master)
 		return // No abilities.
@@ -305,7 +313,7 @@
 	if(object_used && verb_to_call)
 		call(object_used,verb_to_call)(arguments_to_use)
 //		call(object_used,verb_to_call)(arguments_to_use)
-//		to_world("Attempted to call([object_used],[verb_to_call])([arguments_to_use])")
+//		to_world(span_world("Attempted to call([object_used],[verb_to_call])([arguments_to_use])"))
 //		if(hascall(object_used, verb_to_call))
 //			call(object_used,verb_to_call)(arguments_to_use)
 //		else

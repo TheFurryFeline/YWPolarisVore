@@ -10,13 +10,14 @@ Pipelines + Other Objects -> Pipe network
 
 */
 /obj/machinery/atmospherics
-	anchored = 1
+	anchored = TRUE
 	idle_power_usage = 0
 	active_power_usage = 0
 	power_channel = ENVIRON
 	var/nodealert = 0
 	var/power_rating //the maximum amount of power the machine can use to do work, affects how powerful the machine is, in Watts
 
+	unacidable = TRUE
 	layer = ATMOS_LAYER
 	plane = PLATING_PLANE
 
@@ -34,8 +35,8 @@ Pipelines + Other Objects -> Pipe network
 	var/obj/machinery/atmospherics/node1
 	var/obj/machinery/atmospherics/node2
 
-/obj/machinery/atmospherics/New(loc, newdir)
-	..()
+/obj/machinery/atmospherics/Initialize(mapload, newdir)
+	. = ..()
 	if(!icon_manager)
 		icon_manager = new()
 	if(!isnull(newdir))
@@ -81,7 +82,7 @@ Pipelines + Other Objects -> Pipe network
 	return (src.connect_types & target.connect_types)
 
 /obj/machinery/atmospherics/attackby(atom/A, mob/user as mob)
-	if(istype(A, /obj/item/device/pipe_painter))
+	if(istype(A, /obj/item/pipe_painter))
 		return
 	..()
 
@@ -170,6 +171,9 @@ Pipelines + Other Objects -> Pipe network
 	if(construction_type)
 		var/obj/item/pipe/I = new construction_type(loc, null, null, src)
 		I.setPipingLayer(piping_layer)
+		if(istype(I, /obj/item/pipe/trinary/flippable))
+			var/obj/item/pipe/trinary/flippable/flip = I
+			flip.icon_state = "[flip.icon_state][flip.mirrored ? "m" : ""]"
 		transfer_fingerprints_to(I)
 	qdel(src)
 

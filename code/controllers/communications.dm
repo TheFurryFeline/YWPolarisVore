@@ -126,26 +126,28 @@ var/const/MED_I_FREQ = 1485
 var/const/SEC_I_FREQ = 1475
 
 var/const/TALON_FREQ = 1363 //VOREStation Add
+var/const/CSN_FREQ = 1365 //VOREStation Add
 
 var/list/radiochannels = list(
-	"Common"		= PUB_FREQ,
-	"Science"		= SCI_FREQ,
-	"Command"		= COMM_FREQ,
-	"Medical"		= MED_FREQ,
-	"Engineering"	= ENG_FREQ,
-	"Security" 		= SEC_FREQ,
-	"Response Team" = ERT_FREQ,
-	"Special Ops" 	= DTH_FREQ,
-	"Mercenary" 	= SYND_FREQ,
-	"Raider"		= RAID_FREQ,
-	"Supply" 		= SUP_FREQ,
-	"Service" 		= SRV_FREQ,
-	"Explorer"		= EXP_FREQ,
-	"AI Private"	= AI_FREQ,
-	"Entertainment" = ENT_FREQ,
-	"Medical(I)"	= MED_I_FREQ,
-	"Security(I)"	= SEC_I_FREQ,
-	"Talon"			= TALON_FREQ //VOREStation Add
+	CHANNEL_COMMON			= PUB_FREQ,
+	CHANNEL_SCIENCE			= SCI_FREQ,
+	CHANNEL_COMMAND			= COMM_FREQ,
+	CHANNEL_MEDICAL			= MED_FREQ,
+	CHANNEL_ENGINEERING		= ENG_FREQ,
+	CHANNEL_SECURITY		= SEC_FREQ,
+	CHANNEL_RESPONSE_TEAM	= ERT_FREQ,
+	CHANNEL_SPECIAL_OPS		= DTH_FREQ,
+	CHANNEL_MERCENARY		= SYND_FREQ,
+	CHANNEL_RAIDER			= RAID_FREQ,
+	CHANNEL_SUPPLY	 		= SUP_FREQ,
+	CHANNEL_SERVICE 		= SRV_FREQ,
+	CHANNEL_EXPLORATION		= EXP_FREQ,
+	CHANNEL_AI_PRIVATE		= AI_FREQ,
+	CHANNEL_ENTERTAINMENT	= ENT_FREQ,
+	CHANNEL_MEDICAL_1		= MED_I_FREQ,
+	CHANNEL_SECURITY_1		= SEC_I_FREQ,
+	CHANNEL_TALON			= TALON_FREQ, //VOREStation Add
+	CHANNEL_CASINO			= CSN_FREQ,
 )
 
 // Hey, if anyone ever needs to update tgui/packages/tgui/constants.js with new radio channels
@@ -155,7 +157,7 @@ var/list/radiochannels = list(
 	set category = "Generate TGUI Radio Constants"
 
 	var/list/channel_info = list()
-	
+
 	for(var/i in RADIO_LOW_FREQ to RADIO_HIGH_FREQ)
 		for(var/key in radiochannels)
 			if(i == radiochannels[key])
@@ -192,10 +194,7 @@ var/list/ANTAG_FREQS = list(SYND_FREQ, RAID_FREQ)
 //Department channels, arranged lexically
 var/list/DEPT_FREQS = list(AI_FREQ, COMM_FREQ, ENG_FREQ, ENT_FREQ, MED_FREQ, SEC_FREQ, SCI_FREQ, SRV_FREQ, SUP_FREQ)
 
-var/list/OFFMAP_FREQS = list(TALON_FREQ) //VOREStation Add
-
-#define TRANSMISSION_WIRE	0
-#define TRANSMISSION_RADIO	1
+var/list/OFFMAP_FREQS = list(TALON_FREQ, CSN_FREQ) //VOREStation Add
 
 /proc/frequency_span_class(var/frequency)
 	// Antags!

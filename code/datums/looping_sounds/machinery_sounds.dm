@@ -13,7 +13,7 @@
 	mid_length = 60
 	volume = 40
 	extra_range = 10
-	pref_check = /datum/client_preference/supermatter_hum
+	pref_check = /datum/preference/toggle/supermatter_hum
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -80,7 +80,7 @@
 
 /datum/looping_sound/cerealmaker
 	start_sound = 'sound/machines/kitchen/cerealmaker/cerealmaker-start.ogg'
-	start_length = 10 
+	start_length = 10
 	mid_sounds = list('sound/machines/kitchen/cerealmaker/cerealmaker-mid1.ogg'=10)
 	mid_length = 60
 	end_sound = 'sound/machines/kitchen/cerealmaker/cerealmaker-stop.ogg'
@@ -104,4 +104,14 @@
 	mid_length = 70
 	end_sound = 'sound/machines/air_pump/airpumpshutdown.ogg'
 	volume = 15
-	pref_check = /datum/client_preference/air_pump_noise
+	pref_check = /datum/preference/toggle/air_pump_noise
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+/datum/looping_sound/vehicle_engine
+	start_sound = 'sound/machines/vehicle/engine_start.ogg'
+	start_length = 2
+	mid_sounds = list('sound/machines/vehicle/engine_mid.ogg'=1)
+	mid_length = 6
+	end_sound = 'sound/machines/vehicle/engine_end.ogg'
+	volume = 20

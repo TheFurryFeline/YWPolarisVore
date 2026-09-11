@@ -1,6 +1,6 @@
 /datum/category_item/autolathe/arms/syringegun_ammo
 	name = "syringe gun cartridge"
-	path =/obj/item/weapon/syringe_cartridge
+	path =/obj/item/syringe_cartridge
 
 ////////////////
 /*Ammo casings*/
@@ -74,13 +74,13 @@
 	name = "pistol magazine (.45 armor piercing)"
 	path =/obj/item/ammo_magazine/m45/ap
 	hidden = 1
-	resources = list(DEFAULT_WALL_MATERIAL = 500, MAT_PLASTEEL = 300)
+	resources = list(MAT_STEEL = 500, MAT_PLASTEEL = 300)
 
 /datum/category_item/autolathe/arms/pistol_45hp
 	name = "pistol magazine (.45 hollowpoint)"
 	path =/obj/item/ammo_magazine/m45/hp
 	hidden = 1
-	resources = list(DEFAULT_WALL_MATERIAL = 500, MAT_PLASTIC = 200)
+	resources = list(MAT_STEEL = 500, MAT_PLASTIC = 200)
 
 /datum/category_item/autolathe/arms/pistol_45uzi
 	name = "uzi magazine (.45)"
@@ -411,12 +411,6 @@
 	category = list("Arms and Ammunition")
 	hidden = 1
 
-/datum/category_item/autolathe/arms/pistol_clip_10mm
-	name = "ammo clip (10mm)"
-	path =/obj/item/ammo_magazine/clip/c10mm
-	category = list("Arms and Ammunition")
-	hidden = 1
-
 /datum/category_item/autolathe/arms/pistol_clip_50
 	name = "ammo clip (.44)"
 	path =/obj/item/ammo_magazine/clip/c50
@@ -449,15 +443,15 @@
 
 /datum/category_item/autolathe/arms/knuckledusters
 	name = "knuckle dusters"
-	path =/obj/item/clothing/gloves/knuckledusters
+	path =/obj/item/clothing/accessory/knuckledusters
 	hidden = 1
 
 /datum/category_item/autolathe/arms/tacknife
 	name = "tactical knife"
-	path =/obj/item/weapon/material/knife/tacknife
+	path =/obj/item/material/knife/tacknife
 	hidden = 1
 
 /datum/category_item/autolathe/arms/flamethrower
 	name = "flamethrower"
-	path =/obj/item/weapon/flamethrower/full
+	path =/obj/item/flamethrower/full
 	hidden = 1

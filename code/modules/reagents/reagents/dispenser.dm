@@ -49,6 +49,7 @@
 			M.ingested.remove_reagent(R.id, removed * effect)
 
 /datum/reagent/carbon/touch_turf(var/turf/T)
+	..()
 	if(!istype(T, /turf/space))
 		var/obj/effect/decal/cleanable/dirt/dirtoverlay = locate(/obj/effect/decal/cleanable/dirt, T)
 		if (!dirtoverlay)
@@ -78,10 +79,6 @@
 	taste_description = "pennies"
 	color = "#6E3B08"
 
-/datum/reagent/copper/affect_ingest(var/mob/living/carbon/M, var/alien, var/removed)
-	if(alien == IS_SKRELL)
-		M.add_chemical_effect(CE_BLOODRESTORE, 8 * removed)
-
 /datum/reagent/ethanol
 	name = "Ethanol" //Parent class for all alcoholic reagents.
 	id = "ethanol"
@@ -89,6 +86,7 @@
 	taste_description = "pure alcohol"
 	reagent_state = LIQUID
 	color = "#404030"
+	cup_prefix = "alcoholic"
 
 	ingest_met = REM * 2
 
@@ -103,116 +101,116 @@
 
 	glass_name = "ethanol"
 	glass_desc = "A well-known alcohol with a variety of applications."
-	allergen_factor = 0.5	//simulates mixed drinks containing less of the allergen, as they have only a single actual reagent unlike food
+	allergen_factor = 1	//simulates mixed drinks containing less of the allergen, as they have only a single actual reagent unlike food
+
+	affects_robots = 1 //kiss my shiny metal ass
 
 /datum/reagent/ethanol/touch_mob(var/mob/living/L, var/amount)
+	..()
 	if(istype(L))
 		L.adjust_fire_stacks(amount / 15)
 
 /datum/reagent/ethanol/affect_blood(var/mob/living/carbon/M, var/alien, var/removed) //This used to do just toxin. That's boring. Let's make this FUN.
-	if(issmall(M)) removed *= 2
-	var/strength_mod = 3 * M.species.alcohol_mod //Alcohol is 3x stronger when injected into the veins.
-	if(alien == IS_SKRELL)
-		strength_mod *= 5
-	if(alien == IS_TAJARA)
-		strength_mod *= 1.25
-	if(alien == IS_UNATHI)
-		strength_mod *= 0.75
-	if(alien == IS_DIONA)
-		strength_mod = 0
-	if(alien == IS_SLIME)
-		strength_mod *= 2 // VOREStation Edit - M.adjustToxLoss(removed)
+	if(issmall(M))
+		removed *= 2
 
-	M.add_chemical_effect(CE_ALCOHOL, 1)
-	var/effective_dose = dose * strength_mod * (1 + volume/60) //drinking a LOT will make you go down faster
+	var/strength_mod = 3 //Alcohol is 3x stronger when injected into the veins.
+	if(!strength_mod)
+		return
 
-	if(effective_dose >= strength) // Early warning
-		M.make_dizzy(18) // It is decreased at the speed of 3 per tick
-	if(effective_dose >= strength * 2) // Slurring
-		M.slurring = max(M.slurring, 90)
-	if(effective_dose >= strength * 3) // Confusion - walking in random directions
-		M.Confuse(60)
-	if(effective_dose >= strength * 4) // Blurry vision
-		M.eye_blurry = max(M.eye_blurry, 30)
-	if(effective_dose >= strength * 5) // Drowsyness - periodically falling asleep
-		M.drowsyness = max(M.drowsyness, 60)
-	if(effective_dose >= strength * 6) // Toxic dose
-		M.add_chemical_effect(CE_ALCOHOL_TOXIC, toxicity*3)
-	if(effective_dose >= strength * 7) // Pass out
-		M.Paralyse(60)
-		M.Sleeping(90)
+	if(!(M.isSynthetic()))
+		M.add_chemical_effect(CE_ALCOHOL, 1)
+		var/effective_dose = dose * strength_mod * (1 + volume/60) //drinking a LOT will make you go down faster
 
-	if(druggy != 0)
-		M.druggy = max(M.druggy, druggy*3)
+		if(effective_dose >= (strength * M.species.chem_strength_alcohol)) // Early warning
+			M.make_dizzy(18) // It is decreased at the speed of 3 per tick
+		if(effective_dose >= (strength * M.species.chem_strength_alcohol) * 2) // Slurring
+			M.slurring = max(M.slurring, 90)
+		if(effective_dose >= (strength * M.species.chem_strength_alcohol) * 3) // Confusion - walking in random directions
+			M.Confuse(60)
+		if(effective_dose >= (strength * M.species.chem_strength_alcohol) * 4) // Blurry vision
+			M.eye_blurry = max(M.eye_blurry, 30)
+		if(effective_dose >= (strength * M.species.chem_strength_alcohol) * 5) // Drowsyness - periodically falling asleep
+			M.drowsyness = max(M.drowsyness, 60)
+		if(effective_dose >= (strength * M.species.chem_strength_alcohol) * 6) // Toxic dose
+			M.add_chemical_effect(CE_ALCOHOL_TOXIC, toxicity*3)
+		if(effective_dose >= (strength * M.species.chem_strength_alcohol) * 7) // Pass out
+			M.Paralyse(60)
+			M.Sleeping(90)
 
-	if(adj_temp > 0 && M.bodytemperature < targ_temp) // 310 is the normal bodytemp. 310.055
-		M.bodytemperature = min(targ_temp, M.bodytemperature + (adj_temp * TEMPERATURE_DAMAGE_COEFFICIENT))
-	if(adj_temp < 0 && M.bodytemperature > targ_temp)
-		M.bodytemperature = min(targ_temp, M.bodytemperature - (adj_temp * TEMPERATURE_DAMAGE_COEFFICIENT))
+		if(druggy != 0)
+			M.druggy = max(M.druggy, druggy*3)
 
-	if(halluci)
-		M.hallucination = max(M.hallucination, halluci*3)
+		if(adj_temp > 0 && M.bodytemperature < targ_temp) // 310 is the normal bodytemp. 310.055
+			M.bodytemperature = min(targ_temp, M.bodytemperature + (adj_temp * TEMPERATURE_DAMAGE_COEFFICIENT))
+		if(adj_temp < 0 && M.bodytemperature > targ_temp)
+			M.bodytemperature = min(targ_temp, M.bodytemperature - (adj_temp * TEMPERATURE_DAMAGE_COEFFICIENT))
+
+		if(halluci)
+			M.hallucination = max(M.hallucination, halluci*3)
 
 /datum/reagent/ethanol/affect_ingest(var/mob/living/carbon/M, var/alien, var/removed)
-	if(issmall(M)) removed *= 2
-	if(!(M.species.allergens & allergen_type))	//assuming it doesn't cause a horrible reaction, we get the nutrition effects
+	var/ep_base_power = 60	//base nutrition gain for ethanol-processing synthetics, reduced by alcohol strength
+	var/ep_final_mod = 30	//final divisor on nutrition gain
+	if(issmall(M))
+		removed *= 2
+
+	if(!(M.species.allergens & allergen_type) && !(M.isSynthetic()))	//assuming it doesn't cause a horrible reaction, we get the nutrition effects - VOREStation Edit (added synth check)
 		M.adjust_nutrition(nutriment_factor * removed)
-	var/strength_mod = 1 * M.species.alcohol_mod
-	if(alien == IS_SKRELL)
-		strength_mod *= 5
-	if(alien == IS_TAJARA)
-		strength_mod *= 1.25
-	if(alien == IS_UNATHI)
-		strength_mod *= 0.75
-	if(alien == IS_DIONA)
-		strength_mod = 0
-	if(alien == IS_SLIME)
-		strength_mod *= 2 // VOREStation Edit - M.adjustToxLoss(removed * 2)
 
-	M.add_chemical_effect(CE_ALCOHOL, 1)
+	if(M.isSynthetic() && M.nutrition < 500 && M.species.robo_ethanol_proc)
+		M.adjust_nutrition(round(max(0,ep_base_power - strength) * removed)/ep_final_mod)	//the stronger it is, the more juice you gain
 
-	if(dose * strength_mod >= strength) // Early warning
-		M.make_dizzy(6) // It is decreased at the speed of 3 per tick
-	if(dose * strength_mod >= strength * 2) // Slurring
-		M.slurring = max(M.slurring, 30)
-	if(dose * strength_mod >= strength * 3) // Confusion - walking in random directions
-		M.Confuse(20)
-	if(dose * strength_mod >= strength * 4) // Blurry vision
-		M.eye_blurry = max(M.eye_blurry, 10)
-	if(dose * strength_mod >= strength * 5) // Drowsyness - periodically falling asleep
-		M.drowsyness = max(M.drowsyness, 20)
-	if(dose * strength_mod >= strength * 6) // Toxic dose
-		M.add_chemical_effect(CE_ALCOHOL_TOXIC, toxicity)
-	if(dose * strength_mod >= strength * 7) // Pass out
-		M.Paralyse(20)
-		M.Sleeping(30)
+	var/effective_dose = dose
+	if(!effective_dose)
+		return
 
-	if(druggy != 0)
-		M.druggy = max(M.druggy, druggy)
+	if(M.species.robo_ethanol_drunk || !(M.isSynthetic()))
+		M.add_chemical_effect(CE_ALCOHOL, 1)
 
-	if(adj_temp > 0 && M.bodytemperature < targ_temp) // 310 is the normal bodytemp. 310.055
-		M.bodytemperature = min(targ_temp, M.bodytemperature + (adj_temp * TEMPERATURE_DAMAGE_COEFFICIENT))
-	if(adj_temp < 0 && M.bodytemperature > targ_temp)
-		M.bodytemperature = min(targ_temp, M.bodytemperature - (adj_temp * TEMPERATURE_DAMAGE_COEFFICIENT))
+		if(effective_dose >= (strength * M.species.chem_strength_alcohol)) // Early warning
+			M.make_dizzy(6) // It is decreased at the speed of 3 per tick
+		if(effective_dose >= (strength * M.species.chem_strength_alcohol) * 2) // Slurring
+			M.slurring = max(M.slurring, 30)
+		if(effective_dose >= (strength * M.species.chem_strength_alcohol) * 3) // Confusion - walking in random directions
+			M.Confuse(20)
+		if(effective_dose >= (strength * M.species.chem_strength_alcohol) * 4) // Blurry vision
+			M.eye_blurry = max(M.eye_blurry, 10)
+		if(effective_dose >= (strength * M.species.chem_strength_alcohol) * 5) // Drowsyness - periodically falling asleep
+			M.drowsyness = max(M.drowsyness, 20)
+		if(effective_dose >= (strength * M.species.chem_strength_alcohol) * 6) // Toxic dose
+			M.add_chemical_effect(CE_ALCOHOL_TOXIC, toxicity)
+		if(effective_dose >= (strength * M.species.chem_strength_alcohol) * 7) // Pass out
+			M.Paralyse(20)
+			M.Sleeping(30)
 
-	if(halluci)
-		M.hallucination = max(M.hallucination, halluci)
+		if(druggy != 0)
+			M.druggy = max(M.druggy, druggy)
+
+		if(halluci)
+			M.hallucination = max(M.hallucination, halluci)
+
+		if(adj_temp > 0 && M.bodytemperature < targ_temp) // 310 is the normal bodytemp. 310.055
+			M.bodytemperature = min(targ_temp, M.bodytemperature + (adj_temp * TEMPERATURE_DAMAGE_COEFFICIENT))
+		if(adj_temp < 0 && M.bodytemperature > targ_temp)
+			M.bodytemperature = min(targ_temp, M.bodytemperature - (adj_temp * TEMPERATURE_DAMAGE_COEFFICIENT))
 
 /datum/reagent/ethanol/touch_obj(var/obj/O)
-	if(istype(O, /obj/item/weapon/paper))
-		var/obj/item/weapon/paper/paperaffected = O
+	..()
+	if(istype(O, /obj/item/paper))
+		var/obj/item/paper/paperaffected = O
 		paperaffected.clearpaper()
 		to_chat(usr, "The solution dissolves the ink on the paper.")
 		return
-	if(istype(O, /obj/item/weapon/book))
+	if(istype(O, /obj/item/book))
 		if(volume < 5)
 			return
-		if(istype(O, /obj/item/weapon/book/tome))
-			to_chat(usr, "<span class='notice'>The solution does nothing. Whatever this is, it isn't normal ink.</span>")
+		if(istype(O, /obj/item/book/tome))
+			to_chat(usr, span_notice("The solution does nothing. Whatever this is, it isn't normal ink."))
 			return
-		var/obj/item/weapon/book/affectedbook = O
+		var/obj/item/book/affectedbook = O
 		affectedbook.dat = null
-		to_chat(usr, "<span class='notice'>The solution dissolves the ink on the book.</span>")
+		to_chat(usr, span_notice("The solution dissolves the ink on the book."))
 	return
 
 /datum/reagent/fluorine
@@ -244,10 +242,6 @@
 	taste_description = "metal"
 	reagent_state = SOLID
 	color = "#353535"
-
-/datum/reagent/iron/affect_ingest(var/mob/living/carbon/M, var/alien, var/removed)
-	if(alien != IS_DIONA && alien != IS_SKRELL)
-		M.add_chemical_effect(CE_BLOODRESTORE, 8 * removed)
 
 /datum/reagent/lithium
 	name = "Lithium"
@@ -326,22 +320,10 @@
 
 /datum/reagent/radium/affect_blood(var/mob/living/carbon/M, var/alien, var/removed)
 	if(issmall(M)) removed *= 2
-	M.apply_effect(10 * removed, IRRADIATE, 0) // Radium may increase your chances to cure a disease
-	if(M.virus2.len)
-		for(var/ID in M.virus2)
-			var/datum/disease2/disease/V = M.virus2[ID]
-			if(prob(5))
-				M.antibodies |= V.antigen
-				if(prob(50))
-					M.apply_effect(50, IRRADIATE, check_protection = 0) // curing it that way may kill you instead
-					var/absorbed = 0
-					var/obj/item/organ/internal/diona/nutrients/rad_organ = locate() in M.internal_organs
-					if(rad_organ && !rad_organ.is_broken())
-						absorbed = 1
-					if(!absorbed)
-						M.adjustToxLoss(100)
+	M.apply_effect(10 * removed, IRRADIATE, 0)
 
 /datum/reagent/radium/touch_turf(var/turf/T)
+	..()
 	if(volume >= 3)
 		if(!istype(T, /turf/space))
 			var/obj/effect/decal/cleanable/greenglow/glow = locate(/obj/effect/decal/cleanable/greenglow, T)
@@ -374,11 +356,11 @@
 		var/mob/living/carbon/human/H = M
 		if(H.head)
 			if(H.head.unacidable)
-				to_chat(H, "<span class='danger'>Your [H.head] protects you from the acid.</span>")
+				to_chat(H, span_danger("Your [H.head] protects you from the acid."))
 				remove_self(volume)
 				return
 			else if(removed > meltdose)
-				to_chat(H, "<span class='danger'>Your [H.head] melts away!</span>")
+				to_chat(H, span_danger("Your [H.head] melts away!"))
 				qdel(H.head)
 				H.update_inv_head(1)
 				H.update_hair(1)
@@ -388,11 +370,11 @@
 
 		if(H.wear_mask)
 			if(H.wear_mask.unacidable)
-				to_chat(H, "<span class='danger'>Your [H.wear_mask] protects you from the acid.</span>")
+				to_chat(H, span_danger("Your [H.wear_mask] protects you from the acid."))
 				remove_self(volume)
 				return
 			else if(removed > meltdose)
-				to_chat(H, "<span class='danger'>Your [H.wear_mask] melts away!</span>")
+				to_chat(H, span_danger("Your [H.wear_mask] melts away!"))
 				qdel(H.wear_mask)
 				H.update_inv_wear_mask(1)
 				H.update_hair(1)
@@ -402,10 +384,10 @@
 
 		if(H.glasses)
 			if(H.glasses.unacidable)
-				to_chat(H, "<span class='danger'>Your [H.glasses] partially protect you from the acid!</span>")
+				to_chat(H, span_danger("Your [H.glasses] partially protect you from the acid!"))
 				removed /= 2
 			else if(removed > meltdose)
-				to_chat(H, "<span class='danger'>Your [H.glasses] melt away!</span>")
+				to_chat(H, span_danger("Your [H.glasses] melt away!"))
 				qdel(H.glasses)
 				H.update_inv_glasses(1)
 				removed -= meltdose / 2
@@ -430,13 +412,14 @@
 			M.take_organ_damage(0, removed * power * 0.1) // Balance. The damage is instant, so it's weaker. 10 units -> 5 damage, double for pacid. 120 units beaker could deal 60, but a) it's burn, which is not as dangerous, b) it's a one-use weapon, c) missing with it will splash it over the ground and d) clothes give some protection, so not everything will hit
 
 /datum/reagent/acid/touch_obj(var/obj/O)
+	..()
 	if(O.unacidable)
 		return
 	if((istype(O, /obj/item) || istype(O, /obj/effect/plant)) && (volume > meltdose))
 		var/obj/effect/decal/cleanable/molten_item/I = new/obj/effect/decal/cleanable/molten_item(O.loc)
 		I.desc = "Looks like this was \an [O] some time ago."
 		for(var/mob/M in viewers(5, O))
-			to_chat(M, "<span class='warning'>\The [O] melts.</span>")
+			to_chat(M, span_warning("\The [O] melts."))
 		qdel(O)
 		remove_self(meltdose) // 10 units of acid will not melt EVERYTHING on the tile
 

@@ -52,14 +52,16 @@
 /obj/machinery/ion_engine/Initialize()
 	. = ..()
 	controller = new(src)
-
-	var/image/i = image('icons/turf/shuttle_parts_vr.dmi', "ion_overlay") // VOREStation Edit
-	i.plane = PLANE_LIGHTING_ABOVE // VOREStation Edit
-	add_overlay(i) // VOREStation Edit
+	add_glow()
 
 /obj/machinery/ion_engine/Destroy()
 	QDEL_NULL(controller)
 	. = ..()
+
+/obj/machinery/ion_engine/proc/add_glow()
+	var/image/i = image('icons/turf/shuttle_parts_vr.dmi', "ion_overlay") // VOREStation Edit
+	i.plane = PLANE_LIGHTING_ABOVE // VOREStation Edit
+	add_overlay(i) // VOREStation Edit
 
 /obj/machinery/ion_engine/proc/get_status()
 	. = list()
@@ -76,7 +78,7 @@
 /obj/machinery/ion_engine/proc/get_thrust()
 	return thrust_limit * generated_thrust * on
 
-/obj/item/weapon/circuitboard/engine/ion
+/obj/item/circuitboard/engine/ion
 	name = T_BOARD("ion propulsion device")
 	board_type = "machine"
 	icon_state = "mcontroller"
@@ -84,5 +86,5 @@
 	origin_tech = list(TECH_POWER = 1, TECH_ENGINEERING = 2)
 	req_components = list(
 							/obj/item/stack/cable_coil = 2,
-							/obj/item/weapon/stock_parts/matter_bin = 1,
-							/obj/item/weapon/stock_parts/capacitor = 2)
+							/obj/item/stock_parts/matter_bin = 1,
+							/obj/item/stock_parts/capacitor = 2)

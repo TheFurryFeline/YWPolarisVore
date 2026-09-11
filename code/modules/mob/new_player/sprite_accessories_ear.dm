@@ -6,16 +6,29 @@
 ////////////////////////////
 */
 /datum/sprite_accessory/ears
-	name = "You should not see this..."
+	name = DEVELOPER_WARNING_NAME
 	icon = 'icons/mob/human_races/sprite_accessories/ears.dmi'
 	do_colouration = 0 // Set to 1 to blend (ICON_ADD) hair color
 
 	color_blend_mode = ICON_ADD // Only appliciable if do_coloration = 1
 	var/extra_overlay // Icon state of an additional overlay to blend in.
 	var/extra_overlay2
-	var/desc = "You should not see this..."
+	var/desc = DEVELOPER_WARNING_NAME
+	em_block = TRUE
 
-	species_allowed = list(SPECIES_EVENT1, SPECIES_EVENT2, SPECIES_EVENT3)
+	//species_allowed = list(SPECIES_EVENT1, SPECIES_EVENT2, SPECIES_EVENT3)			//Removing Polaris whitelits, ones we need are defined in our files
+
+/**
+ * Gets the number of color channels we have.
+ */
+/datum/sprite_accessory/ears/get_color_channel_count()
+	if(!do_colouration)
+		return 0
+	. = 1
+	if(extra_overlay)
+		. += 1
+	if(extra_overlay2)
+		. += 1
 
 /datum/sprite_accessory/ears/shadekin
 	name = "Shadekin Ears, colorable"
@@ -23,14 +36,14 @@
 	icon_state = "shadekin"
 	do_colouration = 1
 	color_blend_mode = ICON_MULTIPLY
-	species_allowed = list() // SPECIES_SHADEKIN, SPECIES_SHADEKIN_CREW
+	species_allowed = null //YW EDIT
 
 /datum/sprite_accessory/ears/taj_ears
 	name = "Tajaran Ears"
 	icon_state = "ears_plain"
 	do_colouration = 1
 	color_blend_mode = ICON_MULTIPLY
-	species_allowed = list(SPECIES_TAJ, SPECIES_EVENT1, SPECIES_EVENT2, SPECIES_EVENT3)
+	//species_allowed = list(SPECIES_TAJ, SPECIES_EVENT1, SPECIES_EVENT2, SPECIES_EVENT3)			//Removing Polaris whitelits, ones we need are defined in our files
 	extra_overlay = "ears_plain-inner"
 
 /datum/sprite_accessory/ears/taj_ears_tall
@@ -38,7 +51,7 @@
 	icon_state = "msai_plain"
 	do_colouration = 1
 	color_blend_mode = ICON_MULTIPLY
-	species_allowed = list(SPECIES_TAJ, SPECIES_EVENT1, SPECIES_EVENT2, SPECIES_EVENT3)
+	//species_allowed = list(SPECIES_TAJ, SPECIES_EVENT1, SPECIES_EVENT2, SPECIES_EVENT3)			//Removing Polaris whitelits, ones we need are defined in our files
 	extra_overlay = "msai_plain-inner"
 
 /datum/sprite_accessory/ears/squirrel_orange
@@ -344,14 +357,44 @@
 	do_colouration = 1
 	color_blend_mode = ICON_MULTIPLY
 
-/datum/sprite_accessory/ears/elfs
-	name = "elven ears"
+/datum/sprite_accessory/ears/elfs1
+	name = "pointed ears (tall)"
 	desc = ""
 	icon_state = "elfs"
 	do_colouration = 1
 	color_blend_mode = ICON_MULTIPLY
+	//species_allowed = list(SPECIES_HUMAN, SPECIES_HUMAN_VATBORN, SPECIES_EVENT1, SPECIES_EVENT2, SPECIES_EVENT3)			//Removing Polaris whitelits, ones we need are defined in our files
 
-	species_allowed = list(SPECIES_HUMAN, SPECIES_HUMAN_VATBORN, SPECIES_EVENT1, SPECIES_EVENT2, SPECIES_EVENT3)
+/datum/sprite_accessory/ears/elfs2
+	name = "pointed ears"
+	desc = ""
+	icon_state = "ears_pointy"
+	do_colouration = 1
+	//species_allowed = list(SPECIES_HUMAN, SPECIES_HUMAN_VATBORN, SPECIES_EVENT1, SPECIES_EVENT2, SPECIES_EVENT3)			//Removing Polaris whitelits, ones we need are defined in our files
+
+/datum/sprite_accessory/ears/elfs3
+	name = "pointed ears (down)"
+	desc = ""
+	icon_state = "ears_pointy_down"
+	do_colouration = 1
+	color_blend_mode = ICON_MULTIPLY
+	//species_allowed = list(SPECIES_HUMAN, SPECIES_HUMAN_VATBORN, SPECIES_EVENT1, SPECIES_EVENT2, SPECIES_EVENT3)			//Removing Polaris whitelits, ones we need are defined in our files
+
+/datum/sprite_accessory/ears/elfs4
+	name = "pointed ears (long)"
+	desc = ""
+	icon_state = "ears_pointy_long"
+	do_colouration = 1
+	color_blend_mode = ICON_MULTIPLY
+	//species_allowed = list(SPECIES_HUMAN, SPECIES_HUMAN_VATBORN, SPECIES_EVENT1, SPECIES_EVENT2, SPECIES_EVENT3)			//Removing Polaris whitelits, ones we need are defined in our files
+
+/datum/sprite_accessory/ears/elfs5
+	name = "pointed ears (long, down)"
+	desc = ""
+	icon_state = "ears_pointy_long_down"
+	do_colouration = 1
+	color_blend_mode = ICON_MULTIPLY
+	//species_allowed = list(SPECIES_HUMAN, SPECIES_HUMAN_VATBORN, SPECIES_EVENT1, SPECIES_EVENT2, SPECIES_EVENT3)			//Removing Polaris whitelits, ones we need are defined in our files
 
 /datum/sprite_accessory/ears/sleek
 	name = "sleek ears"
@@ -412,7 +455,7 @@
 	do_colouration = 1
 	color_blend_mode = ICON_MULTIPLY
 	extra_overlay = "teshariinner"
-	species_allowed = list(SPECIES_TESHARI, SPECIES_EVENT1, SPECIES_EVENT2, SPECIES_EVENT3)
+	//species_allowed = list(SPECIES_TESHARI, SPECIES_EVENT1, SPECIES_EVENT2, SPECIES_EVENT3)			//Removing Polaris whitelits, ones we need are defined in our files
 
 /datum/sprite_accessory/ears/tesharihigh
 	name = "Teshari upper ears (colorable fluff)"
@@ -421,7 +464,7 @@
 	do_colouration = 1
 	color_blend_mode = ICON_MULTIPLY
 	extra_overlay = "tesharihighinner"
-	species_allowed = list(SPECIES_TESHARI, SPECIES_EVENT1, SPECIES_EVENT2, SPECIES_EVENT3)
+	//species_allowed = list(SPECIES_TESHARI, SPECIES_EVENT1, SPECIES_EVENT2, SPECIES_EVENT3)			//Removing Polaris whitelits, ones we need are defined in our files
 
 /datum/sprite_accessory/ears/tesharilow
 	name = "Teshari lower ears (colorable fluff)"
@@ -430,7 +473,7 @@
 	do_colouration = 1
 	color_blend_mode = ICON_MULTIPLY
 	extra_overlay = "tesharilowinner"
-	species_allowed = list(SPECIES_TESHARI, SPECIES_EVENT1, SPECIES_EVENT2, SPECIES_EVENT3)
+	//species_allowed = list(SPECIES_TESHARI, SPECIES_EVENT1, SPECIES_EVENT2, SPECIES_EVENT3)			//Removing Polaris whitelits, ones we need are defined in our files
 
 /datum/sprite_accessory/ears/inkling
 	name = "colorable mature inkling hair"
@@ -487,3 +530,27 @@
 	do_colouration = 1
 	color_blend_mode = ICON_MULTIPLY
 	extra_overlay = "dragon-horns"
+
+/datum/sprite_accessory/ears/zorgoia
+	name = "Zorgoia ears"
+	desc = ""
+	icon = 'icons/mob/human_races/sprite_accessories/ears.dmi'
+	icon_state = "zorgoia"
+	do_colouration = 1
+	color_blend_mode = ICON_MULTIPLY
+	extra_overlay = "zorgoia_inner"
+	extra_overlay2 = "zorgoia_tips"
+
+// YW CHANGES START - Large Bunny Ears//
+
+/datum/sprite_accessory/ears/lbunnyears
+    name = "Large Bunny Ears"
+    desc = ""
+    icon = 'icons/mob/vore/ears_32x64_yw.dmi'
+    icon_state = "bun-large-inner"
+    extra_overlay = "bun-large-outer"
+    extra_overlay2 = "bun-large-tips"
+    do_colouration = 1
+    color_blend_mode = ICON_MULTIPLY
+
+// YW CHANGES END //

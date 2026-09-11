@@ -1,14 +1,14 @@
 //not a computer
-obj/machinery/scanner
+/obj/machinery/scanner
 	name = "identity analyzer"
 	var/outputdir = 0
 	icon = 'icons/obj/stationobjs.dmi'
 	icon_state = "scanner_idle"
-	density = 1
-	anchored = 1
+	density = TRUE
+	anchored = TRUE
 	var/lastuser = null
 
-obj/machinery/scanner/New()
+/obj/machinery/scanner/New()
 	if(!outputdir)
 		switch(dir)
 			if(1)
@@ -35,7 +35,7 @@ obj/machinery/scanner/New()
 	else
 		icon_state = "scanner_idle"
 
-obj/machinery/scanner/attack_hand(mob/living/carbon/human/user)
+/obj/machinery/scanner/attack_hand(mob/living/carbon/human/user)
 	if(stat & NOPOWER)
 		return
 	if(!ishuman(user) || lastuser == user.real_name)
@@ -69,10 +69,10 @@ obj/machinery/scanner/attack_hand(mob/living/carbon/human/user)
 
 	<b><u>Black Marks</u></b>:<br> "}
 	for(var/A in marks)
-		text += "<span class='danger'>[A]</span><br>"
-	to_chat(user, "<span class='notice'>You feel a sting as the scanner extracts some of your blood.</span>")
+		text += span_danger("[A]") + "<br>"
+	to_chat(user, span_notice("You feel a sting as the scanner extracts some of your blood."))
 	var/turf/T = get_step(src,outputdir)
-	var/obj/item/weapon/paper/print = new(T)
+	var/obj/item/paper/print = new(T)
 	print.name = "[mname] Report"
 	print.info = text
 	print.stamped = 1

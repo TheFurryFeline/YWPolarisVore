@@ -6,7 +6,7 @@
 	icon_living = "goose"
 	icon_dead = "goose_dead"
 
-	faction = "geese"
+	faction = FACTION_GEESE
 
 	maxHealth = 30
 	health = 30
@@ -21,9 +21,12 @@
 	attacktext = list("pecked")
 	attack_sound = 'sound/weapons/bite.ogg'
 
-	has_langs = list("Bird")
+	organ_names = /decl/mob_organ_names/goose
 
-	meat_type = /obj/item/weapon/reagent_containers/food/snacks/meat
+	has_langs = list(LANGUAGE_ANIMAL)
+
+	meat_type = /obj/item/reagent_containers/food/snacks/meat/chicken
+	meat_amount = 3
 
 /datum/say_list/goose
 	speak = list("HONK!")
@@ -39,6 +42,17 @@
 /mob/living/simple_mob/animal/space/goose/verb/berserk()
 	set name = "Berserk"
 	set desc = "Enrage and become vastly stronger for a period of time, however you will be weaker afterwards."
-	set category = "Abilities"
+	set category = "Abilities.Goose"
 
 	add_modifier(/datum/modifier/berserk, 30 SECONDS)
+
+/decl/mob_organ_names/goose
+	hit_zones = list("head", "chest", "left leg", "right leg", "left wing", "right wing", "neck")
+
+/mob/living/simple_mob/animal/space/goose/white
+	icon = 'icons/mob/animal_vr.dmi'
+	icon_state = "whitegoose"
+	icon_living = "whitegoose"
+	icon_dead = "whitegoose_dead"
+	name = "white goose"
+	desc = "And just when you thought it was a lovely day..."

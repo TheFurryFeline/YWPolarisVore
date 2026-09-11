@@ -1,23 +1,23 @@
 /client/proc/admin_lightning_strike()
 	set name = "Lightning Strike"
 	set desc = "Causes lightning to strike on your tile. This can be made to hurt things on or nearby it severely."
-	set category = "Fun"
+	set category = "Fun.Do Not"
 
 	if(!check_rights(R_FUN))
 		return
 
-	var/result = alert(src, "Really strike your tile with lightning?", "Confirm Badmin" , "No", "Yes (Cosmetic)", "Yes (Real)")
+	var/result = tgui_alert(src, "Really strike your tile with lightning?", "Confirm Badmin" , list("No", "Yes (Cosmetic)", "Yes (Real)"))
 
-	if(result == "No")
+	if(!result || result == "No")
 		return
 	var/fake_lightning = result == "Yes (Cosmetic)"
 
 	lightning_strike(get_turf(usr), fake_lightning)
 	log_and_message_admins("[key_name(src)] has caused [fake_lightning ? "cosmetic":"harmful"] lightning to strike at their position ([src.mob.x], [src.mob.y], [src.mob.z]). \
-	(<A HREF='?_src_=holder;adminplayerobservecoodjump=1;X=[src.mob.x];Y=[src.mob.y];Z=[src.mob.z]'>JMP</a>)")
+	(<A HREF='?_src_=holder;[HrefToken()];adminplayerobservecoodjump=1;X=[src.mob.x];Y=[src.mob.y];Z=[src.mob.z]'>JMP</a>)")
 
 #define LIGHTNING_REDIRECT_RANGE 28 // How far in tiles certain things draw lightning from.
-#define LIGHTNING_ZAP_RANGE 3 // How far the tesla effect zaps, as well as the bad effects from a direct strike.
+#define LIGHTNING_ZAP_RANGE 3 // How far the tesla effect zaps, as well as the bad effects from a direct strike. // YW Edit: from 1 to 3.
 #define LIGHTNING_POWER 20000 // How much 'zap' is in a strike, used for tesla_zap().
 
 // The real lightning proc.
@@ -40,13 +40,13 @@
 	for(var/obj/machinery/power/thing in range(LIGHTNING_REDIRECT_RANGE, T))
 		if(istype(thing, /obj/machinery/power/tesla_coil))
 			var/turf/simulated/coil_turf = get_turf(thing)
-			if(istype(coil_turf) && thing.anchored && coil_turf.outdoors)
+			if(istype(coil_turf) && thing.anchored && coil_turf.is_outdoors())
 				coil = thing
 				break
 
 		if(istype(thing, /obj/machinery/power/grounding_rod))
 			var/turf/simulated/rod_turf = get_turf(thing)
-			if(istype(rod_turf) && thing.anchored && rod_turf.outdoors)
+			if(istype(rod_turf) && thing.anchored && rod_turf.is_outdoors())
 				ground = thing
 
 	if(coil) // Coil gets highest priority.
@@ -65,7 +65,7 @@
 	var/sound = get_sfx("thunder")
 	for(var/mob/M in player_list)
 		if( (P && (M.z in P.expected_z_levels)) || M.z == T.z)
-			if(M.is_preference_enabled(/datum/client_preference/weather_sounds))
+			if(M.check_sound_preference(/datum/preference/toggle/weather_sounds))
 				M.playsound_local(get_turf(M), soundin = sound, vol = 70, vary = FALSE, is_global = TRUE)
 
 	if(cosmetic) // Everything beyond here involves potentially damaging things. If we don't want to do that, stop now.
@@ -93,8 +93,8 @@
 			if(iscarbon(L))
 				var/mob/living/carbon/C = L
 				C.ear_deaf += 10
-			to_chat(L, span("danger", "Lightning struck nearby, and the thunderclap is deafening!"))
+			to_chat(L, span_danger("Lightning struck nearby, and the thunderclap is deafening!"))
 
-#undef GROUNDING_ROD_RANGE
+#undef LIGHTNING_REDIRECT_RANGE
 #undef LIGHTNING_ZAP_RANGE
 #undef LIGHTNING_POWER

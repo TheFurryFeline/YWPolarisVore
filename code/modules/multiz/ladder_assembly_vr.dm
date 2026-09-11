@@ -4,24 +4,27 @@
 
 /obj/structure/ladder_assembly
 	name = "ladder assembly"
-	icon = 'icons/obj/structures.dmi'
+	icon = 'icons/obj/structures_vr.dmi'
 	icon_state = "ladder00"
-	density = 0
+	density = FALSE
 	opacity = 0
-	anchored = 0
+	anchored = FALSE
 	w_class = ITEMSIZE_HUGE
 
 	var/state = 0
 	var/created_name = null
 
 /obj/structure/ladder_assembly/attackby(obj/item/W, mob/user)
-	if(istype(W, /obj/item/weapon/pen))
-		var/t = sanitizeSafe(input(user, "Enter the name for the ladder.", "Ladder Name", src.created_name), MAX_NAME_LEN)
+	if(istype(W, /obj/item/pen))
+		var/t = sanitizeSafe(tgui_input_text(user, "Enter the name for the ladder.", "Ladder Name", src.created_name, MAX_NAME_LEN), MAX_NAME_LEN)
 		if(in_range(src, user))
 			created_name = t
 		return
 
-	if(W.is_wrench())
+	else if(istype(get_area(src), /area/shuttle))
+		to_chat(user, span_warning("\The [src] cannot be constructed on a shuttle."))
+		return
+	if(W.has_tool_quality(TOOL_WRENCH))
 		switch(state)
 			if(CONSTRUCTION_UNANCHORED)
 				state = CONSTRUCTION_WRENCHED
@@ -29,23 +32,23 @@
 				user.visible_message("\The [user] secures \the [src]'s reinforcing bolts.", \
 					"You secure the reinforcing bolts.", \
 					"You hear a ratchet")
-				src.anchored = 1
+				src.anchored = TRUE
 			if(CONSTRUCTION_WRENCHED)
 				state = CONSTRUCTION_UNANCHORED
 				playsound(src, 'sound/items/Ratchet.ogg', 75, 1)
 				user.visible_message("\The [user] unsecures \the [src]'s reinforcing bolts.", \
 					"You undo the reinforcing bolts.", \
 					"You hear a ratchet")
-				src.anchored = 0
+				src.anchored = FALSE
 			if(CONSTRUCTION_WELDED)
-				to_chat(user, "<span class='warning'>\The [src] needs to be unwelded.</span>")
+				to_chat(user, span_warning("\The [src] needs to be unwelded."))
 		return
 
-	if(istype(W, /obj/item/weapon/weldingtool))
-		var/obj/item/weapon/weldingtool/WT = W
+	if(W.has_tool_quality(TOOL_WELDER))
+		var/obj/item/weldingtool/WT = W.get_welder()
 		switch(state)
 			if(CONSTRUCTION_UNANCHORED)
-				to_chat(user, "<span class='warning'>The refinforcing bolts need to be secured.</span>")
+				to_chat(user, span_warning("The refinforcing bolts need to be secured."))
 			if(CONSTRUCTION_WRENCHED)
 				if(WT.remove_fuel(0, user))
 					playsound(src, 'sound/items/Welder2.ogg', 50, 1)
@@ -58,7 +61,7 @@
 						to_chat(user, "You weld \the [src] to the floor.")
 						try_construct(user)
 				else
-					to_chat(user, "<span class='warning'>You need more welding fuel to complete this task.</span>")
+					to_chat(user, span_warning("You need more welding fuel to complete this task."))
 			if(CONSTRUCTION_WELDED)
 				if(WT.remove_fuel(0, user))
 					playsound(src, 'sound/items/Welder2.ogg', 50, 1)
@@ -70,7 +73,7 @@
 						state = CONSTRUCTION_WRENCHED
 						to_chat(user, "You cut \the [src] free from the floor.")
 				else
-					to_chat(user, "<span class='warning'>You need more welding fuel to complete this task.</span>")
+					to_chat(user, span_warning("You need more welding fuel to complete this task."))
 		return
 
 // Try to construct this into a real stairway.
@@ -86,8 +89,10 @@
 		if(!T) continue
 		var/obj/structure/ladder_assembly/LA = locate(/obj/structure/ladder_assembly, T)
 		if(!LA) continue
+		if(direction == DOWN && (src.z in using_map.below_blocked_levels)) continue
+		if(direction == UP && (LA.z in using_map.below_blocked_levels)) continue
 		if(LA.state != CONSTRUCTION_WELDED)
-			to_chat(user, "<span class='warning'>\The [LA] [direction == UP ? "above" : "below"] must be secured and welded.</span>")
+			to_chat(user, span_warning("\The [LA] [direction == UP ? "above" : "below"] must be secured and welded."))
 			return
 		if(direction == UP)
 			above = LA
@@ -95,7 +100,7 @@
 			below = LA
 
 	if(!above && !below)
-		to_chat(user, "<span class='notice'>\The [src] is ready to be connected to from above or below.</span>")
+		to_chat(user, span_notice("\The [src] is ready to be connected to from above or below."))
 		return
 
 	// Construct them from bottom to top, because they initialize from top to bottom.

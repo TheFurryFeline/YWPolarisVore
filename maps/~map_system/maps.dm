@@ -3,7 +3,7 @@ var/datum/map/using_map = new USING_MAP_DATUM
 var/list/all_maps = list()
 
 /hook/startup/proc/initialise_map_list()
-	for(var/type in typesof(/datum/map) - /datum/map)
+	for(var/type in subtypesof(/datum/map))
 		var/datum/map/M
 		if(type == using_map.type)
 			M = using_map
@@ -28,15 +28,18 @@ var/list/all_maps = list()
 	// Automatically populated lists made static for faster lookups
 	var/static/list/zlevels = list()
 	var/static/list/station_levels = list() // Z-levels the station exists on
+	var/static/list/allow_global_temperature_change_levels = list() // YW Add: Z-levels that can be cooled/heated by the boiler
 	var/static/list/admin_levels = list()   // Z-levels for admin functionality (Centcom, shuttle transit, etc)
 	var/static/list/contact_levels = list() // Z-levels that can be contacted from the station, for eg announcements
 	var/static/list/player_levels = list()  // Z-levels a character can typically reach
 	var/static/list/sealed_levels = list()  // Z-levels that don't allow random transit at edge
 	var/static/list/xenoarch_exempt_levels = list()	//Z-levels exempt from xenoarch finds and digsites spawning.
 	var/static/list/persist_levels = list() // Z-levels where SSpersistence should persist between rounds. Defaults to station_levels if unset.
+	var/static/list/secret_levels = list() // Z-levels that (non-admin) ghosts can't get to
+	var/static/list/hidden_levels = list() // Z-levels who's contents are hidden, but not forbidden (gateways)
 	var/static/list/empty_levels = list()   // Empty Z-levels that may be used for various things
 	var/static/list/mappable_levels = list()// List of levels where mapping or other similar devices might work fully
-	var/static/list/secret_levels = list() // Z-levels that (non-admin) ghosts can't get to
+	var/static/list/below_blocked_levels = list()// List of levels where mapping or other similar devices might work fully
 	// End Static Lists
 
 	// Z-levels available to various consoles, such as the crew monitor. Defaults to station_levels if unset.
@@ -52,7 +55,9 @@ var/list/all_maps = list()
 	var/list/lateload_z_levels = list()
 
 	//Similar to above, but only pick ONE to load, useful for random away missions and whatnot
-	var/list/lateload_single_pick = list()
+	var/list/lateload_gateway = list()
+	var/list/lateload_overmap = list() //VOREStation Add - The same thing as gateway, but not
+	var/list/lateload_redgate = list() //VOREStation Add - The same thing as gateway, but safe-ish
 
 	var/list/allowed_jobs = list() //Job datums to use.
 	                               //Works a lot better so if we get to a point where three-ish maps are used
@@ -80,6 +85,7 @@ var/list/all_maps = list()
 
 	var/station_name  = "BAD Station"
 	var/station_short = "Baddy"
+	var/facility_type = "facility"
 	var/dock_name     = "THE PirateBay"
 	var/dock_type     = "station"	//VOREStation Edit - for a list of valid types see the switch block in air_traffic.dm at line 148
 	var/boss_name     = "Captain Roger"
@@ -129,6 +135,7 @@ var/list/all_maps = list()
 	var/list/unit_test_exempt_areas = list()
 	var/list/unit_test_exempt_from_atmos = list()
 	var/list/unit_test_exempt_from_apc = list()
+	var/list/unit_test_exempt_from_wires = list()
 	var/list/unit_test_z_levels //To test more than Z1, set your z-levels to test here.
 
 	var/list/planet_datums_to_make = list() // Types of `/datum/planet`s that will be instantiated by SSPlanets.
@@ -144,6 +151,8 @@ var/list/all_maps = list()
 		mappable_levels = station_levels.Copy()
 	if(!persist_levels?.len)
 		persist_levels = station_levels.Copy()
+	if(!mappable_levels?.len)
+		mappable_levels = station_levels.Copy()
 	if(!allowed_jobs || !allowed_jobs.len)
 		allowed_jobs = subtypesof(/datum/job)
 	if(default_skybox) //Type was specified
@@ -202,25 +211,28 @@ var/list/all_maps = list()
 	return text2num(pickweight(candidates))
 
 /datum/map/proc/get_empty_zlevel()
+	// Try to free up a z level from existing temp sectors
+	if(!empty_levels.len)
+		for(var/Z in map_sectors)
+			var/obj/effect/overmap/visitable/sector/temporary/T = map_sectors[Z]
+			T.cleanup() // If we can release some of these, do that.
+
+	// Else, we need to buy a new one.
 	if(!empty_levels.len)
 		world.increment_max_z()
 		empty_levels += world.maxz
 	return pick_n_take(empty_levels)
 
 /datum/map/proc/cache_empty_zlevel(var/z)
-	empty_levels |= z
+	if(z) // Else, it's not a valid z and we want to expunge it
+		empty_levels |= z
 
 // Get a list of 'nearby' or 'connected' zlevels.
 // You should at least return a list with the given z if nothing else.
 /datum/map/proc/get_map_levels(var/srcz, var/long_range = FALSE, var/om_range = -1)
-	//Overmap behavior
-	if(use_overmap)
-		//Get what sector we're in
-		var/obj/effect/overmap/visitable/O = get_overmap_sector(srcz)
-		if(!istype(O))
-			//Anything in multiz then (or just themselves)
-			return GetConnectedZlevels(srcz)
-
+	//Get what sector we're in
+	var/obj/effect/overmap/visitable/O = get_overmap_sector(srcz)
+	if(istype(O))
 		//Just the sector we're in
 		if(om_range == -1)
 			return O.map_z.Copy()
@@ -233,7 +245,7 @@ var/list/all_maps = list()
 			connections += V.map_z // Adding list to list adds contents
 		return connections
 
-	//Traditional behavior
+	//Traditional behavior, if not in an overmap sector
 	else
 		//If long range, and they're at least in contact levels, return contact levels.
 		if (long_range && (srcz in contact_levels))
@@ -312,12 +324,20 @@ var/list/all_maps = list()
 	if(flags & MAP_LEVEL_CONSOLES)
 		if (!map.map_levels) map.map_levels = list()
 		map.map_levels += z
+	if(flags & MAP_LEVEL_BELOW_BLOCKED)
+		if (!map.below_blocked_levels) map.below_blocked_levels = list()
+		map.below_blocked_levels += z
 	if(base_turf)
 		map.base_turf_by_z["[z]"] = base_turf
 	if(transit_chance)
 		map.accessible_z_levels["[z]"] = transit_chance
 	if(flags & MAP_LEVEL_MAPPABLE)
 		map.mappable_levels |= z
+	//YW Add: temperature z levels
+	if(flags & MAP_LEVEL_TEMPERATURE_CHANGEABLE)
+		testing("Adding temp: [z]")
+		map.allow_global_temperature_change_levels += z
+	//YW Add End
 	// Holomaps
 	// Auto-center the map if needed (Guess based on maxx/maxy)
 	if (holomap_offset_x < 0)
@@ -333,7 +353,7 @@ var/list/all_maps = list()
 		custom_skybox = new custom_skybox()
 
 /datum/map_z_level/Destroy(var/force)
-	crash_with("Attempt to delete a map_z_level instance [log_info_line(src)]")
+	stack_trace("Attempt to delete a map_z_level instance [log_info_line(src)]")
 	if(!force)
 		return QDEL_HINT_LETMELIVE // No.
 	if (using_map.zlevels["[z]"] == src)

@@ -15,6 +15,12 @@
  * Misc
  */
 
+/// Returns the top (last) element from the list, does not remove it from the list. Stack functionality.
+/proc/peek(list/target_list)
+	var/list_length = length(target_list)
+	if(list_length != 0)
+		return target_list[list_length]
+
 //Returns a list in plain english as a string
 /proc/english_list(var/list/input, nothing_text = "nothing", and_text = " and ", comma_text = ", ", final_comma_text = ",")
 	// this proc cannot be merged with counting_english_list to maintain compatibility
@@ -79,7 +85,7 @@
 	return counting_english_list(input, output_icons, determiners, nothing_text, and_text, comma_text, final_comma_text)
 
 //Returns list element or null. Should prevent "index out of bounds" error.
-proc/listgetindex(var/list/list,index)
+/proc/listgetindex(var/list/list,index)
 	if(istype(list) && list.len)
 		if(isnum(index))
 			if(InRange(index,1,list.len))
@@ -89,13 +95,13 @@ proc/listgetindex(var/list/list,index)
 	return
 
 //Return either pick(list) or null if list is not of type /list or is empty
-proc/safepick(list/list)
+/proc/safepick(list/list)
 	if(!islist(list) || !list.len)
 		return
 	return pick(list)
 
 //Checks if the list is empty
-proc/isemptylist(list/list)
+/proc/isemptylist(list/list)
 	if(!list.len)
 		return 1
 	return 0
@@ -127,22 +133,19 @@ proc/isemptylist(list/list)
 //returns a new list with only atoms that are in typecache L
 /proc/typecache_filter_list(list/atoms, list/typecache)
 	. = list()
-	for(var/thing in atoms)
-		var/atom/A = thing
+	for(var/atom/A as anything in atoms)
 		if(typecache[A.type])
 			. += A
 
 /proc/typecache_filter_list_reverse(list/atoms, list/typecache)
 	. = list()
-	for(var/thing in atoms)
-		var/atom/A = thing
+	for(var/atom/A as anything in atoms)
 		if(!typecache[A.type])
 			. += A
 
 /proc/typecache_filter_multi_list_exclusion(list/atoms, list/typecache_include, list/typecache_exclude)
 	. = list()
-	for(var/thing in atoms)
-		var/atom/A = thing
+	for(var/atom/A as anything in atoms)
 		if(typecache_include[A.type] && !typecache_exclude[A.type])
 			. += A
 
@@ -177,13 +180,13 @@ proc/isemptylist(list/list)
 //////////////////////////////////////////////////////
 
 //Empties the list by setting the length to 0. Hopefully the elements get garbage collected
-proc/clearlist(list/list)
+/proc/clearlist(list/list)
 	if(istype(list))
 		list.len = 0
 	return
 
 //Removes any null entries from the list
-proc/listclearnulls(list/list)
+/proc/listclearnulls(list/list)
 	if(istype(list))
 		while(null in list)
 			list -= null
@@ -206,6 +209,13 @@ proc/listclearnulls(list/list)
 		result = first - second
 	return result
 
+/**
+ * Removes any null entries from the list
+ * Returns TRUE if the list had nulls, FALSE otherwise
+**/
+/proc/list_clear_nulls(list/list_to_clear)
+	return (list_to_clear.RemoveAll(null) > 0)
+
 /*
 Two lists may be different (A!=B) even if they have the same elements.
 This actually tests if they have the same entries and values.
@@ -219,6 +229,17 @@ This actually tests if they have the same entries and values.
 		if(!(entry in second) || (first[entry] != second[entry]))
 			return 0
 	return 1
+
+/*
+Checks if a list has the same entries and values as an element of big.
+*/
+/proc/in_as_list(var/list/little, var/list/big)
+	if(!islist(big))
+		return 0
+	for(var/element in big)
+		if(same_entries(little, element))
+			return 1
+	return 0
 
 /*
  * Returns list containing entries that are in either list but not both.
@@ -306,12 +327,6 @@ This actually tests if they have the same entries and values.
 	for(var/i=1, i<L.len, ++i)
 		L.Swap(i,rand(i,L.len))
 
-//Return a list with no duplicate entries
-/proc/uniquelist(var/list/L)
-	. = list()
-	for(var/i in L)
-		. |= i
-
 //same, but returns nothing and acts on list in place (also handles associated values properly)
 /proc/uniqueList_inplace(list/L)
 	var/temp = L.Copy()
@@ -359,7 +374,7 @@ This actually tests if they have the same entries and values.
 	if(isnull(L) || L.len < 2)
 		return L
 	var/middle = L.len / 2 + 1
-	return mergeAtoms(sortAtom(L.Copy(0,middle)), sortAtom(L.Copy(middle)), order)
+	return mergeAtoms(sortAtom(L.Copy(1,middle)), sortAtom(L.Copy(middle)), order)
 
 //Mergsort: does the actual sorting and returns the results back to sortAtom
 /proc/mergeAtoms(var/list/atom/L, var/list/atom/R, var/order = 1)
@@ -611,7 +626,7 @@ This actually tests if they have the same entries and values.
 			min = mid+1
 
 /*
-proc/dd_sortedObjectList(list/incoming)
+/proc/dd_sortedObjectList(list/incoming)
 	/*
 	   Use binary search to order by dd_SortValue().
 	   This works by going to the half-point of the list, seeing if the node in
@@ -669,7 +684,7 @@ proc/dd_sortedObjectList(list/incoming)
 	return sorted_list
 */
 
-proc/dd_sortedtextlist(list/incoming, case_sensitive = 0)
+/proc/dd_sortedtextlist(list/incoming, case_sensitive = 0)
 	// Returns a new list with the text values sorted.
 	// Use binary search to order by sortValue.
 	// This works by going to the half-point of the list, seeing if the node in question is higher or lower cost,
@@ -728,7 +743,7 @@ proc/dd_sortedtextlist(list/incoming, case_sensitive = 0)
 	return sorted_text
 
 
-proc/dd_sortedTextList(list/incoming)
+/proc/dd_sortedTextList(list/incoming)
 	var/case_sensitive = 1
 	return dd_sortedtextlist(incoming, case_sensitive)
 
@@ -867,3 +882,81 @@ var/global/list/json_cache = list()
 	catch(var/exception/e)
 		log_error("Exception during JSON decoding ([json_to_decode]): [e]")
 		return list()
+
+//takes an input_key, as text, and the list of keys already used, outputting a replacement key in the format of "[input_key] ([number_of_duplicates])" if it finds a duplicate
+//use this for lists of things that might have the same name, like mobs or objects, that you plan on giving to a player as input
+/proc/avoid_assoc_duplicate_keys(input_key, list/used_key_list)
+	if(!input_key || !istype(used_key_list))
+		return
+	if(used_key_list[input_key])
+		used_key_list[input_key]++
+		input_key = "[input_key] ([used_key_list[input_key]])"
+	else
+		used_key_list[input_key] = 1
+	return input_key
+
+// Generic listoflist safe add and removal macros:
+///If value is a list, wrap it in a list so it can be used with list add/remove operations
+#define LIST_VALUE_WRAP_LISTS(value) (islist(value) ? list(value) : value)
+///Add an untyped item to a list, taking care to handle list items by wrapping them in a list to remove the footgun
+#define UNTYPED_LIST_ADD(list, item) (list += LIST_VALUE_WRAP_LISTS(item))
+///Remove an untyped item to a list, taking care to handle list items by wrapping them in a list to remove the footgun
+#define UNTYPED_LIST_REMOVE(list, item) (list -= LIST_VALUE_WRAP_LISTS(item))
+
+/// Passed into BINARY_INSERT to compare keys
+#define COMPARE_KEY __BIN_LIST[__BIN_MID]
+/// Passed into BINARY_INSERT to compare values
+#define COMPARE_VALUE __BIN_LIST[__BIN_LIST[__BIN_MID]]
+
+/****
+	* Binary search sorted insert
+	* INPUT: Object to be inserted
+	* LIST: List to insert object into
+	* TYPECONT: The typepath of the contents of the list
+	* COMPARE: The object to compare against, usualy the same as INPUT
+	* COMPARISON: The variable on the objects to compare
+	* COMPTYPE: How should the values be compared? Either COMPARE_KEY or COMPARE_VALUE.
+	*/
+#define BINARY_INSERT(INPUT, LIST, TYPECONT, COMPARE, COMPARISON, COMPTYPE) \
+	do {\
+		var/list/__BIN_LIST = LIST;\
+		var/__BIN_CTTL = length(__BIN_LIST);\
+		if(!__BIN_CTTL) {\
+			__BIN_LIST += INPUT;\
+		} else {\
+			var/__BIN_LEFT = 1;\
+			var/__BIN_RIGHT = __BIN_CTTL;\
+			var/__BIN_MID = (__BIN_LEFT + __BIN_RIGHT) >> 1;\
+			var ##TYPECONT/__BIN_ITEM;\
+			while(__BIN_LEFT < __BIN_RIGHT) {\
+				__BIN_ITEM = COMPTYPE;\
+				if(__BIN_ITEM.##COMPARISON <= COMPARE.##COMPARISON) {\
+					__BIN_LEFT = __BIN_MID + 1;\
+				} else {\
+					__BIN_RIGHT = __BIN_MID;\
+				};\
+				__BIN_MID = (__BIN_LEFT + __BIN_RIGHT) >> 1;\
+			};\
+			__BIN_ITEM = COMPTYPE;\
+			__BIN_MID = __BIN_ITEM.##COMPARISON > COMPARE.##COMPARISON ? __BIN_MID : __BIN_MID + 1;\
+			__BIN_LIST.Insert(__BIN_MID, INPUT);\
+		};\
+	} while(FALSE)
+
+///Converts a bitfield to a list of numbers (or words if a wordlist is provided)
+/proc/bitfield_to_list(bitfield = 0, list/wordlist)
+	var/list/return_list = list()
+	if(islist(wordlist))
+		var/max = min(wordlist.len, 24)
+		var/bit = 1
+		for(var/i in 1 to max)
+			if(bitfield & bit)
+				return_list += wordlist[i]
+			bit = bit << 1
+	else
+		for(var/bit_number = 0 to 23)
+			var/bit = 1 << bit_number
+			if(bitfield & bit)
+				return_list += bit
+
+	return return_list

@@ -23,8 +23,8 @@
 	buckle_lying = 1
 
 	// BubbleWrap
-/obj/machinery/atmospherics/pipe/simple/heat_exchanging/New()
-	..()
+/obj/machinery/atmospherics/pipe/simple/heat_exchanging/Initialize()
+	. = ..()
 // BubbleWrap END
 	color = "#404040" //we don't make use of the fancy overlay system for colours, use this to set the default.
 
@@ -98,15 +98,14 @@
 			else
 				var/datum/gas_mixture/environment = loc.return_air()
 				environment_temperature = environment.temperature
-			if(abs(environment_temperature-pipe_air.temperature) > minimum_temperature_difference)
+			var/turf/simulated/loc_as_turf = loc
+			if((abs(environment_temperature-pipe_air.temperature) > minimum_temperature_difference) || (loc_as_turf.special_temperature))
 				parent.temperature_interact(loc, volume, thermal_conductivity)
 		else if(istype(loc, /turf/space/))
 			parent.radiate_heat_to_space(surface, 1)
 
 		if(has_buckled_mobs())
-			for(var/M in buckled_mobs)
-				var/mob/living/L = M
-
+			for(var/mob/living/L as anything in buckled_mobs)
 				var/hc = pipe_air.heat_capacity()
 				var/avg_temp = (pipe_air.temperature * hc + L.bodytemperature * 3500) / (hc + 3500)
 				pipe_air.temperature = avg_temp

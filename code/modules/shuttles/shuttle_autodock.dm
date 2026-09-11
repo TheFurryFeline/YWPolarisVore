@@ -1,5 +1,3 @@
-#define DOCK_ATTEMPT_TIMEOUT 200	//how long in ticks we wait before assuming the docking controller is broken or blown up.
-
 // Subtype of shuttle that handles docking with docking controllers
 // Consists of code pulled down from the old /datum/shuttle and up from /datum/shuttle/ferry
 // Note: Since all known shuttles extend this type, this really could just be built into /datum/shuttle
@@ -9,11 +7,11 @@
 	var/last_dock_attempt_time = 0
 
 	var/docking_controller_tag = null // ID of the controller on the shuttle (If multiple, this is the default one)
-	var/datum/computer/file/embedded_program/docking/shuttle_docking_controller // Controller on the shuttle (the one in use)
+	var/datum/embedded_program/docking/shuttle_docking_controller // Controller on the shuttle (the one in use)
 	var/docking_codes
 
 	var/tmp/obj/effect/shuttle_landmark/next_location  //This is only used internally.
-	var/datum/computer/file/embedded_program/docking/active_docking_controller // Controller we are docked with (or trying to)
+	var/datum/embedded_program/docking/active_docking_controller // Controller we are docked with (or trying to)
 
 	var/obj/effect/shuttle_landmark/landmark_transition  //This variable is type-abused initially: specify the landmark_tag, not the actual landmark.
 	var/move_time = 240		//the time spent in the transition area
@@ -65,7 +63,7 @@
 		current_dock_target = docking_controller_tag
 	shuttle_docking_controller = SSshuttles.docking_registry[current_dock_target]
 	if(current_dock_target && !shuttle_docking_controller)
-		log_shuttle("<span class='danger'>warning: shuttle [src] can't find its controller with tag [current_dock_target]!</span>") // No toggle because this is an error message that needs to be seen
+		log_shuttle(span_danger("warning: shuttle [src] can't find its controller with tag [current_dock_target]!")) // No toggle because this is an error message that needs to be seen
 /*
 	Docking stuff
 */

@@ -4,8 +4,9 @@
 	desc = "The name isn't descriptive enough?"
 	icon = 'icons/obj/kitchen.dmi'
 	icon_state = "grinder"
-	density = 1
-	anchored = 1
+	density = TRUE
+	anchored = TRUE
+	unacidable = TRUE
 	req_access = list(access_kitchen,access_morgue)
 
 	var/operating = 0 //Is it on?
@@ -58,20 +59,20 @@
 
 /obj/machinery/gibber/New()
 	..()
-	src.overlays += image('icons/obj/kitchen.dmi', "grjam")
+	add_overlay("grjam")
 
 /obj/machinery/gibber/update_icon()
-	overlays.Cut()
+	cut_overlays()
 	if (dirty)
-		src.overlays += image('icons/obj/kitchen.dmi', "grbloody")
+		add_overlay("grbloody")
 	if(stat & (NOPOWER|BROKEN))
 		return
 	if (!occupant)
-		src.overlays += image('icons/obj/kitchen.dmi', "grjam")
+		add_overlay("grjam")
 	else if (operating)
-		src.overlays += image('icons/obj/kitchen.dmi', "gruse")
+		add_overlay("gruse")
 	else
-		src.overlays += image('icons/obj/kitchen.dmi', "gridle")
+		add_overlay("gridle")
 
 /obj/machinery/gibber/relaymove(mob/user as mob)
 	src.go_out()
@@ -81,22 +82,22 @@
 	if(stat & (NOPOWER|BROKEN))
 		return
 	if(operating)
-		to_chat(user, "<span class='danger'>The gibber is locked and running, wait for it to finish.</span>")
+		to_chat(user, span_danger("The gibber is locked and running, wait for it to finish."))
 		return
 	else
 		src.startgibbing(user)
 
 /obj/machinery/gibber/examine()
 	. = ..()
-	. += "The safety guard is [emagged ? "<span class='danger'>disabled</span>" : "enabled"]."
+	. += "The safety guard is [emagged ? span_danger("disabled") : "enabled"]."
 
 /obj/machinery/gibber/emag_act(var/remaining_charges, var/mob/user)
 	emagged = !emagged
-	to_chat(user, "<span class='danger'>You [emagged ? "disable" : "enable"] the gibber safety guard.</span>")
+	to_chat(user, span_danger("You [emagged ? "disable" : "enable"] the gibber safety guard."))
 	return 1
 
 /obj/machinery/gibber/attackby(var/obj/item/W, var/mob/user)
-	var/obj/item/weapon/grab/G = W
+	var/obj/item/grab/G = W
 
 	if(default_unfasten_wrench(user, W, 40))
 		return
@@ -105,7 +106,7 @@
 		return ..()
 
 	if(G.state < 2)
-		to_chat(user, "<span class='danger'>You need a better grip to do that!</span>")
+		to_chat(user, span_danger("You need a better grip to do that!"))
 		return
 
 	move_into_gibber(user,G.affecting)
@@ -119,30 +120,30 @@
 /obj/machinery/gibber/proc/move_into_gibber(var/mob/user,var/mob/living/victim)
 
 	if(src.occupant)
-		to_chat(user, "<span class='danger'>The gibber is full, empty it first!</span>")
+		to_chat(user, span_danger("The gibber is full, empty it first!"))
 		return
 
 	if(operating)
-		to_chat(user, "<span class='danger'>The gibber is locked and running, wait for it to finish.</span>")
+		to_chat(user, span_danger("The gibber is locked and running, wait for it to finish."))
 		return
 
 	if(!(istype(victim, /mob/living/carbon)) && !(istype(victim, /mob/living/simple_mob)) )
-		to_chat(user, "<span class='danger'>This is not suitable for the gibber!</span>")
+		to_chat(user, span_danger("This is not suitable for the gibber!"))
 		return
 
 	if(istype(victim,/mob/living/carbon/human) && !emagged)
-		to_chat(user, "<span class='danger'>The gibber safety guard is engaged!</span>")
+		to_chat(user, span_danger("The gibber safety guard is engaged!"))
 		return
 
 
 	if(victim.abiotic(1))
-		to_chat(user, "<span class='danger'>Subject may not have abiotic items on.</span>")
+		to_chat(user, span_danger("Subject may not have abiotic items on."))
 		return
 
-	user.visible_message("<span class='danger'>[user] starts to put [victim] into the gibber!</span>")
+	user.visible_message(span_danger("[user] starts to put [victim] into the gibber!"))
 	src.add_fingerprint(user)
 	if(do_after(user, 30) && victim.Adjacent(src) && user.Adjacent(src) && victim.Adjacent(user) && !occupant)
-		user.visible_message("<span class='danger'>[user] stuffs [victim] into the gibber!</span>")
+		user.visible_message(span_danger("[user] stuffs [victim] into the gibber!"))
 		if(victim.client)
 			victim.client.perspective = EYE_PERSPECTIVE
 			victim.client.eye = src
@@ -179,17 +180,17 @@
 	if(src.operating)
 		return
 	if(!src.occupant)
-		visible_message("<span class='danger'>You hear a loud metallic grinding sound.</span>")
+		visible_message(span_danger("You hear a loud metallic grinding sound."))
 		return
 
 	use_power(1000)
-	visible_message("<span class='danger'>You hear a loud [occupant.isSynthetic() ? "metallic" : "squelchy"] grinding sound.</span>")
+	visible_message(span_danger("You hear a loud [occupant.isSynthetic() ? "metallic" : "squelchy"] grinding sound."))
 	src.operating = 1
 	update_icon()
 
 	var/slab_name = occupant.name
 	var/slab_count = 2 + occupant.meat_amount
-	var/slab_type = occupant.meat_type ? occupant.meat_type : /obj/item/weapon/reagent_containers/food/snacks/meat
+	var/slab_type = occupant.meat_type ? occupant.meat_type : /obj/item/reagent_containers/food/snacks/meat
 	var/slab_nutrition = src.occupant.nutrition / 15
 
 	var/list/byproducts = occupant?.butchery_loot?.Copy()
@@ -204,14 +205,13 @@
 		slab_nutrition *= 0.5
 	slab_nutrition /= slab_count
 
-	while(slab_count)
-		slab_count--
-		var/obj/item/weapon/reagent_containers/food/snacks/meat/new_meat = new slab_type(src, rand(3,8))
+	for(var/i=1 to slab_count)
+		var/obj/item/reagent_containers/food/snacks/meat/new_meat = new slab_type(src, rand(3,8))
 		if(istype(new_meat))
 			new_meat.name = "[slab_name] [new_meat.name]"
 			new_meat.reagents.add_reagent("nutriment",slab_nutrition)
 			if(src.occupant.reagents)
-				src.occupant.reagents.trans_to_obj(new_meat, round(occupant.reagents.total_volume/slab_count,1))
+				src.occupant.reagents.trans_to_obj(new_meat, round(occupant.reagents.total_volume/(2 + occupant.meat_amount),1))
 
 	add_attack_logs(user,occupant,"Used [src] to gib")
 
@@ -243,5 +243,3 @@
 			thing.throw_at(get_edge_target_turf(src,gib_throw_dir),rand(0,3),emagged ? 100 : 50) // Being pelted with bits of meat and bone would hurt.
 
 		update_icon()
-
-

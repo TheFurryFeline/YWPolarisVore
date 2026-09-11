@@ -1,3 +1,8 @@
+/**
+ * Copyright (c) 2020 Aleksej Komarov
+ * SPDX-License-Identifier: MIT
+ */
+
 @use '../base.scss';
 
 .LabeledList {
@@ -27,10 +32,9 @@
   padding: 0.25em 0.5em;
   border: 0;
   text-align: left;
-  vertical-align: baseline;
 }
 
-.LabeledList__label {
+.LabeledList__label--nowrap {
   width: 1%;
   white-space: nowrap;
   min-width: 5em;
@@ -44,7 +48,9 @@
   padding-bottom: 0;
 }
 
+// VOREStation Addition Start
 .LabeledList__breakContents {
   word-break: break-all;
   word-wrap: break-word;
 }
+// VOREStation Addition End

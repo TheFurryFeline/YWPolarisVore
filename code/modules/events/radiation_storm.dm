@@ -16,7 +16,7 @@
 
 /datum/event/radiation_storm/tick()
 	if(activeFor == enterBelt)
-		command_announcement.Announce("The outpost has entered the radiation flare. Please remain in a sheltered area until the radiation flare has passed.", "Anomaly Alert")
+		command_announcement.Announce("The [using_map.facility_type] has entered the radiation belt. Please remain in a sheltered area until we have passed the radiation belt.", "Anomaly Alert")
 		radiate()
 
 	if(activeFor >= enterBelt && activeFor <= leaveBelt)
@@ -27,21 +27,25 @@
 		radiate()
 
 	else if(activeFor == leaveBelt)
-		command_announcement.Announce("The outpost has passed the radiation flare. Please allow for up to one minute while radiation levels dissipate, and report to medbay if you experience any unusual symptoms. Maintenance will lose all access again shortly.", "Anomaly Alert")
+		command_announcement.Announce("The [using_map.facility_type] has passed the radiation belt. Please allow for up to one minute while radiation levels dissipate, and report to medbay if you experience any unusual symptoms. Maintenance will lose all access again shortly.", "Anomaly Alert")
 /datum/event/radiation_storm/proc/radiate()
 	var/radiation_level = rand(15, 35)
 	for(var/z in using_map.station_levels)
 		SSradiation.z_radiate(locate(1, 1, z), radiation_level, 1)
 //YW Edit end.
 	for(var/mob/living/carbon/C in living_mob_list)
+		if(!(C.z in using_map.station_levels) || C.isSynthetic() || isbelly(C.loc))
+			continue
 		var/area/A = get_area(C)
 		if(!A)
 			continue
-		if(A.flags & RAD_SHIELDED)
+		if(A.flag_check(RAD_SHIELDED))
 			continue
 		if(istype(C,/mob/living/carbon/human))
 			var/mob/living/carbon/human/H = C
-			if(prob(5))
+			var/chance = 5.0
+			chance -= (chance / 100) * C.getarmor(null, "rad")
+			if(prob(chance))
 				if (prob(75))
 					randmutb(H) // Applies bad mutation
 					domutcheck(H,null,MUTCHK_FORCED)

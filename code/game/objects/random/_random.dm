@@ -1,17 +1,19 @@
 /obj/random
 	name = "random object"
 	desc = "This item type is used to spawn random objects at round-start"
-	icon = 'icons/misc/mark.dmi'
-	icon_state = "rup"
+	icon = 'icons/misc/random_spawners.dmi'
+	icon_state = "generic"
 	var/spawn_nothing_percentage = 0 // this variable determines the likelyhood that this random object will not spawn anything
 	var/drop_get_turf = TRUE
 
-// creates a new object and deletes itself
+
 /obj/random/Initialize()
+	. = INITIALIZE_HINT_QDEL
 	..()
-	if(!prob(spawn_nothing_percentage))
-		try_spawn_item()
-	return INITIALIZE_HINT_QDEL
+	if (prob(spawn_nothing_percentage))
+		return
+	try_spawn_item()
+
 
 /obj/random/proc/try_spawn_item()
 	var/atom/result = spawn_item()
@@ -44,12 +46,12 @@ var/list/random_junk_
 var/list/random_useful_
 /proc/get_random_useful_type()
 	if(!random_useful_)
-		random_useful_ = subtypesof(/obj/item/weapon/pen/crayon)
-		random_useful_ += /obj/item/weapon/pen
-		random_useful_ += /obj/item/weapon/pen/blue
-		random_useful_ += /obj/item/weapon/pen/red
-		random_useful_ += /obj/item/weapon/pen/multi
-		random_useful_ += /obj/item/weapon/storage/box/matches
+		random_useful_ = subtypesof(/obj/item/pen/crayon)
+		random_useful_ += /obj/item/pen
+		random_useful_ += /obj/item/pen/blue
+		random_useful_ += /obj/item/pen/red
+		random_useful_ += /obj/item/pen/multi
+		random_useful_ += /obj/item/storage/box/matches
 		random_useful_ += /obj/item/stack/material/cardboard
 	return pick(random_useful_)
 
@@ -59,13 +61,13 @@ var/list/random_useful_
 	if(prob(70)) // Misc. junk
 		if(!random_junk_)
 			random_junk_ = subtypesof(/obj/item/trash)
-			random_junk_ += /obj/effect/decal/cleanable/spiderling_remains
+			random_junk_ += /obj/effect/decal/cleanable/bug_remains
 			random_junk_ += /obj/effect/decal/remains/mouse
 			random_junk_ += /obj/effect/decal/remains/robot
-			random_junk_ += /obj/item/weapon/paper/crumpled
+			random_junk_ += /obj/item/paper/crumpled
 			random_junk_ += /obj/item/inflatable/torn
 			random_junk_ += /obj/effect/decal/cleanable/molten_item
-			random_junk_ += /obj/item/weapon/material/shard
+			random_junk_ += /obj/item/material/shard
 
 			random_junk_ -= /obj/item/trash/plate
 			random_junk_ -= /obj/item/trash/snack_bowl
@@ -80,7 +82,7 @@ var/list/random_useful_
 /obj/random/single
 	name = "randomly spawned object"
 	desc = "This item type is used to randomly spawn a given object at round-start"
-	icon_state = "x3"
+	icon_state = "generic"
 	var/spawn_object = null
 
 /obj/random/single/item_to_spawn()
@@ -104,8 +106,8 @@ var/list/multi_point_spawns
 /obj/random_multi
 	name = "random object spawn point"
 	desc = "This item type is used to spawn random objects at round-start. Only one spawn point for a given group id is selected."
-	icon = 'icons/misc/mark.dmi'
-	icon_state = "x3"
+	icon = 'icons/misc/random_spawners.dmi'
+	icon_state = "generic_3"
 	invisibility = INVISIBILITY_MAXIMUM
 	var/id     // Group id
 	var/weight // Probability weight for this spawn point

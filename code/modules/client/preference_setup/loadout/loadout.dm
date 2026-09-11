@@ -12,9 +12,8 @@ var/list/gear_datums = list()
 /hook/startup/proc/populate_gear_list()
 
 	//create a list of gear datums to sort
-	for(var/geartype in typesof(/datum/gear)-/datum/gear)
-		var/datum/gear/G = geartype
-		if(initial(G.type_category) == geartype)
+	for(var/datum/gear/G as anything in subtypesof(/datum/gear))
+		if(initial(G.type_category) == G)
 			continue
 		var/use_name = initial(G.display_name)
 		var/use_category = initial(G.sort_category)
@@ -32,7 +31,7 @@ var/list/gear_datums = list()
 		if(!loadout_categories[use_category])
 			loadout_categories[use_category] = new /datum/loadout_category(use_category)
 		var/datum/loadout_category/LC = loadout_categories[use_category]
-		gear_datums[use_name] = new geartype
+		gear_datums[use_name] = new G
 		LC.gear[use_name] = gear_datums[use_name]
 
 	loadout_categories = sortAssoc(loadout_categories)
@@ -46,19 +45,34 @@ var/list/gear_datums = list()
 	sort_order = 1
 	var/current_tab = "General"
 
-/datum/category_item/player_setup_item/loadout/load_character(var/savefile/S)
-	from_file(S["gear_list"], pref.gear_list)
-	from_file(S["gear_slot"], pref.gear_slot)
+/datum/category_item/player_setup_item/loadout/load_character(list/save_data)
+	pref.gear_list = list()
+	var/all_gear = check_list_copy(save_data["gear_list"])
+	for(var/i in all_gear)
+		var/list/entries = check_list_copy(all_gear["[i]"])
+		for(var/j in entries)
+			entries["[j]"] = path2text_list(entries["[j]"])
+		pref.gear_list["[i]"] = entries
+	pref.gear_slot = save_data["gear_slot"]
 	if(pref.gear_list!=null && pref.gear_slot!=null)
 		pref.gear = pref.gear_list["[pref.gear_slot]"]
 	else
-		from_file(S["gear"], pref.gear)
+		pref.gear = check_list_copy(save_data["gear"])
 		pref.gear_slot = 1
 
-/datum/category_item/player_setup_item/loadout/save_character(var/savefile/S)
+/datum/category_item/player_setup_item/loadout/save_character(list/save_data)
 	pref.gear_list["[pref.gear_slot]"] = pref.gear
-	to_file(S["gear_list"], pref.gear_list)
-	to_file(S["gear_slot"], pref.gear_slot)
+	var/list/all_gear = list()
+	var/worn_gear = check_list_copy(pref.gear_list)
+	for(var/i in worn_gear)
+		var/list/entries = check_list_copy(worn_gear["[i]"])
+		if(!length(entries))
+			entries = check_list_copy(worn_gear[i])
+		for(var/j in entries)
+			entries["[j]"] = check_list_copy(entries["[j]"])
+		all_gear["[i]"] = entries
+	save_data["gear_list"] = all_gear
+	save_data["gear_slot"] = pref.gear_slot
 
 /datum/category_item/player_setup_item/loadout/proc/valid_gear_choices(var/max_cost)
 	. = list()
@@ -66,10 +80,10 @@ var/list/gear_datums = list()
 	for(var/gear_name in gear_datums)
 		var/datum/gear/G = gear_datums[gear_name]
 
-		if(G.whitelisted && config.loadout_whitelist != LOADOUT_WHITELIST_OFF)
-			if(config.loadout_whitelist == LOADOUT_WHITELIST_STRICT && G.whitelisted != pref.species)
+		if(G.whitelisted && CONFIG_GET(flag/loadout_whitelist) != LOADOUT_WHITELIST_OFF && pref.client) //VOREStation Edit.
+			if(CONFIG_GET(flag/loadout_whitelist) == LOADOUT_WHITELIST_STRICT && G.whitelisted != pref.species)
 				continue
-			if(config.loadout_whitelist == LOADOUT_WHITELIST_LAX && !is_alien_whitelisted(preference_mob(), GLOB.all_species[G.whitelisted]))	
+			if(CONFIG_GET(flag/loadout_whitelist) == LOADOUT_WHITELIST_LAX && !is_alien_whitelisted(preference_mob(), GLOB.all_species[G.whitelisted]))
 				continue
 		if(max_cost && G.cost > max_cost)
 			continue
@@ -95,16 +109,16 @@ var/list/gear_datums = list()
 	var/total_cost = 0
 	for(var/gear_name in pref.gear)
 		if(!gear_datums[gear_name])
-			to_chat(preference_mob, "<span class='warning'>You cannot have more than one of the \the [gear_name]</span>")
+			to_chat(preference_mob, span_warning("You cannot have more than one of the \the [gear_name]"))
 			pref.gear -= gear_name
 		else if(!(gear_name in valid_gear_choices()))
-			to_chat(preference_mob, "<span class='warning'>You cannot take \the [gear_name] as you are not whitelisted for the species or item.</span>")		//Vorestation Edit
+			to_chat(preference_mob, span_warning("You cannot take \the [gear_name] as you are not whitelisted for the species or item."))		//Vorestation Edit
 			pref.gear -= gear_name
 		else
 			var/datum/gear/G = gear_datums[gear_name]
 			if(total_cost + G.cost > MAX_GEAR_COST)
 				pref.gear -= gear_name
-				to_chat(preference_mob, "<span class='warning'>You cannot afford to take \the [gear_name]</span>")
+				to_chat(preference_mob, span_warning("You cannot afford to take \the [gear_name]"))
 			else
 				total_cost += G.cost
 
@@ -142,7 +156,7 @@ var/list/gear_datums = list()
 				category_cost += G.cost
 
 		if(category == current_tab)
-			. += " <span class='linkOn'>[category] - [category_cost]</span> "
+			. += " " + span_linkOn("[category] - [category_cost]") + " "
 		else
 			if(category_cost)
 				. += " <a href='?src=\ref[src];select_category=[category]'><font color = '#E67300'>[category] - [category_cost]</font></a> "
@@ -156,21 +170,21 @@ var/list/gear_datums = list()
 	. += "<tr><td colspan=3><hr></td></tr>"
 	for(var/gear_name in LC.gear)
 		var/datum/gear/G = LC.gear[gear_name]
-		//VOREStation Edit Start
 		if(preference_mob && preference_mob.client)
 			if(G.ckeywhitelist && !(preference_mob.ckey in G.ckeywhitelist))
 				continue
 			if(G.character_name && !(preference_mob.client.prefs.real_name in G.character_name))
 				continue
-		//VOREStation Edit End
 		var/ticked = (G.display_name in pref.gear)
 		. += "<tr style='vertical-align:top;'><td width=25%><a style='white-space:normal;' [ticked ? "class='linkOn' " : ""]href='?src=\ref[src];toggle_gear=[html_encode(G.display_name)]'>[G.display_name]</a></td>"
 		. += "<td width = 10% style='vertical-align:top'>[G.cost]</td>"
 		. += "<td><font size=2><i>[G.description]</i></font></td></tr>"
+		if(G.show_roles && G.allowed_roles)
+			. += "<td colspan=3>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Restricted to: [list2text(G.allowed_roles,", ")]</td>"
 		if(ticked)
 			. += "<tr><td colspan=3>"
 			for(var/datum/gear_tweak/tweak in G.gear_tweaks)
-				. += " <a href='?src=\ref[src];gear=[G.display_name];tweak=\ref[tweak]'>[tweak.get_contents(get_tweak_metadata(G, tweak))]</a>"
+				. += " <a href='?src=\ref[src];gear=[url_encode(G.display_name)];tweak=\ref[tweak]'>[tweak.get_contents(get_tweak_metadata(G, tweak))]</a>"
 			. += "</td></tr>"
 	. += "</table>"
 	. = jointext(., null)
@@ -206,7 +220,7 @@ var/list/gear_datums = list()
 				pref.gear += TG.display_name
 		return TOPIC_REFRESH_UPDATE_PREVIEW
 	if(href_list["gear"] && href_list["tweak"])
-		var/datum/gear/gear = gear_datums[href_list["gear"]]
+		var/datum/gear/gear = gear_datums[url_decode(href_list["gear"])]
 		var/datum/gear_tweak/tweak = locate(href_list["tweak"])
 		if(!tweak || !istype(gear) || !(tweak in gear.gear_tweaks))
 			return TOPIC_NOACTION
@@ -222,14 +236,14 @@ var/list/gear_datums = list()
 		if(href_list["next_slot"])
 			//change the current slot number
 			pref.gear_slot = pref.gear_slot+1
-			if(pref.gear_slot>config.loadout_slots)
+			if(pref.gear_slot > CONFIG_GET(number/loadout_slots))
 				pref.gear_slot = 1
 		//If we're moving down a slot..
 		else if(href_list["prev_slot"])
 			//change current slot one down
 			pref.gear_slot = pref.gear_slot-1
 			if(pref.gear_slot<1)
-				pref.gear_slot = config.loadout_slots
+				pref.gear_slot = CONFIG_GET(number/loadout_slots)
 		// Set the currently selected gear to whatever's in the new slot
 		if(pref.gear_list["[pref.gear_slot]"])
 			pref.gear = pref.gear_list["[pref.gear_slot]"]
@@ -253,6 +267,7 @@ var/list/gear_datums = list()
 	var/cost = 1           //Number of points used. Items in general cost 1 point, storage/armor/gloves/special use costs 2 points.
 	var/slot               //Slot to equip to.
 	var/list/allowed_roles //Roles that can spawn with this item.
+	var/show_roles = TRUE	//Show the role restrictions on this item?
 	var/whitelisted        //Term to check the whitelist for..
 	var/sort_category = "General"
 	var/list/gear_tweaks = list() //List of datums which will alter the item after it has been spawned.

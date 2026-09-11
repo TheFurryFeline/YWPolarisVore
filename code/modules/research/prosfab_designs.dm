@@ -83,6 +83,7 @@
 		H.b_skin = 0
 		H.dna.ResetUIFrom(H)
 
+		H.allow_spontaneous_tf = TRUE // Allows vore customization of synthmorphs
 		H.real_name = "Synthmorph #[rand(100,999)]"
 		H.name = H.real_name
 		H.dir = 2
@@ -92,7 +93,7 @@
 //////////////////// Prosthetics ////////////////////
 /datum/design/item/prosfab/pros/torso
 	time = 35
-	materials = list(DEFAULT_WALL_MATERIAL = 30000, "glass" = 7500)
+	materials = list(MAT_STEEL = 30000, MAT_GLASS = 7500)
 //	req_tech = list(TECH_ENGINEERING = 2, TECH_MATERIAL = 3, TECH_DATA = 3)	//Saving the values just in case
 	var/gender = MALE
 
@@ -115,7 +116,7 @@
 	id = "pros_head"
 	build_path = /obj/item/organ/external/head
 	time = 30
-	materials = list(DEFAULT_WALL_MATERIAL = 18750, "glass" = 3750)
+	materials = list(MAT_STEEL = 18750, MAT_GLASS = 3750)
 //	req_tech = list(TECH_ENGINEERING = 2, TECH_MATERIAL = 3, TECH_DATA = 3)	//Saving the values just in case
 
 /datum/design/item/prosfab/pros/l_arm
@@ -123,56 +124,56 @@
 	id = "pros_l_arm"
 	build_path = /obj/item/organ/external/arm
 	time = 20
-	materials = list(DEFAULT_WALL_MATERIAL = 10125)
+	materials = list(MAT_STEEL = 10125)
 
 /datum/design/item/prosfab/pros/l_hand
 	name = "Prosthetic Left Hand"
 	id = "pros_l_hand"
 	build_path = /obj/item/organ/external/hand
 	time = 15
-	materials = list(DEFAULT_WALL_MATERIAL = 3375)
+	materials = list(MAT_STEEL = 3375)
 
 /datum/design/item/prosfab/pros/r_arm
 	name = "Prosthetic Right Arm"
 	id = "pros_r_arm"
 	build_path = /obj/item/organ/external/arm/right
 	time = 20
-	materials = list(DEFAULT_WALL_MATERIAL = 10125)
+	materials = list(MAT_STEEL = 10125)
 
 /datum/design/item/prosfab/pros/r_hand
 	name = "Prosthetic Right Hand"
 	id = "pros_r_hand"
 	build_path = /obj/item/organ/external/hand/right
 	time = 15
-	materials = list(DEFAULT_WALL_MATERIAL = 3375)
+	materials = list(MAT_STEEL = 3375)
 
 /datum/design/item/prosfab/pros/l_leg
 	name = "Prosthetic Left Leg"
 	id = "pros_l_leg"
 	build_path = /obj/item/organ/external/leg
 	time = 20
-	materials = list(DEFAULT_WALL_MATERIAL = 8437)
+	materials = list(MAT_STEEL = 8437)
 
 /datum/design/item/prosfab/pros/l_foot
 	name = "Prosthetic Left Foot"
 	id = "pros_l_foot"
 	build_path = /obj/item/organ/external/foot
 	time = 15
-	materials = list(DEFAULT_WALL_MATERIAL = 2813)
+	materials = list(MAT_STEEL = 2813)
 
 /datum/design/item/prosfab/pros/r_leg
 	name = "Prosthetic Right Leg"
 	id = "pros_r_leg"
 	build_path = /obj/item/organ/external/leg/right
 	time = 20
-	materials = list(DEFAULT_WALL_MATERIAL = 8437)
+	materials = list(MAT_STEEL = 8437)
 
 /datum/design/item/prosfab/pros/r_foot
 	name = "Prosthetic Right Foot"
 	id = "pros_r_foot"
 	build_path = /obj/item/organ/external/foot/right
 	time = 15
-	materials = list(DEFAULT_WALL_MATERIAL = 2813)
+	materials = list(MAT_STEEL = 2813)
 
 /datum/design/item/prosfab/pros/internal
 	category = list("Prosthetics, Internal")
@@ -182,7 +183,7 @@
 	id = "pros_cell"
 	build_path = /obj/item/organ/internal/cell
 	time = 15
-	materials = list(DEFAULT_WALL_MATERIAL = 7500, "glass" = 3000)
+	materials = list(MAT_STEEL = 7500, MAT_GLASS = 3000)
 //	req_tech = list(TECH_ENGINEERING = 2, TECH_MATERIAL = 2)
 
 /datum/design/item/prosfab/pros/internal/eyes
@@ -190,7 +191,7 @@
 	id = "pros_eyes"
 	build_path = /obj/item/organ/internal/eyes/robot
 	time = 15
-	materials = list(DEFAULT_WALL_MATERIAL = 5625, "glass" = 5625)
+	materials = list(MAT_STEEL = 5625, MAT_GLASS = 5625)
 //	req_tech = list(TECH_ENGINEERING = 2, TECH_MATERIAL = 2)
 
 /datum/design/item/prosfab/pros/internal/hydraulic
@@ -198,35 +199,35 @@
 	id = "pros_hydraulic"
 	build_path = /obj/item/organ/internal/heart/machine
 	time = 15
-	materials = list(DEFAULT_WALL_MATERIAL = 7500, MAT_PLASTIC = 3000)
+	materials = list(MAT_STEEL = 7500, MAT_PLASTIC = 3000)
 
 /datum/design/item/prosfab/pros/internal/reagcycler
 	name = "Reagent Cycler"
 	id = "pros_reagcycler"
 	build_path = /obj/item/organ/internal/stomach/machine
 	time = 15
-	materials = list(DEFAULT_WALL_MATERIAL = 7500, MAT_PLASTIC = 3000)
+	materials = list(MAT_STEEL = 7500, MAT_PLASTIC = 3000)
 
 /datum/design/item/prosfab/pros/internal/heatsink
 	name = "Heatsink"
 	id = "pros_heatsink"
 	build_path = /obj/item/organ/internal/robotic/heatsink
 	time = 15
-	materials = list(DEFAULT_WALL_MATERIAL = 7500, MAT_PLASTIC = 3000)
+	materials = list(MAT_STEEL = 7500, MAT_PLASTIC = 3000)
 
 /datum/design/item/prosfab/pros/internal/diagnostic
 	name = "Diagnostic Controller"
 	id = "pros_diagnostic"
 	build_path = /obj/item/organ/internal/robotic/diagnostic
 	time = 15
-	materials = list(DEFAULT_WALL_MATERIAL = 7500, MAT_PLASTIC = 3000)
+	materials = list(MAT_STEEL = 7500, MAT_PLASTIC = 3000)
 
 /datum/design/item/prosfab/pros/internal/heart
 	name = "Prosthetic Heart"
 	id = "pros_heart"
 	build_path = /obj/item/organ/internal/heart
 	time = 15
-	materials = list(DEFAULT_WALL_MATERIAL = 5625, "glass" = 1000)
+	materials = list(MAT_STEEL = 5625, MAT_GLASS = 1000)
 //	req_tech = list(TECH_ENGINEERING = 2, TECH_MATERIAL = 2)
 
 /datum/design/item/prosfab/pros/internal/lungs
@@ -234,7 +235,7 @@
 	id = "pros_lung"
 	build_path = /obj/item/organ/internal/lungs
 	time = 15
-	materials = list(DEFAULT_WALL_MATERIAL = 5625, "glass" = 1000)
+	materials = list(MAT_STEEL = 5625, MAT_GLASS = 1000)
 //	req_tech = list(TECH_ENGINEERING = 2, TECH_MATERIAL = 2)
 
 /datum/design/item/prosfab/pros/internal/liver
@@ -242,7 +243,7 @@
 	id = "pros_liver"
 	build_path = /obj/item/organ/internal/liver
 	time = 15
-	materials = list(DEFAULT_WALL_MATERIAL = 5625, "glass" = 1000)
+	materials = list(MAT_STEEL = 5625, MAT_GLASS = 1000)
 //	req_tech = list(TECH_ENGINEERING = 2, TECH_MATERIAL = 2)
 
 /datum/design/item/prosfab/pros/internal/kidneys
@@ -250,7 +251,7 @@
 	id = "pros_kidney"
 	build_path = /obj/item/organ/internal/kidneys
 	time = 15
-	materials = list(DEFAULT_WALL_MATERIAL = 5625, "glass" = 1000)
+	materials = list(MAT_STEEL = 5625, MAT_GLASS = 1000)
 //	req_tech = list(TECH_ENGINEERING = 2, TECH_MATERIAL = 2)
 
 /datum/design/item/prosfab/pros/internal/spleen
@@ -258,7 +259,7 @@
 	id = "pros_spleen"
 	build_path = /obj/item/organ/internal/spleen
 	time = 15
-	materials = list(DEFAULT_WALL_MATERIAL = 3000, MAT_GLASS = 750)
+	materials = list(MAT_STEEL = 3000, MAT_GLASS = 750)
 //	req_tech = list(TECH_ENGINEERING = 2, TECH_MATERIAL = 2)
 
 /datum/design/item/prosfab/pros/internal/larynx
@@ -266,62 +267,69 @@
 	id = "pros_larynx"
 	build_path = /obj/item/organ/internal/voicebox
 	time = 15
-	materials = list(DEFAULT_WALL_MATERIAL = 2000, MAT_GLASS = 750, MAT_PLASTIC = 500)
+	materials = list(MAT_STEEL = 2000, MAT_GLASS = 750, MAT_PLASTIC = 500)
+
+/datum/design/item/prosfab/pros/internal/stomach
+	name = "Prosthetic Stomach"
+	id = "pros_stomach"
+	build_path = /obj/item/organ/internal/stomach
+	time = 15
+	materials = list(MAT_STEEL = 5625, MAT_GLASS = 1000)
 
 //////////////////// Cyborg Parts ////////////////////
 /datum/design/item/prosfab/cyborg
 	category = list("Cyborg Parts")
 	time = 20
-	materials = list(DEFAULT_WALL_MATERIAL = 3750)
+	materials = list(MAT_STEEL = 3750)
 
 /datum/design/item/prosfab/cyborg/exoskeleton
 	name = "Robot Exoskeleton"
 	id = "robot_exoskeleton"
 	build_path = /obj/item/robot_parts/robot_suit
 	time = 50
-	materials = list(DEFAULT_WALL_MATERIAL = 37500)
+	materials = list(MAT_STEEL = 37500)
 
 /datum/design/item/prosfab/cyborg/torso
 	name = "Robot Torso"
 	id = "robot_torso"
 	build_path = /obj/item/robot_parts/chest
 	time = 35
-	materials = list(DEFAULT_WALL_MATERIAL = 30000)
+	materials = list(MAT_STEEL = 30000)
 
 /datum/design/item/prosfab/cyborg/head
 	name = "Robot Head"
 	id = "robot_head"
 	build_path = /obj/item/robot_parts/head
 	time = 35
-	materials = list(DEFAULT_WALL_MATERIAL = 18750)
+	materials = list(MAT_STEEL = 18750)
 
 /datum/design/item/prosfab/cyborg/l_arm
 	name = "Robot Left Arm"
 	id = "robot_l_arm"
 	build_path = /obj/item/robot_parts/l_arm
 	time = 20
-	materials = list(DEFAULT_WALL_MATERIAL = 13500)
+	materials = list(MAT_STEEL = 13500)
 
 /datum/design/item/prosfab/cyborg/r_arm
 	name = "Robot Right Arm"
 	id = "robot_r_arm"
 	build_path = /obj/item/robot_parts/r_arm
 	time = 20
-	materials = list(DEFAULT_WALL_MATERIAL = 13500)
+	materials = list(MAT_STEEL = 13500)
 
 /datum/design/item/prosfab/cyborg/l_leg
 	name = "Robot Left Leg"
 	id = "robot_l_leg"
 	build_path = /obj/item/robot_parts/l_leg
 	time = 20
-	materials = list(DEFAULT_WALL_MATERIAL = 11250)
+	materials = list(MAT_STEEL = 11250)
 
 /datum/design/item/prosfab/cyborg/r_leg
 	name = "Robot Right Leg"
 	id = "robot_r_leg"
 	build_path = /obj/item/robot_parts/r_leg
 	time = 20
-	materials = list(DEFAULT_WALL_MATERIAL = 11250)
+	materials = list(MAT_STEEL = 11250)
 
 
 //////////////////// Cyborg Internals ////////////////////
@@ -329,7 +337,7 @@
 	category = list("Cyborg Internals")
 	build_type = PROSFAB
 	time = 12
-	materials = list(DEFAULT_WALL_MATERIAL = 7500)
+	materials = list(MAT_STEEL = 7500)
 
 /datum/design/item/prosfab/cyborg/component/binary_communication_device
 	name = "Binary Communication Device"
@@ -369,77 +377,218 @@
 /datum/design/item/prosfab/cyborg/component/ai_shell
 	name = "AI Remote Interface"
 	id = "mmi_ai_shell"
-	build_path = /obj/item/device/mmi/inert/ai_remote
+	build_path = /obj/item/mmi/inert/ai_remote
+
+//////////////////// Advanced Components ////////////////////
+/datum/design/item/prosfab/cyborg/component/radio_upgraded
+	name = "Improved Radio"
+	id = "improved_radio"
+	build_path = /obj/item/robot_parts/robot_component/radio/upgraded
+	req_tech = list(TECH_MAGNET = 7, TECH_MATERIAL = 5, TECH_PRECURSOR = 1)
+	materials = list(MAT_STEEL = 10000, MAT_DIAMOND = 2000, MAT_PLASTEEL = 3000, MAT_GLASS = 6500, MAT_SILVER = 3000, MAT_MORPHIUM = 560, MAT_DURASTEEL = 800)
+
+/datum/design/item/prosfab/cyborg/component/actuator_upgraded
+	name = "Improved Actuator"
+	id = "improved_actuator"
+	build_path = /obj/item/robot_parts/robot_component/actuator/upgraded
+	req_tech = list(TECH_MAGNET = 7, TECH_MATERIAL = 5, TECH_PRECURSOR = 1)
+	materials = list(MAT_STEEL = 10000, MAT_PLASTEEL = 2500, MAT_MORPHIUM = 500, MAT_DURASTEEL = 500)
+
+/datum/design/item/prosfab/cyborg/component/diagnosis_unit_upgraded
+	name = "Improved Diagnosis Unit"
+	id = "improved_diagnosis_unit"
+	build_path = /obj/item/robot_parts/robot_component/diagnosis_unit/upgraded
+	req_tech = list(TECH_MAGNET = 7, TECH_MATERIAL = 5, TECH_PRECURSOR = 1)
+	materials = list(MAT_STEEL = 10000, MAT_DIAMOND = 2000, MAT_URANIUM = 4000, MAT_PLASTEEL = 1000, MAT_GLASS = 400, MAT_SILVER = 1000, MAT_MORPHIUM = 420, MAT_DURASTEEL = 600)
+
+/datum/design/item/prosfab/cyborg/component/camera_upgraded
+	name = "Improved Camera"
+	id = "improved_camera"
+	build_path = /obj/item/robot_parts/robot_component/camera/upgraded
+	req_tech = list(TECH_MAGNET = 7, TECH_MATERIAL = 5, TECH_PRECURSOR = 1)
+	materials = list(MAT_STEEL = 10000, MAT_DIAMOND = 2000, MAT_PLASTEEL = 3000, MAT_GLASS = 6500, MAT_SILVER = 3000, MAT_MORPHIUM = 560, MAT_DURASTEEL = 800)
+
+/datum/design/item/prosfab/cyborg/component/binary_communication_device/upgraded
+	name = "Improved Binary Communication Device"
+	id = "improved_binary_communication_device"
+	build_path = /obj/item/robot_parts/robot_component/binary_communication_device/upgraded
+	req_tech = list(TECH_MAGNET = 7, TECH_MATERIAL = 5, TECH_PRECURSOR = 1)
+	materials = list(MAT_STEEL = 10000, MAT_DIAMOND = 2000, MAT_PLASTEEL = 3000, MAT_GLASS = 6500, MAT_GOLD = 3000, MAT_DURASTEEL = 800)
+
+/datum/design/item/prosfab/cyborg/component/armour_very_heavy
+	name = "Armour Plating (Prototype)"
+	id = "titan_armour"
+	build_path = /obj/item/robot_parts/robot_component/armour/armour_titan
+	req_tech = list(TECH_MATERIAL = 9, TECH_PRECURSOR = 3)
+	materials = list(MAT_STEEL = 12000, MAT_MORPHIUM = 3000, MAT_DURASTEEL = 5000)
+
 
 //////////////////// Cyborg Modules ////////////////////
 /datum/design/item/prosfab/robot_upgrade
 	category = list("Cyborg Modules")
 	build_type = PROSFAB
 	time = 12
-	materials = list(DEFAULT_WALL_MATERIAL = 7500)
+	materials = list(MAT_STEEL = 7500)
 
-/datum/design/item/prosfab/robot_upgrade/rename
+// Section for utility upgrades
+
+/datum/design/item/prosfab/robot_upgrade/utility/rename
 	name = "Rename Module"
 	desc = "Used to rename a cyborg."
 	id = "borg_rename_module"
-	build_path = /obj/item/borg/upgrade/rename
+	build_path = /obj/item/borg/upgrade/utility/rename
 
-/datum/design/item/prosfab/robot_upgrade/reset
+/datum/design/item/prosfab/robot_upgrade/utility/reset
 	name = "Reset Module"
 	desc = "Used to reset a cyborg's module. Destroys any other upgrades applied to the robot."
 	id = "borg_reset_module"
-	build_path = /obj/item/borg/upgrade/reset
+	build_path = /obj/item/borg/upgrade/utility/reset
 
-/datum/design/item/prosfab/robot_upgrade/restart
+/datum/design/item/prosfab/robot_upgrade/utility/restart
 	name = "Emergency Restart Module"
 	desc = "Used to force a restart of a disabled-but-repaired robot, bringing it back online."
 	id = "borg_restart_module"
-	materials = list(DEFAULT_WALL_MATERIAL = 45000, "glass" = 3750)
-	build_path = /obj/item/borg/upgrade/restart
+	materials = list(MAT_STEEL = 45000, MAT_GLASS = 3750)
+	build_path = /obj/item/borg/upgrade/utility/restart
 
-/datum/design/item/prosfab/robot_upgrade/vtec
+// Section for basic upgrades for all cyborgs
+
+/datum/design/item/prosfab/robot_upgrade/basic/sizeshift
+	name = "Size Alteration Module"
+	id = "borg_sizeshift_module"
+	req_tech = list(TECH_BLUESPACE = 3, TECH_MATERIAL = 3, TECH_POWER = 2)
+	materials = list(MAT_STEEL = 4000, MAT_GLASS = 4000)
+	build_path = /obj/item/borg/upgrade/basic/sizeshift
+
+/datum/design/item/prosfab/robot_upgrade/basic/vtec
 	name = "VTEC Module"
 	desc = "Used to kick in a robot's VTEC systems, increasing their speed."
 	id = "borg_vtec_module"
-	materials = list(DEFAULT_WALL_MATERIAL = 60000, "glass" = 4500, "gold" = 3750)
-	build_path = /obj/item/borg/upgrade/vtec
+	materials = list(MAT_STEEL = 60000, MAT_GLASS = 4500, MAT_GOLD = 3750)
+	build_path = /obj/item/borg/upgrade/basic/vtec
 
-/datum/design/item/prosfab/robot_upgrade/tasercooler
-	name = "Rapid Taser Cooling Module"
-	desc = "Used to cool a mounted taser, increasing the potential current in it and thus its recharge rate."
-	id = "borg_taser_module"
-	materials = list(DEFAULT_WALL_MATERIAL = 60000, "glass" = 4500, "gold" = 1500, "diamond" = 375)
-	build_path = /obj/item/borg/upgrade/tasercooler
-
-/datum/design/item/prosfab/robot_upgrade/jetpack
-	name = "Jetpack Module"
-	desc = "A carbon dioxide jetpack suitable for low-gravity mining operations."
-	id = "borg_jetpack_module"
-	materials = list(DEFAULT_WALL_MATERIAL = 7500, "phoron" = 11250, "uranium" = 15000)
-	build_path = /obj/item/borg/upgrade/jetpack
-
-/datum/design/item/prosfab/robot_upgrade/advhealth
-	name = "Advanced Health Analyzer Module"
-	desc = "An advanced health analyzer suitable for diagnosing more serious injuries."
-	id = "borg_advhealth_module"
-	materials = list(DEFAULT_WALL_MATERIAL = 10000, "glass" = 6500, "diamond" = 350)
-	build_path = /obj/item/borg/upgrade/advhealth
-
-/datum/design/item/prosfab/robot_upgrade/syndicate
+/datum/design/item/prosfab/robot_upgrade/basic/syndicate
 	name = "Scrambled Equipment Module"
 	desc = "Allows for the construction of lethal upgrades for cyborgs."
 	id = "borg_syndicate_module"
 	req_tech = list(TECH_COMBAT = 4, TECH_ILLEGAL = 3)
-	materials = list(DEFAULT_WALL_MATERIAL = 7500, "glass" = 11250, "diamond" = 7500)
-	build_path = /obj/item/borg/upgrade/syndicate
+	materials = list(MAT_STEEL = 7500, MAT_GLASS = 11250, MAT_DIAMOND = 7500)
+	build_path = /obj/item/borg/upgrade/basic/syndicate
 
-/datum/design/item/prosfab/robot_upgrade/language
+/datum/design/item/prosfab/robot_upgrade/basic/language
 	name = "Language Module"
 	desc = "Used to let cyborgs other than clerical or service speak a variety of languages."
 	id = "borg_language_module"
 	req_tech = list(TECH_DATA = 6, TECH_MATERIAL = 6)
-	materials = list(DEFAULT_WALL_MATERIAL = 25000, "glass" = 3000, "gold" = 350)
-	build_path = /obj/item/borg/upgrade/language
+	materials = list(MAT_STEEL = 25000, MAT_GLASS = 3000, MAT_GOLD = 350)
+	build_path = /obj/item/borg/upgrade/basic/language
+
+// Section for advanced upgrades for all cyborgs
+
+/datum/design/item/prosfab/robot_upgrade/advanced/bellysizeupgrade
+	name = "Robohound Capacity Expansion Module"
+	id = "borg_hound_capacity_module"
+	req_tech = list(TECH_MATERIAL = 3, TECH_ENGINEERING = 2)
+	materials = list(MAT_STEEL = 4000, MAT_GLASS = 4000)
+	build_path = /obj/item/borg/upgrade/advanced/bellysizeupgrade
+
+/datum/design/item/prosfab/robot_upgrade/advanced/sizegun
+	name = "Size Gun Module"
+	id = "borg_sizegun_module"
+	req_tech = list(TECH_COMBAT = 3, TECH_BLUESPACE = 3, TECH_MATERIAL = 3, TECH_POWER = 2)
+	materials = list(MAT_STEEL = 6000, MAT_GLASS = 4000)
+	build_path = /obj/item/borg/upgrade/advanced/sizegun
+
+/datum/design/item/prosfab/robot_upgrade/advanced/jetpack
+	name = "Jetpack Module"
+	desc = "A carbon dioxide jetpack suitable for low-gravity mining operations."
+	id = "borg_jetpack_module"
+	materials = list(MAT_STEEL = 7500, MAT_PHORON = 11250, MAT_URANIUM = 15000)
+	build_path = /obj/item/borg/upgrade/advanced/jetpack
+
+/datum/design/item/prosfab/robot_upgrade/advanced/advhealth
+	name = "Advanced Health Analyzer Module"
+	desc = "An advanced health analyzer suitable for diagnosing more serious injuries."
+	id = "borg_advhealth_module"
+	materials = list(MAT_STEEL = 10000, MAT_GLASS = 6500, MAT_DIAMOND = 350)
+	build_path = /obj/item/borg/upgrade/advanced/advhealth
+
+/*
+	Some job related borg upgrade modules, adding useful items for puppers.
+*/
+
+/datum/design/item/prosfab/robot_upgrade/restricted/bellycapupgrade
+	name = "Robohound Capability Expansion Module"
+	id = "borg_hound_capability_module"
+	req_tech = list(TECH_MATERIAL = 5, TECH_ENGINEERING = 4)
+	materials = list(MAT_STEEL = 8000, MAT_GLASS = 6000)
+	build_path = /obj/item/borg/upgrade/restricted/bellycapupgrade
+
+/datum/design/item/prosfab/robot_upgrade/restricted/advrped
+	name = "Advanced Rapid Part Exchange Device"
+	desc = "Exactly the same as a standard Advanced RPED, but this one has mounting hardware for a Science Borg."
+	id = "borg_advrped_module"
+	req_tech = list(TECH_ENGINEERING = 6, TECH_MATERIAL = 6)
+	materials = list(MAT_STEEL = 30000, MAT_GLASS = 10000)
+	build_path = /obj/item/borg/upgrade/restricted/advrped
+
+/datum/design/item/prosfab/robot_upgrade/restricted/diamonddrill
+	name = "Diamond Drill"
+	desc = "A mining drill with a diamond tip, made for use by Mining Borgs."
+	id = "borg_ddrill_module"
+	req_tech = list(TECH_MATERIAL = 6, TECH_POWER = 5, TECH_ENGINEERING = 5)
+	materials = list(MAT_STEEL = 3000, MAT_GLASS = 1000, MAT_DIAMOND = 2000)
+	build_path = /obj/item/borg/upgrade/restricted/diamonddrill
+
+/datum/design/item/prosfab/robot_upgrade/restricted/pka
+	name = "Proto-Kinetic Accelerator"
+	desc = "A mining weapon designed for clearing rocks and hostile wildlife. This model is equiped with a self upgrade system, allowing it to attach modules hands free."
+	id = "borg_pka_module"
+	req_tech = list(TECH_COMBAT = 6, TECH_MATERIAL = 5, TECH_POWER = 4)
+	materials = list(MAT_PLASTEEL = 5000, MAT_GLASS = 1000, MAT_URANIUM = 500, MAT_PLATINUM = 350)
+	build_path = /obj/item/borg/upgrade/restricted/pka
+
+/datum/design/item/prosfab/robot_upgrade/restricted/tasercooler
+	name = "Rapid Taser Cooling Module"
+	desc = "Used to cool a mounted taser, increasing the potential current in it and thus its recharge rate."
+	id = "borg_taser_module"
+	materials = list(MAT_STEEL = 60000, MAT_GLASS = 4500, MAT_GOLD = 1500, MAT_DIAMOND = 375)
+	build_path = /obj/item/borg/upgrade/restricted/tasercooler
+
+// Section for quick access for admins, events and such, but can't be produced.
+
+/datum/design/item/prosfab/robot_upgrade/no_prod
+	category = list()		// We simply do not sort them in
+
+/datum/design/item/prosfab/robot_upgrade/no_prod/cyborgtoy
+	name = "Donk-Soft Cyborg Blaster"
+	id = "borg_hound_cyborg_blaster"
+	build_path = /obj/item/borg/upgrade/no_prod/toygun
+
+/datum/design/item/prosfab/robot_upgrade/no_prod/vision_xray
+	name = "X-ray vision"
+	id = "borg_hound_vision_xray"
+	build_path = /obj/item/borg/upgrade/no_prod/vision_xray
+
+/datum/design/item/prosfab/robot_upgrade/no_prod/vision_thermal
+	name = "Thermal vision"
+	id = "borg_hound_vision_thermal"
+	build_path = /obj/item/borg/upgrade/no_prod/vision_thermal
+
+/datum/design/item/prosfab/robot_upgrade/no_prod/vision_meson
+	name = "Meson vision"
+	id = "borg_hound_vision_meson"
+	build_path = /obj/item/borg/upgrade/no_prod/vision_meson
+
+/datum/design/item/prosfab/robot_upgrade/no_prod/vision_material
+	name = "Material vision"
+	id = "borg_hound_vision_material"
+	build_path = /obj/item/borg/upgrade/no_prod/vision_material
+
+/datum/design/item/prosfab/robot_upgrade/no_prod/vision_anomalous
+	name = "Anomalous vision"
+	id = "borg_hound_vision_anomalous"
+	build_path = /obj/item/borg/upgrade/no_prod/vision_anomalous
 
 // Synthmorph Bags.
 
@@ -447,42 +596,42 @@
 	name = "Synthmorph Storage Bag"
 	desc = "Used to store or slowly defragment an FBP."
 	id = "misc_synth_bag"
-	materials = list(DEFAULT_WALL_MATERIAL = 250, "glass" = 250, "plastic" = 2000)
+	materials = list(MAT_STEEL = 250, MAT_GLASS = 250, MAT_PLASTIC = 2000)
 	build_path = /obj/item/bodybag/cryobag/robobag
 
 /datum/design/item/prosfab/badge_nt
 	name = "NanoTrasen Tag"
 	desc = "Used to identify an empty NanoTrasen FBP."
 	id = "misc_synth_bag_tag_nt"
-	materials = list(DEFAULT_WALL_MATERIAL = 1000, "glass" = 500, "plastic" = 1000)
+	materials = list(MAT_STEEL = 1000, MAT_GLASS = 500, MAT_PLASTIC = 1000)
 	build_path = /obj/item/clothing/accessory/badge/corporate_tag
 
 /datum/design/item/prosfab/badge_morph
 	name = "Morpheus Tag"
 	desc = "Used to identify an empty Morpheus FBP."
 	id = "misc_synth_bag_tag_morph"
-	materials = list(DEFAULT_WALL_MATERIAL = 1000, "glass" = 500, "plastic" = 1000)
+	materials = list(MAT_STEEL = 1000, MAT_GLASS = 500, MAT_PLASTIC = 1000)
 	build_path = /obj/item/clothing/accessory/badge/corporate_tag/morpheus
 
 /datum/design/item/prosfab/badge_wardtaka
 	name = "Ward-Takahashi Tag"
 	desc = "Used to identify an empty Ward-Takahashi FBP."
 	id = "misc_synth_bag_tag_wardtaka"
-	materials = list(DEFAULT_WALL_MATERIAL = 1000, "glass" = 500, "plastic" = 1000)
+	materials = list(MAT_STEEL = 1000, MAT_GLASS = 500, MAT_PLASTIC = 1000)
 	build_path = /obj/item/clothing/accessory/badge/corporate_tag/wardtaka
 
 /datum/design/item/prosfab/badge_zenghu
 	name = "Zeng-Hu Tag"
 	desc = "Used to identify an empty Zeng-Hu FBP."
 	id = "misc_synth_bag_tag_zenghu"
-	materials = list(DEFAULT_WALL_MATERIAL = 1000, "glass" = 500, "plastic" = 1000)
+	materials = list(MAT_STEEL = 1000, MAT_GLASS = 500, MAT_PLASTIC = 1000)
 	build_path = /obj/item/clothing/accessory/badge/corporate_tag/zenghu
 
 /datum/design/item/prosfab/badge_gilthari
 	name = "Gilthari Tag"
 	desc = "Used to identify an empty Gilthari FBP."
 	id = "misc_synth_bag_tag_gilthari"
-	materials = list(DEFAULT_WALL_MATERIAL = 1000, "glass" = 500, "gold" = 1000)
+	materials = list(MAT_STEEL = 1000, MAT_GLASS = 500, MAT_GOLD = 1000)
 	build_path = /obj/item/clothing/accessory/badge/corporate_tag/gilthari
 	req_tech = list(TECH_MATERIAL = 4, TECH_ILLEGAL = 2, TECH_PHORON = 2)
 
@@ -490,7 +639,7 @@
 	name = "Vey-Medical Tag"
 	desc = "Used to identify an empty Vey-Medical FBP."
 	id = "misc_synth_bag_tag_veymed"
-	materials = list(DEFAULT_WALL_MATERIAL = 1000, "glass" = 500, "plastic" = 1000)
+	materials = list(MAT_STEEL = 1000, MAT_GLASS = 500, MAT_PLASTIC = 1000)
 	build_path = /obj/item/clothing/accessory/badge/corporate_tag/veymed
 	req_tech = list(TECH_MATERIAL = 3, TECH_ILLEGAL = 1, TECH_BIO = 4)
 
@@ -498,26 +647,87 @@
 	name = "Hephaestus Tag"
 	desc = "Used to identify an empty Hephaestus FBP."
 	id = "misc_synth_bag_tag_heph"
-	materials = list(DEFAULT_WALL_MATERIAL = 1000, "glass" = 500, "plastic" = 1000)
+	materials = list(MAT_STEEL = 1000, MAT_GLASS = 500, MAT_PLASTIC = 1000)
 	build_path = /obj/item/clothing/accessory/badge/corporate_tag/hephaestus
 
 /datum/design/item/prosfab/badge_grayson
 	name = "Grayson Tag"
 	desc = "Used to identify an empty Grayson FBP."
 	id = "misc_synth_bag_tag_grayson"
-	materials = list(DEFAULT_WALL_MATERIAL = 1000, "glass" = 500, "plastic" = 1000)
+	materials = list(MAT_STEEL = 1000, MAT_GLASS = 500, MAT_PLASTIC = 1000)
 	build_path = /obj/item/clothing/accessory/badge/corporate_tag/grayson
 
 /datum/design/item/prosfab/badge_xion
 	name = "Xion Tag"
 	desc = "Used to identify an empty Xion FBP."
 	id = "misc_synth_bag_tag_xion"
-	materials = list(DEFAULT_WALL_MATERIAL = 1000, "glass" = 500, "plastic" = 1000)
+	materials = list(MAT_STEEL = 1000, MAT_GLASS = 500, MAT_PLASTIC = 1000)
 	build_path = /obj/item/clothing/accessory/badge/corporate_tag/xion
 
 /datum/design/item/prosfab/badge_bishop
 	name = "Bishop Tag"
 	desc = "Used to identify an empty Bishop FBP."
 	id = "misc_synth_bag_tag_bishop"
-	materials = list(DEFAULT_WALL_MATERIAL = 500, "glass" = 2000, "plastic" = 500)
+	materials = list(MAT_STEEL = 500, MAT_GLASS = 2000, MAT_PLASTIC = 500)
 	build_path = /obj/item/clothing/accessory/badge/corporate_tag/bishop
+
+// Replacement protean bits
+
+/datum/design/item/prosfab/orchestrator
+	name = "Protean Orchestrator"
+	id = "prot_orch"
+	build_path = /obj/item/organ/internal/nano/orchestrator
+	time = 30
+	materials = list(MAT_STEEL = 8000, MAT_GLASS = 2000, MAT_SILVER = 2000, MAT_GOLD = 2000)
+	//req_tech = list(TECH_MAGNET = 5, TECH_BLUESPACE = 5, TECH_MATERIAL = 5, TECH_ENGINEERING = 5, TECH_DATA = 5)
+
+/datum/design/item/prosfab/refactory
+	name = "Protean Refactory"
+	id = "prot_refact"
+	build_path = /obj/item/organ/internal/nano/refactory
+	time = 30
+	materials = list(MAT_STEEL = 8000, MAT_GLASS = 2000, MAT_SILVER = 2000, MAT_GOLD = 2000)
+	//req_tech = list(TECH_MAGNET = 5, TECH_BLUESPACE = 5, TECH_MATERIAL = 5, TECH_ENGINEERING = 5, TECH_DATA = 5)
+
+///// pAI parts!!!
+
+//////////////////// Cyborg Parts ////////////////////
+/datum/design/item/prosfab/paiparts
+	category = list("pAI Parts")
+	time = 20
+	materials = list(MAT_STEEL = 1000, MAT_GLASS = 1000)
+
+/datum/design/item/prosfab/paiparts/cell
+	name = "pAI Cell"
+	id = "pai_cell"
+	build_path = /obj/item/paiparts/cell
+
+/datum/design/item/prosfab/paiparts/processor
+	name = "pAI Processor"
+	id = "pai_processor"
+	build_path = /obj/item/paiparts/processor
+
+/datum/design/item/prosfab/paiparts/board
+	name = "pAI Board"
+	id = "pai_board"
+	build_path = /obj/item/paiparts/board
+
+/datum/design/item/prosfab/paiparts/capacitor
+	name = "pAI capacitor"
+	id = "pai_capacitor"
+	build_path = /obj/item/paiparts/capacitor
+
+/datum/design/item/prosfab/paiparts/projector
+	name = "pAI Projector"
+	id = "pai_projector"
+	build_path = /obj/item/paiparts/projector
+
+/datum/design/item/prosfab/paiparts/emitter
+	name = "pAI Emitter"
+	id = "pai_emitter"
+	build_path = /obj/item/paiparts/emitter
+
+/datum/design/item/prosfab/paiparts/speech_synthesizer
+	name = "pAI Speech Synthesizer"
+	id = "pai_speech_synthesizer"
+	build_path = /obj/item/paiparts/speech_synthesizer

@@ -39,14 +39,14 @@
 /area/submap/debrisfield/tinyshuttle/crew)
 "af" = (
 /obj/structure/cable{
-	d1 = 1;
-	d2 = 2;
-	icon_state = "1-2";
-	pixel_y = 0
+	icon_state = "1-2"
 	},
 /obj/machinery/door/airlock/external,
 /obj/effect/map_helper/airlock/door/ext_door,
-/turf/simulated/floor/tiled/monofloor,
+/obj/effect/floor_decal/steeldecal/monofloor{
+	dir = 1
+	},
+/turf/simulated/floor/tiled/monotile,
 /area/submap/debrisfield/tinyshuttle/crew)
 "ag" = (
 /obj/structure/lattice,
@@ -90,9 +90,10 @@
 	},
 /obj/machinery/door/airlock/glass_external/public,
 /obj/effect/map_helper/airlock/door/int_door,
-/turf/simulated/floor/tiled/monofloor{
-	dir = 4
+/obj/effect/floor_decal/steeldecal/monofloor{
+	dir = 8
 	},
+/turf/simulated/floor/tiled/monotile,
 /area/submap/debrisfield/tinyshuttle/crew)
 "am" = (
 /obj/machinery/atmospherics/unary/vent_pump/high_volume{
@@ -167,15 +168,11 @@
 /area/submap/debrisfield/tinyshuttle/crew)
 "at" = (
 /obj/structure/cable{
-	d1 = 1;
-	d2 = 2;
-	icon_state = "1-2";
-	pixel_y = 0
+	icon_state = "1-2"
 	},
 /obj/machinery/airlock_sensor/airlock_interior{
 	dir = 8;
-	pixel_x = 24;
-	pixel_y = 0
+	pixel_x = 24
 	},
 /obj/effect/map_helper/airlock/sensor/int_sensor,
 /obj/effect/floor_decal/corner/brown{
@@ -217,8 +214,7 @@
 "ax" = (
 /obj/machinery/computer/shuttle_control/explore/tinycarrier,
 /obj/effect/floor_decal/corner/blue{
-	dir = 5;
-	icon_state = "corner_white"
+	dir = 5
 	},
 /turf/simulated/floor/tiled/airless{
 	broken = 1
@@ -272,8 +268,7 @@
 "aC" = (
 /obj/machinery/light_switch{
 	dir = 4;
-	pixel_x = -28;
-	pixel_y = 0
+	pixel_x = -28
 	},
 /obj/effect/floor_decal/corner/brown{
 	dir = 9
@@ -282,10 +277,7 @@
 /area/submap/debrisfield/tinyshuttle/crew)
 "aD" = (
 /obj/structure/cable{
-	d1 = 1;
-	d2 = 2;
-	icon_state = "1-2";
-	pixel_y = 0
+	icon_state = "1-2"
 	},
 /obj/effect/floor_decal/corner/brown{
 	dir = 4
@@ -310,7 +302,6 @@
 /obj/machinery/power/apc{
 	dir = 1;
 	name = "north bump";
-	pixel_x = 0;
 	pixel_y = 24
 	},
 /obj/structure/cable/green{
@@ -342,8 +333,7 @@
 	dir = 8
 	},
 /obj/effect/floor_decal/corner/blue{
-	dir = 1;
-	icon_state = "corner_white"
+	dir = 1
 	},
 /turf/simulated/floor/tiled/airless,
 /area/submap/debrisfield/tinyshuttle/bridge)
@@ -369,8 +359,7 @@
 	icon_state = "4-8"
 	},
 /obj/machinery/atmospherics/pipe/simple/hidden/scrubbers{
-	dir = 5;
-	icon_state = "intact-scrubbers"
+	dir = 5
 	},
 /obj/effect/floor_decal/corner/blue{
 	dir = 6
@@ -425,8 +414,7 @@
 	icon_state = "6-8"
 	},
 /obj/machinery/atmospherics/pipe/simple/hidden{
-	dir = 10;
-	icon_state = "intact"
+	dir = 10
 	},
 /obj/machinery/atmospherics/pipe/simple/hidden/scrubbers{
 	dir = 10
@@ -450,8 +438,7 @@
 	icon_state = "4-8"
 	},
 /obj/machinery/atmospherics/pipe/simple/hidden{
-	dir = 10;
-	icon_state = "intact"
+	dir = 10
 	},
 /turf/simulated/floor/tiled,
 /area/submap/debrisfield/tinyshuttle/crew)
@@ -474,8 +461,7 @@
 /area/submap/debrisfield/tinyshuttle/crew)
 "aU" = (
 /obj/machinery/atmospherics/pipe/simple/hidden/fuel{
-	dir = 6;
-	icon_state = "intact-fuel"
+	dir = 6
 	},
 /turf/simulated/wall/thull,
 /area/submap/debrisfield/tinyshuttle/engine)
@@ -491,7 +477,6 @@
 /area/submap/debrisfield/tinyshuttle/bridge)
 "aW" = (
 /obj/machinery/computer/ship/sensors{
-	icon_state = "computer";
 	dir = 4
 	},
 /obj/structure/cable/green{
@@ -520,21 +505,18 @@
 	pixel_y = -24
 	},
 /obj/effect/floor_decal/corner/blue{
-	dir = 10;
-	icon_state = "corner_white"
+	dir = 10
 	},
 /turf/simulated/floor/tiled/airless,
 /area/submap/debrisfield/tinyshuttle/bridge)
 "aY" = (
 /obj/machinery/turretid/lethal{
-	pixel_x = 0;
 	pixel_y = 4;
 	req_access = list()
 	},
 /obj/structure/table/steel_reinforced,
 /obj/effect/floor_decal/corner/blue{
-	dir = 10;
-	icon_state = "corner_white"
+	dir = 10
 	},
 /turf/simulated/floor/tiled/airless,
 /area/submap/debrisfield/tinyshuttle/bridge)
@@ -552,8 +534,7 @@
 	pixel_y = -24
 	},
 /obj/effect/floor_decal/corner/blue/full{
-	dir = 4;
-	icon_state = "corner_white_full"
+	dir = 4
 	},
 /turf/simulated/floor/tiled/airless,
 /area/submap/debrisfield/tinyshuttle/bridge)
@@ -562,8 +543,7 @@
 	icon_state = "2-8"
 	},
 /obj/machinery/atmospherics/pipe/simple/hidden{
-	dir = 6;
-	icon_state = "intact"
+	dir = 6
 	},
 /turf/simulated/floor/tiled,
 /area/submap/debrisfield/tinyshuttle/crew)
@@ -588,18 +568,16 @@
 /area/submap/debrisfield/tinyshuttle/crew)
 "bd" = (
 /obj/machinery/atmospherics/pipe/simple/hidden{
-	dir = 5;
-	icon_state = "intact"
+	dir = 5
 	},
 /obj/structure/closet/secure_closet/guncabinet/sidearm{
 	anchored = 1;
 	starts_with = list()
 	},
-/obj/item/weapon/gun/projectile/p92x/large,
-/obj/item/weapon/gun/projectile/p92x/large,
+/obj/item/gun/projectile/p92x/large,
+/obj/item/gun/projectile/p92x/large,
 /obj/machinery/atmospherics/pipe/simple/hidden/scrubbers{
-	dir = 5;
-	icon_state = "intact-scrubbers"
+	dir = 5
 	},
 /obj/effect/floor_decal/corner/brown/full,
 /obj/item/ammo_magazine/m9mm/large,
@@ -657,8 +635,7 @@
 /area/submap/debrisfield/tinyshuttle/crew)
 "bh" = (
 /obj/machinery/atmospherics/pipe/manifold/hidden/fuel{
-	dir = 8;
-	icon_state = "map-fuel"
+	dir = 8
 	},
 /turf/simulated/wall/thull,
 /area/submap/debrisfield/tinyshuttle/engine)
@@ -706,14 +683,10 @@
 /area/submap/debrisfield/tinyshuttle/crew)
 "bm" = (
 /obj/structure/cable{
-	d1 = 1;
-	d2 = 2;
-	icon_state = "1-2";
-	pixel_y = 0
+	icon_state = "1-2"
 	},
 /obj/machinery/atmospherics/pipe/manifold/hidden{
-	dir = 4;
-	icon_state = "map"
+	dir = 4
 	},
 /obj/machinery/atmospherics/pipe/simple/hidden/scrubbers{
 	dir = 10
@@ -735,10 +708,7 @@
 /area/submap/debrisfield/tinyshuttle/bridge)
 "bo" = (
 /obj/structure/cable{
-	d1 = 1;
-	d2 = 2;
-	icon_state = "1-2";
-	pixel_y = 0
+	icon_state = "1-2"
 	},
 /obj/structure/cable/green{
 	icon_state = "9-10"
@@ -783,16 +753,15 @@
 "bs" = (
 /obj/structure/extinguisher_cabinet{
 	dir = 1;
-	icon_state = "extinguisher_closed";
 	pixel_y = 32
 	},
 /obj/structure/table/steel,
 /obj/machinery/atmospherics/unary/vent_scrubber{
 	dir = 4
 	},
-/obj/item/weapon/tool/crowbar,
-/obj/item/weapon/tool/wrench,
-/obj/item/weapon/tool/screwdriver{
+/obj/item/tool/crowbar,
+/obj/item/tool/wrench,
+/obj/item/tool/screwdriver{
 	pixel_y = 8
 	},
 /turf/simulated/floor/tiled/techmaint/airless,
@@ -803,7 +772,6 @@
 	},
 /obj/structure/extinguisher_cabinet{
 	dir = 4;
-	icon_state = "extinguisher_closed";
 	pixel_x = -30
 	},
 /obj/machinery/atmospherics/portables_connector{
@@ -835,8 +803,7 @@
 	icon_state = "1-4"
 	},
 /obj/machinery/atmospherics/pipe/manifold/hidden{
-	dir = 4;
-	icon_state = "map"
+	dir = 4
 	},
 /obj/machinery/atmospherics/pipe/manifold/hidden/scrubbers{
 	dir = 8
@@ -876,8 +843,7 @@
 	icon_state = "1-2"
 	},
 /obj/machinery/atmospherics/pipe/simple/hidden{
-	dir = 9;
-	icon_state = "intact"
+	dir = 9
 	},
 /obj/machinery/light_switch{
 	dir = 8;
@@ -896,10 +862,10 @@
 /area/submap/debrisfield/tinyshuttle/hangar)
 "bB" = (
 /obj/structure/table/rack/steel,
-/obj/item/weapon/storage/toolbox/mechanical{
-	starts_with = list(/obj/item/weapon/tool/screwdriver,/obj/item/weapon/tool/wrench,/obj/item/weapon/tool/crowbar,/obj/item/device/analyzer,/obj/item/weapon/tool/wirecutters)
+/obj/item/storage/toolbox/mechanical{
+	starts_with = list(/obj/item/tool/screwdriver,/obj/item/tool/wrench,/obj/item/tool/crowbar,/obj/item/analyzer,/obj/item/tool/wirecutters)
 	},
-/obj/item/device/t_scanner,
+/obj/item/t_scanner,
 /obj/effect/floor_decal/corner/orange{
 	dir = 9
 	},
@@ -913,7 +879,6 @@
 	anchored = 1
 	},
 /obj/structure/cable{
-	d2 = 8;
 	icon_state = "0-8"
 	},
 /obj/machinery/atmospherics/pipe/simple/hidden/scrubbers{
@@ -933,8 +898,7 @@
 	},
 /obj/machinery/atmospherics/pipe/simple/hidden,
 /obj/machinery/atmospherics/pipe/simple/hidden/scrubbers{
-	dir = 5;
-	icon_state = "intact-scrubbers"
+	dir = 5
 	},
 /turf/simulated/floor/tiled/steel_ridged,
 /area/submap/debrisfield/tinyshuttle/engine)
@@ -981,8 +945,7 @@
 	},
 /obj/effect/decal/cleanable/dirt,
 /obj/machinery/atmospherics/pipe/simple/hidden/scrubbers{
-	dir = 5;
-	icon_state = "intact-scrubbers"
+	dir = 5
 	},
 /obj/machinery/atmospherics/unary/vent_scrubber/on{
 	dir = 8
@@ -994,7 +957,6 @@
 /area/submap/debrisfield/tinyshuttle/engine)
 "bK" = (
 /obj/machinery/atmospherics/portables_connector/fuel{
-	icon_state = "map_connector-fuel";
 	dir = 4
 	},
 /obj/effect/floor_decal/corner/orange{
@@ -1029,15 +991,13 @@
 /area/submap/debrisfield/tinyshuttle/engine)
 "bN" = (
 /obj/machinery/atmospherics/pipe/simple/hidden/fuel{
-	dir = 10;
-	icon_state = "intact-fuel"
+	dir = 10
 	},
 /obj/machinery/atmospherics/pipe/simple/hidden{
-	dir = 5;
-	icon_state = "intact"
+	dir = 5
 	},
 /obj/effect/decal/cleanable/liquid_fuel,
-/obj/item/device/multitool,
+/obj/item/multitool,
 /turf/simulated/floor/tiled/steel_ridged,
 /area/submap/debrisfield/tinyshuttle/engine)
 "bO" = (
@@ -1066,7 +1026,6 @@
 /area/submap/debrisfield/tinyshuttle/engine)
 "bR" = (
 /obj/machinery/atmospherics/portables_connector/fuel{
-	icon_state = "map_connector-fuel";
 	dir = 4
 	},
 /obj/machinery/portable_atmospherics/canister/empty/phoron{
@@ -1121,8 +1080,7 @@
 /area/submap/debrisfield/tinyshuttle/hangar)
 "bY" = (
 /obj/machinery/atmospherics/pipe/simple/hidden/fuel{
-	dir = 5;
-	icon_state = "intact-fuel"
+	dir = 5
 	},
 /turf/simulated/wall/thull,
 /area/submap/debrisfield/tinyshuttle/engine)
@@ -1156,8 +1114,7 @@
 /area/submap/debrisfield/tinyshuttle/hangar)
 "ce" = (
 /obj/machinery/atmospherics/pipe/simple/hidden/fuel{
-	dir = 8;
-	icon_state = "intact-fuel"
+	dir = 8
 	},
 /obj/machinery/meter,
 /obj/machinery/light_switch{
@@ -1175,7 +1132,7 @@
 /turf/simulated/floor/tiled/steel_dirty,
 /area/submap/debrisfield/tinyshuttle/engine)
 "cf" = (
-/obj/item/weapon/material/shard/titaniumglass,
+/obj/item/material/shard/titaniumglass,
 /turf/space,
 /turf/simulated/shuttle/plating/airless/carry,
 /area/submap/debrisfield/tinyshuttle/hangar)
@@ -1185,14 +1142,13 @@
 /area/submap/debrisfield/tinyshuttle/hangar)
 "ch" = (
 /obj/machinery/atmospherics/binary/pump/fuel{
-	icon_state = "map_off-fuel";
 	dir = 4
 	},
 /obj/machinery/alarm/alarms_hidden{
 	dir = 1;
 	pixel_y = -24
 	},
-/obj/item/weapon/weldingtool/electric,
+/obj/item/weldingtool/electric,
 /obj/effect/floor_decal/corner/orange{
 	dir = 10
 	},
@@ -1230,7 +1186,7 @@
 /area/submap/debrisfield/tinyshuttle/hangar)
 "cm" = (
 /obj/structure/lattice,
-/obj/item/weapon/material/shard/titaniumglass,
+/obj/item/material/shard/titaniumglass,
 /turf/simulated/shuttle/plating/airless/carry,
 /area/submap/debrisfield/tinyshuttle/hangar)
 

@@ -1,10 +1,11 @@
 /obj/machinery/optable
 	name = "Operating Table"
 	desc = "Used for advanced medical procedures."
-	icon = 'icons/obj/surgery.dmi'
+	icon = 'icons/obj/surgery_vr.dmi'
 	icon_state = "table2-idle"
-	density = 1
-	anchored = 1.0
+	density = TRUE
+	anchored = TRUE
+	unacidable = TRUE
 	use_power = USE_POWER_IDLE
 	idle_power_usage = 1
 	active_power_usage = 5
@@ -37,14 +38,14 @@
 				return
 		if(3.0)
 			if(prob(25))
-				density = 0
+				density = FALSE
 		else
 	return
 
 /obj/machinery/optable/attack_hand(mob/user as mob)
-	if(HULK in usr.mutations)
-		visible_message("<span class='danger'>\The [usr] destroys \the [src]!</span>")
-		density = 0
+	if(HULK in user.mutations)
+		visible_message(span_danger("\The [user] destroys \the [src]!"))
+		density = FALSE
 		qdel(src)
 	return
 
@@ -77,7 +78,7 @@
 	if(C == user)
 		user.visible_message("[user] climbs on \the [src].","You climb on \the [src].")
 	else
-		visible_message("<span class='notice'>\The [C] has been laid on \the [src] by [user].</span>")
+		visible_message(span_notice("\The [C] has been laid on \the [src] by [user]."))
 	if(C.client)
 		C.client.perspective = EYE_PERSPECTIVE
 		C.client.eye = src
@@ -99,12 +100,12 @@
 
 	if(!Adjacent(target) || !Adjacent(user))
 		return ..()
-	
+
 	if(user.incapacitated() || !check_table(target, user))
 		return ..()
 
 	take_victim(target, user)
-	
+
 /obj/machinery/optable/verb/climb_on()
 	set name = "Climb On Table"
 	set category = "Object"
@@ -116,9 +117,9 @@
 
 	take_victim(user, user)
 
-/obj/machinery/optable/attackby(obj/item/weapon/W, mob/living/carbon/user)
-	if(istype(W, /obj/item/weapon/grab))
-		var/obj/item/weapon/grab/G = W
+/obj/machinery/optable/attackby(obj/item/W, mob/living/carbon/user)
+	if(istype(W, /obj/item/grab))
+		var/obj/item/grab/G = W
 		if(iscarbon(G.affecting) && check_table(G.affecting, user))
 			take_victim(G.affecting, user)
 			qdel(W)
@@ -127,9 +128,9 @@
 /obj/machinery/optable/proc/check_table(mob/living/carbon/patient, mob/living/user)
 	check_victim()
 	if(victim && get_turf(victim) == get_turf(src) && victim.lying)
-		to_chat(user, "<span class='warning'>\The [src] is already occupied!</span>")
+		to_chat(user, span_warning("\The [src] is already occupied!"))
 		return 0
 	if(patient.buckled)
-		to_chat(user, "<span class='notice'>Unbuckle \the [patient] first!</span>")
+		to_chat(user, span_notice("Unbuckle \the [patient] first!"))
 		return 0
 	return 1

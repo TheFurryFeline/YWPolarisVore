@@ -218,7 +218,7 @@ var/global/list/PDA_Manifest = list()
 			heads[++heads.len] = list("name" = name, "rank" = rank, "active" = isactive)
 			department = 1
 			depthead = 1
-			if(rank=="Site Manager" && heads.len != 1)
+			if(rank==JOB_SITE_MANAGER && heads.len != 1)
 				heads.Swap(1,heads.len)
 
 		if(SSjob.is_job_in_department(real_rank, DEPARTMENT_SECURITY))
@@ -338,18 +338,7 @@ var/global/list/PDA_Manifest = list()
 		var/datum/job/J = SSjob.get_job(H.mind.assigned_role)
 		hidden = J?.offmap_spawn
 
-		/* Note: Due to cached_character_icon, a number of emergent properties occur due to the initialization
-		* order of readied-up vs latejoiners. Namely, latejoiners will get a uniform in their datacore picture, but readied-up will
-		* not. This is due to the fact that SSticker calls data_core.manifest_inject() inside of ticker/proc/create_characters(),
-		* but does not equip them until ticker/proc/equip_characters(), which is called later. So, this proc is literally called before
-		* they ever get their equipment, and so it can't get a picture of them in their equipment.
-		* Latejoiners do not have this problem, because /mob/new_player/proc/AttemptLateSpawn calls EquipRank() before it calls
-		* this proc, which means that they're already clothed by the time they get their picture taken here.
-		* The COMPILE_OVERLAYS() here is just to bypass SSoverlays taking for-fucking-ever to update the mob, since we're about to
-		* take a picture of them, we want all the overlays.
-		*/
-		COMPILE_OVERLAYS(H)
-		SSoverlays.queue -= H
+		H.ImmediateOverlayUpdate()
 
 		var/id = generate_record_id()
 		//General Record
@@ -358,6 +347,7 @@ var/global/list/PDA_Manifest = list()
 		G.fields["real_rank"]	= H.mind.assigned_role
 		G.fields["rank"]		= assignment
 		G.fields["age"]			= H.age
+		G.fields["languages"] = list2text(H.languages,", ")
 		if(H.get_FBP_type())
 			G.fields["brain_type"] = H.get_FBP_type()
 		else
@@ -366,8 +356,12 @@ var/global/list/PDA_Manifest = list()
 		G.fields["p_stat"]		= "Active"
 		G.fields["m_stat"]		= "Stable"
 		G.fields["sex"]			= gender2text(H.gender)
-		G.fields["species"]		= H.get_species()
+		if(H.species.name == SPECIES_HANNER)
+			G.fields["species"] = "[H.custom_species ? "[H.custom_species]" : H.species.name]"
+		else
+			G.fields["species"]		= "[H.custom_species ? "[H.custom_species] ([H.species.name])" : H.species.name]"
 		G.fields["home_system"]	= H.home_system
+		G.fields["birthplace"]	= H.birthplace
 		G.fields["citizenship"]	= H.citizenship
 		G.fields["faction"]		= H.personal_faction
 		G.fields["religion"]	= H.religion
@@ -376,7 +370,12 @@ var/global/list/PDA_Manifest = list()
 
 		//Medical Record
 		var/datum/data/record/M = CreateMedicalRecord(H.real_name, id, hidden)
+		if(H.species.name == SPECIES_HANNER)
+			M.fields["species"] = "[H.custom_species ? "[H.custom_species]" : H.species.name]"
+		else
+			M.fields["species"]		= "[H.custom_species ? "[H.custom_species] ([H.species.name])" : H.species.name]"
 		M.fields["b_type"]		= H.b_type
+		M.fields["blood_reagent"]	= H.species.blood_reagents
 		M.fields["b_dna"]		= H.dna.unique_enzymes
 		M.fields["id_gender"]	= gender2text(H.identifying_gender)
 		if(H.get_FBP_type())
@@ -388,6 +387,10 @@ var/global/list/PDA_Manifest = list()
 
 		//Security Record
 		var/datum/data/record/S = CreateSecurityRecord(H.real_name, id, hidden)
+		if(H.species.name == SPECIES_HANNER)
+			S.fields["species"] = "[H.custom_species ? "[H.custom_species]" : H.species.name]"
+		else
+			S.fields["species"]		= "[H.custom_species ? "[H.custom_species] ([H.species.name])" : H.species.name]"
 		if(H.get_FBP_type())
 			S.fields["brain_type"] = H.get_FBP_type()
 		else
@@ -401,6 +404,7 @@ var/global/list/PDA_Manifest = list()
 		L.fields["name"]		= H.real_name
 		L.fields["rank"] 		= H.mind.assigned_role
 		L.fields["age"]			= H.age
+		L.fields["languages"] = list2text(H.languages,", ")
 		L.fields["fingerprint"]	= md5(H.dna.uni_identity)
 		L.fields["sex"]			= gender2text(H.gender)
 		L.fields["id_gender"]	= gender2text(H.identifying_gender)
@@ -412,8 +416,12 @@ var/global/list/PDA_Manifest = list()
 		L.fields["b_dna"]		= H.dna.unique_enzymes
 		L.fields["enzymes"]		= H.dna.SE // Used in respawning
 		L.fields["identity"]	= H.dna.UI // "
-		L.fields["species"]		= H.get_species()
+		if(H.species.name == SPECIES_HANNER)
+			L.fields["species"] = "[H.custom_species ? "[H.custom_species]" : H.species.name]"
+		else
+			L.fields["species"]		= "[H.custom_species ? "[H.custom_species] ([H.species.name])" : H.species.name]"
 		L.fields["home_system"]	= H.home_system
+		L.fields["birthplace"]	= H.birthplace
 		L.fields["citizenship"]	= H.citizenship
 		L.fields["faction"]		= H.personal_faction
 		L.fields["religion"]	= H.religion
@@ -453,12 +461,14 @@ var/global/list/PDA_Manifest = list()
 	G.fields["real_rank"] = "Unassigned"
 	G.fields["sex"] = "Unknown"
 	G.fields["age"] = "Unknown"
+	G.fields["languages"] = "Unknown"
 	G.fields["brain_type"] = "Unknown"
 	G.fields["fingerprint"] = "Unknown"
 	G.fields["p_stat"] = "Active"
 	G.fields["m_stat"] = "Stable"
 	G.fields["species"] = SPECIES_HUMAN
 	G.fields["home_system"]	= "Unknown"
+	G.fields["birthplace"]	= "Unknown"
 	G.fields["citizenship"]	= "Unknown"
 	G.fields["faction"]		= "Unknown"
 	G.fields["religion"]	= "Unknown"
@@ -479,6 +489,7 @@ var/global/list/PDA_Manifest = list()
 	var/datum/data/record/R = new /datum/data/record()
 	R.name = "Security Record #[id]"
 	R.fields["name"] = name
+	R.fields["species"] = SPECIES_HUMAN
 	R.fields["id"] = id
 	R.fields["brain_type"] = "Unknown"
 	R.fields["criminal"]	= "None"
@@ -487,7 +498,6 @@ var/global/list/PDA_Manifest = list()
 	R.fields["ma_crim"]		= "None"
 	R.fields["ma_crim_d"]	= "No major crime convictions."
 	R.fields["notes"]		= "No notes."
-	R.fields["notes"] = "No notes."
 	if(hidden)
 		hidden_security += R
 	else
@@ -501,6 +511,7 @@ var/global/list/PDA_Manifest = list()
 	M.name = "Medical Record #[id]"
 	M.fields["id"]			= id
 	M.fields["name"]		= name
+	M.fields["species"]		= SPECIES_HUMAN
 	M.fields["b_type"]		= "AB+"
 	M.fields["b_dna"]		= md5(name)
 	M.fields["id_gender"]	= "Unknown"

@@ -21,7 +21,7 @@
 			to_chat(usr, "This can only be used on instances of type /mob")
 			return
 
-		var/new_name = sanitize(input(usr,"What would you like to name this mob?","Input a name",M.real_name) as text|null, MAX_NAME_LEN)
+		var/new_name = sanitize(tgui_input_text(usr,"What would you like to name this mob?","Input a name",M.real_name,MAX_NAME_LEN), MAX_NAME_LEN)
 		if( !new_name || !M )	return
 
 		message_admins("Admin [key_name_admin(usr)] renamed [key_name_admin(M)] to [new_name].")
@@ -92,16 +92,42 @@
 		src.admin_give_modifier(M)
 		href_list["datumrefresh"] = href_list["give_modifier"]
 
-	else if(href_list["give_disease2"])
-		if(!check_rights(R_ADMIN|R_FUN|R_EVENT))	return
-
-		var/mob/M = locate(href_list["give_disease2"])
-		if(!istype(M))
-			to_chat(usr, "This can only be used on instances of type /mob")
+	else if(href_list["give_wound_internal"])
+		if(!check_rights(R_ADMIN|R_FUN|R_DEBUG|R_EVENT))
 			return
 
-		src.give_disease2(M)
-		href_list["datumrefresh"] = href_list["give_spell"]
+		var/mob/living/carbon/human/H = locate(href_list["give_wound_internal"])
+		if(!istype(H))
+			to_chat(usr, span_notice("This can only be used on instances of type /mob/living/carbon/human"))
+			return
+
+		var/severity = tgui_input_number(usr, "How much damage should the bleeding internal wound cause? \
+		Bleed timer directly correlates with this. 0 cancels. Input is rounded to nearest integer.",
+		"Wound Severity", 0)
+		if(!severity) return
+
+		var/obj/item/organ/external/chosen_organ = tgui_input_list(usr, "Choose an external organ to inflict IB on!", "Organ Choice", H.organs)
+		if(!chosen_organ || !istype(chosen_organ))
+			to_chat(usr, span_notice("The chosen organ is of inappropriate type or no longer exists."))
+			return
+
+		var/datum/wound/internal_bleeding/I = new /datum/wound/internal_bleeding(severity)
+		if(!I || !istype(I))
+			to_chat(usr, span_notice("Could not initialize internal wound"))
+			log_debug("[usr] attempted to create an internal bleeding wound on [H]'s [chosen_organ] of [severity] damage \
+			and wound initialization failed")
+
+		chosen_organ.wounds += I
+		chosen_organ.update_wounds()
+		chosen_organ.update_damages()
+		H.bad_external_organs += chosen_organ
+		H.handle_organs()
+
+		if(H.client)
+			H.custom_pain("You feel a throbbing pain inside your [chosen_organ]", severity, force=TRUE)
+			log_and_message_admins("created an Internal Bleeding wound on [H.ckey]'s mob [H] on [chosen_organ] of [severity] damage", usr)
+
+		href_list["datumrefresh"] = href_list["give_wound_internal"]
 
 	else if(href_list["godmode"])
 		if(!check_rights(R_REJUVINATE))	return
@@ -157,6 +183,29 @@
 		if(usr.client)
 			usr.client.cmd_assume_direct_control(M)
 
+	else if(href_list["give_ai"])
+		if(!check_rights(0))	return
+
+		var/mob/M = locate(href_list["give_ai"])
+		if(!istype(M, /mob/living))
+			to_chat(usr, span_notice("This can only be used on instances of type /mob/living"))
+			return
+		var/mob/living/L = M
+		if(L.client || L.teleop)
+			to_chat(usr, span_warning("This cannot be used on player mobs!"))
+			return
+
+		if(L.ai_holder)	//Cleaning up the original ai
+			var/ai_holder_old = L.ai_holder
+			L.ai_holder = null
+			qdel(ai_holder_old)	//Only way I could make #TESTING - Unable to be GC'd to stop. del() logs show it works.
+		L.ai_holder_type = tgui_input_list(usr, "Choose AI holder", "AI Type", typesof(/datum/ai_holder/))
+		L.initialize_ai_holder()
+		L.faction = sanitize(tgui_input_text(usr, "Please input AI faction", "AI faction", "neutral"))
+		L.a_intent = tgui_input_list(usr, "Please choose AI intent", "AI intent", list(I_HURT, I_HELP))
+		if(tgui_alert(usr, "Make mob wake up? This is needed for carbon mobs.", "Wake mob?", list("Yes", "No")) == "Yes")
+			L.AdjustSleeping(-100)
+
 	else if(href_list["make_skeleton"])
 		if(!check_rights(R_FUN))	return
 
@@ -177,14 +226,14 @@
 			to_chat(usr, "This can only be used on instances of type /obj")
 			return
 
-		var/action_type = alert("Strict type ([O.type]) or type and all subtypes?",,"Strict type","Type and subtypes","Cancel")
+		var/action_type = tgui_alert(usr, "Strict type ([O.type]) or type and all subtypes?","Type Selection",list("Strict type","Type and subtypes","Cancel"))
 		if(action_type == "Cancel" || !action_type)
 			return
 
-		if(alert("Are you really sure you want to delete all objects of type [O.type]?",,"Yes","No") != "Yes")
+		if(tgui_alert(usr, "Are you really sure you want to delete all objects of type [O.type]?","Delete All?",list("Yes","No")) != "Yes")
 			return
 
-		if(alert("Second confirmation required. Delete?",,"Yes","No") != "Yes")
+		if(tgui_alert(usr, "Second confirmation required. Delete?","REALLY?",list("Yes","No")) != "Yes")
 			return
 
 		var/O_type = O.type
@@ -200,7 +249,7 @@
 					to_chat(usr, "No objects of this type exist")
 					return
 				log_admin("[key_name(usr)] deleted all objects of type [O_type] ([i] objects deleted) ")
-				message_admins("<span class='notice'>[key_name(usr)] deleted all objects of type [O_type] ([i] objects deleted) </span>")
+				message_admins(span_notice("[key_name(usr)] deleted all objects of type [O_type] ([i] objects deleted) "))
 			if("Type and subtypes")
 				var/i = 0
 				for(var/obj/Obj in world)
@@ -212,7 +261,16 @@
 					to_chat(usr, "No objects of this type exist")
 					return
 				log_admin("[key_name(usr)] deleted all objects of type or subtype of [O_type] ([i] objects deleted) ")
-				message_admins("<span class='notice'>[key_name(usr)] deleted all objects of type or subtype of [O_type] ([i] objects deleted) </span>")
+				message_admins(span_notice("[key_name(usr)] deleted all objects of type or subtype of [O_type] ([i] objects deleted) "))
+	else if(href_list["fakepdapropconvo"])
+		if(!check_rights(R_FUN)) return
+
+		var/obj/item/pda/P = locate(href_list["fakepdapropconvo"])
+		if(!istype(P))
+			to_chat(usr, span_warning("This can only be done to instances of type /pda"))
+			return
+
+		P.createPropFakeConversation_admin(usr)
 
 	else if(href_list["rotatedatum"])
 		if(!check_rights(0))	return
@@ -235,7 +293,7 @@
 			to_chat(usr, "This can only be done to instances of type /mob/living/carbon/human")
 			return
 
-		if(alert("Confirm mob type change?",,"Transform","Cancel") != "Transform")	return
+		if(tgui_alert(usr, "Confirm mob type change?","Confirm",list("Transform","Cancel")) != "Transform")	return
 		if(!H)
 			to_chat(usr, "Mob doesn't exist anymore")
 			return
@@ -249,7 +307,7 @@
 			to_chat(usr, "This can only be done to instances of type /mob/living/carbon/human")
 			return
 
-		if(alert("Confirm mob type change?",,"Transform","Cancel") != "Transform")	return
+		if(tgui_alert(usr, "Confirm mob type change?","Confirm",list("Transform","Cancel")) != "Transform")	return
 		if(!H)
 			to_chat(usr, "Mob doesn't exist anymore")
 			return
@@ -263,7 +321,7 @@
 			to_chat(usr, "This can only be done to instances of type /mob/living/carbon/human")
 			return
 
-		if(alert("Confirm mob type change?",,"Transform","Cancel") != "Transform")	return
+		if(tgui_alert(usr, "Confirm mob type change?","Confirm",list("Transform","Cancel")) != "Transform")	return
 		if(!H)
 			to_chat(usr, "Mob doesn't exist anymore")
 			return
@@ -277,7 +335,7 @@
 			to_chat(usr, "This can only be done to instances of type /mob/living/carbon/human")
 			return
 
-		if(alert("Confirm mob type change?",,"Transform","Cancel") != "Transform")	return
+		if(tgui_alert(usr, "Confirm mob type change?","Confirm",list("Transform","Cancel")) != "Transform")	return
 		if(!H)
 			to_chat(usr, "Mob doesn't exist anymore")
 			return
@@ -291,7 +349,7 @@
 			to_chat(usr, "This can only be done to instances of type /mob/living/carbon/human")
 			return
 
-		var/new_species = input("Please choose a new species.","Species",null) as null|anything in GLOB.all_species
+		var/new_species = tgui_input_list(usr, "Please choose a new species.","Species", GLOB.all_species)
 
 		if(!H)
 			to_chat(usr, "Mob doesn't exist anymore")
@@ -310,7 +368,7 @@
 			to_chat(usr, "This can only be done to instances of type /mob")
 			return
 
-		var/new_language = input("Please choose a language to add.","Language",null) as null|anything in GLOB.all_languages
+		var/new_language = tgui_input_list(usr, "Please choose a language to add.","Language", GLOB.all_languages)
 
 		if(!new_language)
 			return
@@ -336,7 +394,7 @@
 			to_chat(usr, "This mob knows no languages.")
 			return
 
-		var/datum/language/rem_language = input("Please choose a language to remove.","Language",null) as null|anything in H.languages
+		var/datum/language/rem_language = tgui_input_list(usr, "Please choose a language to remove.","Language", H.languages)
 
 		if(!rem_language)
 			return
@@ -372,14 +430,14 @@
 		possibleverbs -= H.verbs
 		possibleverbs += "Cancel" 								// ...And one for the bottom
 
-		var/verb = input("Select a verb!", "Verbs",null) as anything in possibleverbs
+		var/verb = tgui_input_list(usr, "Select a verb!", "Verbs", possibleverbs)
 		if(!H)
 			to_chat(usr, "Mob doesn't exist anymore")
 			return
 		if(!verb || verb == "Cancel")
 			return
 		else
-			H.verbs += verb
+			add_verb(H, verb)
 
 	else if(href_list["remverb"])
 		if(!check_rights(R_DEBUG))      return
@@ -389,14 +447,14 @@
 		if(!istype(H))
 			to_chat(usr, "This can only be done to instances of type /mob")
 			return
-		var/verb = input("Please choose a verb to remove.","Verbs",null) as null|anything in H.verbs
+		var/verb = tgui_input_list(usr, "Please choose a verb to remove.","Verbs", H.verbs)
 		if(!H)
 			to_chat(usr, "Mob doesn't exist anymore")
 			return
 		if(!verb)
 			return
 		else
-			H.verbs -= verb
+			remove_verb(H, verb)
 
 	else if(href_list["addorgan"])
 		if(!check_rights(R_SPAWN))	return
@@ -406,7 +464,7 @@
 			to_chat(usr, "This can only be done to instances of type /mob/living/carbon")
 			return
 
-		var/new_organ = input("Please choose an organ to add.","Organ",null) as null|anything in typesof(/obj/item/organ)-/obj/item/organ
+		var/new_organ = tgui_input_list(usr, "Please choose an organ to add.","Organ", subtypesof(/obj/item/organ))
 		if(!new_organ) return
 
 		if(!M)
@@ -428,7 +486,7 @@
 			to_chat(usr, "This can only be done to instances of type /mob/living/carbon")
 			return
 
-		var/obj/item/organ/rem_organ = input("Please choose an organ to remove.","Organ",null) as null|anything in M.internal_organs
+		var/obj/item/organ/rem_organ = tgui_input_list(usr, "Please choose an organ to remove.","Organ", M.internal_organs)
 
 		if(!M)
 			to_chat(usr, "Mob doesn't exist anymore")
@@ -475,7 +533,7 @@
 
 		var/Text = href_list["adjustDamage"]
 
-		var/amount =  input("Deal how much damage to mob? (Negative values here heal)","Adjust [Text]loss",0) as num
+		var/amount =  tgui_input_number(usr, "Deal how much damage to mob? (Negative values here heal)","Adjust [Text]loss",0, min_value=-INFINITY, round_value=FALSE)
 
 		if(!L)
 			to_chat(usr, "Mob doesn't exist anymore")
@@ -494,7 +552,7 @@
 
 		if(amount != 0)
 			log_admin("[key_name(usr)] dealt [amount] amount of [Text] damage to [L]")
-			message_admins("<span class='notice'>[key_name(usr)] dealt [amount] amount of [Text] damage to [L]</span>")
+			message_admins(span_notice("[key_name(usr)] dealt [amount] amount of [Text] damage to [L]"))
 			href_list["datumrefresh"] = href_list["mobToDamage"]
 	else if(href_list["expose"])
 		if(!check_rights(R_ADMIN, FALSE))
@@ -508,13 +566,13 @@
 		var/client/C = value["value"]
 		if (!C)
 			return
-		var/prompt = alert("Do you want to grant [C] access to view this VV window? (they will not be able to edit or change anysrc nor open nested vv windows unless they themselves are an admin)", "Confirm", "Yes", "No")
+		var/prompt = tgui_alert(usr, "Do you want to grant [C] access to view this VV window? (they will not be able to edit or change anysrc nor open nested vv windows unless they themselves are an admin)", "Confirm", list("Yes", "No"))
 		if (prompt != "Yes")
 			return
 		if(!thing)
-			to_chat(usr, "<span class='warning'>The object you tried to expose to [C] no longer exists (GC'd)</span>")
+			to_chat(usr, span_warning("The object you tried to expose to [C] no longer exists (GC'd)"))
 			return
-		message_admins("[key_name_admin(usr)] Showed [key_name_admin(C)] a <a href='?_src_=vars;datumrefresh=\ref[thing]'>VV window</a>")
+		message_admins("[key_name_admin(usr)] Showed [key_name_admin(C)] a <a href='?_src_=vars;[HrefToken(TRUE)];datumrefresh=\ref[thing]'>VV window</a>")
 		log_admin("Admin [key_name(usr)] Showed [key_name(C)] a VV window of a [src]")
 		to_chat(C, "[holder.fakekey ? "an Administrator" : "[usr.client.key]"] has granted you access to view a View Variables window")
 		C.debug_variables(thing)
@@ -523,4 +581,3 @@
 		var/datum/DAT = locate(href_list["datumrefresh"])
 		if(istype(DAT, /datum) || istype(DAT, /client) || islist(DAT))
 			debug_variables(DAT)
-

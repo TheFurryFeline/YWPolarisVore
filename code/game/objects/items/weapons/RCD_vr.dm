@@ -1,4 +1,4 @@
-/obj/item/weapon/rcd
+/obj/item/rcd
 	icon = 'icons/obj/tools_vr.dmi'
 	icon_state = "rcd"
 	item_state = "rcd"
@@ -15,7 +15,7 @@
 	var/static/image/radial_image_floorwall = image(icon = 'icons/mob/radial.dmi', icon_state = "wallfloor")
 
 // Ammo for the (non-electric) RCDs.
-/obj/item/weapon/rcd_ammo
+/obj/item/rcd_ammo
 	name = "compressed matter cartridge"
 	desc = "Highly compressed matter for the RCD."
 	icon = 'icons/obj/tools_vr.dmi'
@@ -26,64 +26,64 @@
 		slot_r_hand_str = 'icons/mob/items/righthand_vr.dmi',
 	)
 
-/obj/item/weapon/rcd/Initialize()
+/obj/item/rcd/Initialize()
 	. = ..()
 	update_icon()
 
-/obj/item/weapon/rcd/consume_resources(amount)
+/obj/item/rcd/consume_resources(amount)
 	. = ..()
 	update_icon()
 
-/obj/item/weapon/rcd/update_icon()
+/obj/item/rcd/update_icon()
 	var/nearest_ten = round((stored_matter/max_stored_matter)*10, 1)
-	
+
 	//Just to prevent updates every use
 	if(ammostate == nearest_ten)
 		return //No change
 	ammostate = nearest_ten
-	
+
 	cut_overlays()
-	
+
 	//Main sprite update
 	if(!nearest_ten)
 		icon_state = "[initial(icon_state)]_empty"
 	else
 		icon_state = "[initial(icon_state)]"
-	
+
 	add_overlay("[initial(icon_state)]_charge[nearest_ten]")
 
-/obj/item/weapon/rcd/proc/perform_effect(var/atom/A, var/time_taken)
+/obj/item/rcd/proc/perform_effect(var/atom/A, var/time_taken)
 	effects[A] = new /obj/effect/constructing_effect(get_turf(A), time_taken, modes[mode_index])
 
-/obj/item/weapon/rcd/use_rcd(atom/A, mob/living/user)
+/obj/item/rcd/use_rcd(atom/A, mob/living/user)
 	. = ..()
 	cleanup_effect(A)
 
-/obj/item/weapon/rcd/proc/cleanup_effect(var/atom/A)
+/obj/item/rcd/proc/cleanup_effect(var/atom/A)
 	if(A in effects)
 		qdel(effects[A])
 		effects -= A
 
-/obj/item/weapon/rcd/attackby(obj/item/weapon/W, mob/user)
-	if(istype(W, /obj/item/weapon/rcd_ammo))
-		var/obj/item/weapon/rcd_ammo/cartridge = W
+/obj/item/rcd/attackby(obj/item/W, mob/user)
+	if(istype(W, /obj/item/rcd_ammo))
+		var/obj/item/rcd_ammo/cartridge = W
 		var/can_store = min(max_stored_matter - stored_matter, cartridge.remaining)
 		if(can_store <= 0)
-			to_chat(user, span("warning", "There's either no space or \the [cartridge] is empty!"))
+			to_chat(user, span_warning("There's either no space or \the [cartridge] is empty!"))
 			return FALSE
 		stored_matter += can_store
 		cartridge.remaining -= can_store
 		if(!cartridge.remaining)
-			to_chat(user, span("warning", "\The [cartridge] dissolves as it empties of compressed matter."))
+			to_chat(user, span_warning("\The [cartridge] dissolves as it empties of compressed matter."))
 			user.drop_from_inventory(W)
 			qdel(W)
 		playsound(src, 'sound/machines/click.ogg', 50, 1)
-		to_chat(user, span("notice", "The RCD now holds [stored_matter]/[max_stored_matter] matter-units."))
+		to_chat(user, span_notice("The RCD now holds [stored_matter]/[max_stored_matter] matter-units."))
 		update_icon()
 		return TRUE
 	return ..()
 
-/obj/item/weapon/rcd/proc/check_menu(mob/living/user)
+/obj/item/rcd/proc/check_menu(mob/living/user)
 	if(!istype(user))
 		return FALSE
 	if(user.incapacitated() || !user.Adjacent(src))
@@ -91,22 +91,22 @@
 	return TRUE
 
 // Mounted one is more complex
-/obj/item/weapon/rcd/electric/mounted/rig/check_menu(mob/living/user)
+/obj/item/rcd/electric/mounted/rig/check_menu(mob/living/user)
 	if(!istype(user))
 		world.log << "One"
 		return FALSE
 	if(user.incapacitated())
 		world.log << "Two"
 		return FALSE
-	
+
 	var/obj/item/rig_module/device/D = loc
 	if(!istype(D) || !D?.holder?.wearer == user)
 		world.log << "Three"
 		return FALSE
-	
+
 	return TRUE
 
-/obj/item/weapon/rcd/attack_self(mob/living/user)
+/obj/item/rcd/attack_self(mob/living/user)
 	..()
 	var/list/choices = list(
 		"Airlock" = radial_image_airlock,
@@ -134,7 +134,7 @@
 			"Change Window Type" = image(icon = 'icons/mob/radial.dmi', icon_state = "windowtype")
 		)
 	*/
-	var/choice = show_radial_menu(user, user, choices, custom_check = CALLBACK(src, .proc/check_menu, user), tooltips = TRUE)
+	var/choice = show_radial_menu(user, user, choices, custom_check = CALLBACK(src, PROC_REF(check_menu), user), tooltips = TRUE)
 	if(!check_menu(user))
 		return
 	switch(choice)
@@ -169,25 +169,25 @@
 		else
 			return
 	playsound(src, 'sound/effects/pop.ogg', 50, FALSE)
-	to_chat(user, "<span class='notice'>You change RCD's mode to '[choice]'.</span>")
+	to_chat(user, span_notice("You change RCD's mode to '[choice]'."))
 
 //////////////////
-/obj/item/weapon/rcd/electric/update_icon()
+/obj/item/rcd/electric/update_icon()
 	return
 
-/obj/item/weapon/rcd/shipwright
+/obj/item/rcd/shipwright
 	icon_state = "swrcd"
 	item_state = "ircd"
 	can_remove_rwalls = TRUE
 	make_rwalls = TRUE
 
 //////////////////
-/obj/item/weapon/rcd_ammo/examine(mob/user)
+/obj/item/rcd_ammo/examine(mob/user)
 	. = ..()
 	. += display_resources()
 
 // Used to show how much stuff (matter units, cell charge, etc) is left inside.
-/obj/item/weapon/rcd_ammo/proc/display_resources()
+/obj/item/rcd_ammo/proc/display_resources()
 	return "It currently holds [remaining]/[initial(remaining)] matter-units."
 
 //////////////////
@@ -206,7 +206,7 @@
 	status = rcd_status
 	delay = rcd_delay
 	if (status == RCD_DECONSTRUCT)
-		addtimer(CALLBACK(src, /atom/.proc/update_icon), 11)
+		addtimer(CALLBACK(src, TYPE_PROC_REF(/atom, update_icon)), 11)
 		delay -= 11
 		icon_state = "rcd_end_reverse"
 	else
@@ -228,7 +228,7 @@
 		qdel(src)
 	else
 		icon_state = "rcd_end"
-		addtimer(CALLBACK(src, .proc/end), 15)
+		addtimer(CALLBACK(src, PROC_REF(end)), 15)
 
 /obj/effect/constructing_effect/proc/end()
 	qdel(src)

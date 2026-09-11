@@ -20,6 +20,14 @@
 	if(!isnull(entries_decay_at) && !isnull(entries_expire_at))
 		entries_decay_at = round(entries_expire_at * entries_decay_at)
 
+/datum/persistent/proc/Initialize()
+	if(fexists(filename))
+		var/list/tokens = json_decode(file2text(filename))
+		for(var/list/token in tokens)
+			if(!CheckTokenSanity(token))
+				tokens -= token
+		ProcessAndApplyTokens(tokens)
+
 /datum/persistent/proc/GetValidTurf(var/turf/T, var/list/token)
 	if(T && CheckTurfContents(T, token))
 		return T
@@ -63,7 +71,7 @@
 				return
 
 		var/_z = token["z"]
-		if(_z in using_map.station_levels)
+		if(_z in using_map.persist_levels)
 			. = GetValidTurf(locate(token["x"], token["y"], _z), token)
 			if(.)
 				CreateEntryInstance(., token)
@@ -74,10 +82,10 @@
 	if(GetEntryAge(entry) >= entries_expire_at)
 		return FALSE
 	var/turf/T = get_turf(entry)
-	if(!T || !(T.z in using_map.station_levels) )
+	if(!T || !(T.z in using_map.persist_levels) )
 		return FALSE
 	var/area/A = get_area(T)
-	if(!A || (A.flags & AREA_FLAG_IS_NOT_PERSISTENT))
+	if(!A || (A.flag_check(AREA_FLAG_IS_NOT_PERSISTENT)))
 		return FALSE
 	return TRUE
 
@@ -93,18 +101,10 @@
 		"age" = GetEntryAge(entry)
 	)
 
-/datum/persistent/proc/Initialize()
-	if(fexists(filename))
-		var/list/tokens = json_decode(file2text(filename))
-		for(var/list/token in tokens)
-			if(!CheckTokenSanity(token))
-				tokens -= token
-		ProcessAndApplyTokens(tokens)
-
 /datum/persistent/proc/Shutdown()
 	if(fexists(filename))
 		fdel(filename)
-	
+
 	var/list/to_store = list()
 	for(var/thing in SSpersistence.tracking_values[type])
 		if(!IsValidEntry(thing))
@@ -121,10 +121,10 @@
 	var/list/my_tracks = SSpersistence.tracking_values[type]
 	if(!my_tracks?.len)
 		return
-	
+
 	. = list("<tr><td colspan = 4><b>[capitalize(name)]</b></td></tr>")
 	. += "<tr><td colspan = 4><hr></td></tr>"
-	
+
 	for(var/thing in my_tracks)
 		. += "<tr>[GetAdminDataStringFor(thing, can_modify, user)]</tr>"
 	. += "<tr><td colspan = 4><hr></td></tr>"
@@ -132,7 +132,7 @@
 
 /datum/persistent/proc/GetAdminDataStringFor(var/thing, var/can_modify, var/mob/user)
 	if(can_modify)
-		. = "<td colspan = 3>[thing]</td><td><a href='byond://?src=\ref[src];caller=\ref[user];remove_entry=\ref[thing]'>Destroy</a></td>"
+		. = "<td colspan = 3>[thing]</td><td><a href='byond://?src=\ref[src];[HrefToken()];caller=\ref[user];remove_entry=\ref[thing]'>Destroy</a></td>"
 	else
 		. = "<td colspan = 4>[thing]</td>"
 

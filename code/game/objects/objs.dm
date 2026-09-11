@@ -1,15 +1,16 @@
 /obj
 	layer = OBJ_LAYER
 	plane = OBJ_PLANE
+	vis_flags = VIS_INHERIT_PLANE //when this be added to vis_contents of something it inherit something.plane, important for visualisation of obj in openspace.
 	//Used to store information about the contents of the object.
 	var/list/matter
 	var/w_class // Size of the object.
-	var/unacidable = 0 //universal "unacidabliness" var, here so you can use it in any obj.
+	var/unacidable = FALSE //universal "unacidabliness" var, here so you can use it in any obj.
 	animate_movement = 2
 	var/throwforce = 1
 	var/catchable = 1	// can it be caught on throws/flying?
-	var/sharp = 0		// whether this object cuts
-	var/edge = 0		// whether this object is more likely to dismember
+	var/sharp = FALSE		// whether this object cuts
+	var/edge = FALSE		// whether this object is more likely to dismember
 	var/pry = 0			//Used in attackby() to open doors
 	var/in_use = 0 // If we have a user using us, this will be set on. We will check if the user has stopped using us, and thus stop updating and LAGGING EVERYTHING!
 	var/damtype = "brute"
@@ -20,8 +21,24 @@
 
 	var/show_examine = TRUE	// Does this pop up on a mob when the mob is examined?
 
+	var/redgate_allowed = TRUE	//can we be taken through the redgate, in either direction?
+
 /obj/Destroy()
 	STOP_PROCESSING(SSobj, src)
+
+	//VOREStation Add Start - I really am an idiot why did I make it this way
+	if(micro_target)
+		for(var/thing in src.contents)
+			if(!ismob(thing))
+				continue
+			var/mob/m = thing
+			if(isbelly(src.loc))
+				m.forceMove(src.loc)
+			else
+				m.forceMove(get_turf(src.loc))
+			m.visible_message(span_notice("\The [m] tumbles out of \the [src]!"))
+	//VOREStation Add End
+
 	return ..()
 
 /obj/Topic(href, href_list, var/datum/tgui_state/state = GLOB.tgui_default_state)
@@ -40,7 +57,7 @@
 /obj/CanUseTopic(var/mob/user, var/datum/tgui_state/state = GLOB.tgui_default_state)
 	if(user.CanUseObjTopic(src))
 		return ..()
-	to_chat(user, "<span class='danger'>[bicon(src)]Access Denied!</span>")
+	to_chat(user, span_danger("[icon2html(src, user.client)]Access Denied!"))
 	return STATUS_CLOSE
 
 /mob/living/silicon/CanUseObjTopic(var/obj/O)
@@ -120,9 +137,6 @@
 	tgui_interact(user)
 	..()
 
-/obj/proc/interact(mob/user)
-	return
-
 /mob/proc/unset_machine()
 	machine?.remove_visual(src)
 	src.machine = null
@@ -151,7 +165,7 @@
 /*
 	var/mob/mo = locate(/mob) in src
 	if(mo)
-		var/rendered = "<span class='game say'><span class='name'>[M.name]: </span> <span class='message'>[text]</span></span>"
+		var/rendered = span_game(span_say(span_name("[M.name]:") + " " + span_message("[text]"))))
 		mo.show_message(rendered, 2)
 		*/
 	return

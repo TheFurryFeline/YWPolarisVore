@@ -3,15 +3,15 @@
 	desc = "A ladder. You can climb it up and down."
 	icon_state = "ladder01"
 	icon = 'icons/obj/structures/multiz.dmi'
-	density = 0
+	density = FALSE
 	opacity = 0
-	anchored = 1
+	anchored = TRUE
 
 	var/allowed_directions = DOWN
 	var/obj/structure/ladder/target_up
 	var/obj/structure/ladder/target_down
 
-	var/const/climb_time = 2 SECONDS
+	var/climb_time = 2 SECONDS
 
 /obj/structure/ladder/Initialize()
 	. = ..()
@@ -33,6 +33,13 @@
 		target_up = null
 	return ..()
 
+/obj/structure/ladder/attack_generic(mob/user)
+	//Simple Animal
+	if(isanimal(user))
+		attack_hand(user)
+	else
+		return ..()
+
 /obj/structure/ladder/attackby(obj/item/C as obj, mob/user as mob)
 	attack_hand(user)
 	return
@@ -45,7 +52,7 @@
 	if(!target_ladder)
 		return
 	if(!(M.loc == loc) && !M.Move(get_turf(src)))
-		to_chat(M, "<span class='notice'>You fail to reach \the [src].</span>")
+		to_chat(M, span_notice("You fail to reach \the [src]."))
 		return
 
 	climbLadder(M, target_ladder)
@@ -61,12 +68,12 @@
 
 /obj/structure/ladder/proc/getTargetLadder(var/mob/M)
 	if((!target_up && !target_down) || (target_up && !istype(target_up.loc, /turf) || (target_down && !istype(target_down.loc,/turf))))
-		to_chat(M, "<span class='notice'>\The [src] is incomplete and can't be climbed.</span>")
+		to_chat(M, span_notice("\The [src] is incomplete and can't be climbed."))
 		return
 	if(target_down && target_up)
-		var/direction = alert(M,"Do you want to go up or down?", "Ladder", "Up", "Down", "Cancel")
+		var/direction = tgui_alert(M,"Do you want to go up or down?", "Ladder", list("Up", "Down", "Cancel"))
 
-		if(direction == "Cancel")
+		if(!direction || direction == "Cancel")
 			return
 
 		if(!M.may_climb_ladders(src))
@@ -82,29 +89,34 @@
 
 /mob/proc/may_climb_ladders(var/ladder)
 	if(!Adjacent(ladder))
-		to_chat(src, "<span class='warning'>You need to be next to \the [ladder] to start climbing.</span>")
+		to_chat(src, span_warning("You need to be next to \the [ladder] to start climbing."))
 		return FALSE
 	if(incapacitated())
-		to_chat(src, "<span class='warning'>You are physically unable to climb \the [ladder].</span>")
+		to_chat(src, span_warning("You are physically unable to climb \the [ladder]."))
 		return FALSE
 	return TRUE
 
-/mob/observer/ghost/may_climb_ladders(var/ladder)
+/mob/observer/dead/may_climb_ladders(var/ladder)
 	return TRUE
 
 /obj/structure/ladder/proc/climbLadder(var/mob/M, var/obj/target_ladder)
 	var/direction = (target_ladder == target_up ? "up" : "down")
-	M.visible_message("<span class='notice'>\The [M] begins climbing [direction] \the [src]!</span>",
-		"You begin climbing [direction] \the [src]!",
-		"You hear the grunting and clanging of a metal ladder being used.")
+	M.visible_message(span_infoplain(span_bold("\The [M]") + " begins climbing [direction] \the [src]!"),
+		span_info("You begin climbing [direction] \the [src]!"),
+		span_info("You hear the grunting and clanging of a metal ladder being used."))
 
-	target_ladder.audible_message("<span class='notice'>You hear something coming [direction] \the [src]</span>", runemessage = "clank clank")
+	target_ladder.audible_message(span_notice("You hear something coming [direction] \the [src]"), runemessage = "clank clank")
 
-	if(do_after(M, climb_time, src))
+	var/climb_modifier = 1
+	if(istype(M, /mob/living/carbon/human))
+		var/mob/living/carbon/human/MS = M
+		climb_modifier = MS.species.climb_mult
+
+	if(do_after(M, (climb_time * climb_modifier), src))
 		var/turf/T = get_turf(target_ladder)
 		for(var/atom/A in T)
 			if(!A.CanPass(M, M.loc, 1.5, 0))
-				to_chat(M, "<span class='notice'>\The [A] is blocking \the [src].</span>")
+				to_chat(M, span_notice("\The [A] is blocking \the [src]."))
 				return FALSE
 		return M.forceMove(T) //VOREStation Edit - Fixes adminspawned ladders
 

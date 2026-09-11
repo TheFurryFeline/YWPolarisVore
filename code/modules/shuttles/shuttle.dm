@@ -257,7 +257,7 @@
 
 	// Observer pattern pre-move
 	var/old_location = current_location
-	GLOB.shuttle_pre_move_event.raise_event(src, old_location, destination)
+	SEND_SIGNAL(src, COMSIG_OBSERVER_SHUTTLE_PRE_MOVE, old_location, destination)
 	current_location.shuttle_departed(src)
 
 	if(debug_logging)
@@ -273,7 +273,7 @@
 
 	// Observer pattern post-move
 	destination.shuttle_arrived(src)
-	GLOB.shuttle_moved_event.raise_event(src, old_location, destination)
+	SEND_SIGNAL(src, COMSIG_OBSERVER_SHUTTLE_MOVED, old_location, destination)
 
 	return TRUE
 
@@ -295,9 +295,9 @@
 		var/new_grav = 1
 		if(destination.flags & SLANDMARK_FLAG_ZERO_G)
 			var/area/new_area = get_area(destination)
-			new_grav = new_area.has_gravity
+			new_grav = new_area.get_gravity()
 		for(var/area/our_area in shuttle_area)
-			if(our_area.has_gravity != new_grav)
+			if(our_area.get_gravity() != new_grav)
 				our_area.gravitychange(new_grav)
 
 	// TODO - Old code used to throw stuff out of the way instead of squashing.  Should we?
@@ -311,6 +311,8 @@
 				//	qdel(AM)
 				//	continue
 				if(!AM.simulated)
+					continue
+				if(isobserver(AM) || isEye(AM))
 					continue
 				if(isliving(AM))
 					var/mob/living/bug = AM
@@ -330,13 +332,13 @@
 			for(var/mob/living/M in A)
 				spawn(0)
 					if(M.buckled)
-						to_chat(M, "<font color='red'>Sudden acceleration presses you into \the [M.buckled]!</font>")
+						to_chat(M, span_red("Sudden acceleration presses you into \the [M.buckled]!"))
 						shake_camera(M, 3, 1)
 					else
-						to_chat(M, "<font color='red'>The floor lurches beneath you!</font>")
+						to_chat(M, span_red("The floor lurches beneath you!"))
 						shake_camera(M, 10, 1)
 						// TODO - tossing?
-						//M.visible_message("<span class='warning'>[M.name] is tossed around by the sudden acceleration!</span>")
+						//M.visible_message(span_warning("[M.name] is tossed around by the sudden acceleration!"))
 						//M.throw_at_random(FALSE, 4, 1)
 						if(istype(M, /mob/living/carbon))
 							M.Weaken(3)
@@ -347,6 +349,11 @@
 		// We only need to rebuild powernets for our cables.  No need to check machines because they are on top of cables.
 		for(var/obj/structure/cable/C in A)
 			powernets |= C.powernet
+
+	// Update our base turfs before we move, so that transparent turfs look good.
+	var/new_base = destination.base_turf || /turf/space
+	for(var/area/A as anything in shuttle_area)
+		A.base_turf = new_base
 
 	// Actually do the movement of everything - This replaces origin.move_contents_to(destination)
 	translate_turfs(turf_translation, current_location.base_area, current_location.base_turf)

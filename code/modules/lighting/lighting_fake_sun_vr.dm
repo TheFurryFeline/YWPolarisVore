@@ -1,8 +1,19 @@
+var/static/list/fake_sunlight_zs = list()
+
 /obj/effect/fake_sun
 	name = "fake sun"
 	desc = "Deletes itself, but first updates all the lighting on outdoor turfs."
 	icon = 'icons/effects/effects_vr.dmi'
 	icon_state = "fakesun"
+	invisibility = INVISIBILITY_ABSTRACT
+	var/atom/movable/sun_visuals/sun
+	var/atom/movable/weather_visuals/visuals
+	var/family = null	//Allows multipe maps that are THEORETICALLY connected to use the same settings when not in a connected Z stack
+	var/shared_settings	//Automatically set if using the family var
+	var/static/world_suns = list()	//List of all the fake_suns in the world, used for checking for family members
+
+	var/do_sun = TRUE
+	var/do_weather = FALSE
 
 	var/list/possible_light_setups = list(
 		list(
@@ -16,6 +27,22 @@
 		list(
 			"brightness" = 2.5,
 			"color" = "#EE9AC6"
+		),
+		list(
+			"brightness" = 1.5,
+			"color" = "#F07AD8"
+		),
+		list(
+			"brightness" = 1.5,
+			"color" = "#61AEF3"
+		),
+		list(
+			"brightness" = 1,
+			"color" = "#f3932d"
+		),
+		list(
+			"brightness" = 1,
+			"color" = "#631E8A"
 		),
 		list(
 			"brightness" = 1.0,
@@ -60,34 +87,133 @@
 
 	)
 
+	var/weather_visuals_icon = 'icons/effects/weather.dmi'
+	var/weather_visuals_icon_state = null
+
+/obj/effect/fake_sun/New(loc, ...)
+	. = ..()
+	world_suns += src
+
 /obj/effect/fake_sun/Initialize()
 	..()
 	return INITIALIZE_HINT_LATELOAD
 
 /obj/effect/fake_sun/LateInitialize()
 	. = ..()
+	var/list/choice
+	if(family)	//Allows one to make multiple fake_suns to use the same settings
+		for(var/obj/effect/fake_sun/l in world_suns)	//check all the suns that exist
+			if(l.family == family && l.shared_settings)	//do you have settings we need?
+				choice = l.shared_settings
+				break
+	if(!choice)	//We didn't get anything from our family, let's pick something
+		choice = pick(possible_light_setups)
+		if(family)	//Let's pass our settings on to our family
+			shared_settings = choice
+	if(choice["brightness"] <= LIGHTING_SOFT_THRESHOLD) // dark!
+		return
 
-	var/list/our_choice = pick(possible_light_setups)
-	
-	// Calculate new values to apply
-	var/new_brightness = our_choice["brightness"]
-	var/new_color = our_choice["color"]
-	var/lum_r = new_brightness * GetRedPart  (new_color) / 255
-	var/lum_g = new_brightness * GetGreenPart(new_color) / 255
-	var/lum_b = new_brightness * GetBluePart (new_color) / 255
-	var/static/update_gen = -1 // Used to prevent double-processing corners. Otherwise would happen when looping over adjacent turfs.
-	
-	var/list/turfs = block(locate(1,1,z),locate(world.maxx,world.maxy,z))
-	
-	for(var/turf/simulated/T as anything in turfs)
-		if(!T.lighting_overlay)
-			T.lighting_build_overlay()
-		if(!T.outdoors)
-			continue
-		for(var/C in T.get_corners())
-			var/datum/lighting_corner/LC = C
-			if(LC.update_gen != update_gen && LC.active)
-				LC.update_gen = update_gen
-				LC.update_lumcount(lum_r, lum_g, lum_b)
-	update_gen--
-	qdel(src)
+	var/list/zees = GetConnectedZlevels()
+	var/min = z
+	var/max = z
+	for(var/zee in zees)
+		if(zee < min)
+			min = z
+		if(zee > max)
+			max = z
+
+	var/list/all_turfs = block(locate(1, 1, min), locate(world.maxx, world.maxy, max))
+	var/list/turfs_to_use = list()
+	for(var/turf/T as anything in all_turfs)
+		if(T.is_outdoors())
+			turfs_to_use += T
+
+	if(!turfs_to_use.len)
+		warning("Fake sun placed on a level where it can't find any outdoor turfs to color at [x],[y],[z].")
+		return
+
+	sun = new(null)
+
+	visuals = new(null)
+	visuals.icon = weather_visuals_icon
+	visuals.icon_state = weather_visuals_icon_state
+
+	sun.set_color(choice["color"])
+	sun.set_alpha(round(CLAMP01(choice["brightness"])*255,1))
+
+	if(do_sun)
+		fake_sunlight_zs |= z
+		for(var/turf/T as anything in turfs_to_use)
+			sun.apply_to_turf(T)
+
+	if(do_weather)
+		for(var/turf/T as anything in turfs_to_use)
+			T.vis_contents += visuals
+
+/obj/effect/fake_sun/warm
+	name = "warm fake sun"
+	desc = "Deletes itself, but first updates all the lighting on outdoor turfs to warm colors."
+
+	possible_light_setups = list(
+
+		list(
+			"brightness" = 6.0,
+			"color" = "#E9FFB8"
+		),
+
+		list(
+			"brightness" = 4.0,
+			"color" = "#F4EA55"
+		),
+		list(
+			"brightness" = 4.0,
+			"color" = "#F07AD8"
+		),
+		list(
+			"brightness" = 4.0,
+			"color" = "#f3932d"
+		)
+
+	)
+
+/obj/effect/fake_sun/cool
+	name = "fake sun"
+	desc = "Deletes itself, but first updates all the lighting on outdoor turfs to cool colors."
+	possible_light_setups = list(
+
+		list(
+			"brightness" = 6.0,
+			"color" = "#abfff7"
+		),
+		list(
+			"brightness" = 4.0,
+			"color" = "#2e30c9"
+		),
+		list(
+			"brightness" = 1.0,
+			"color" = "#61AEF3"
+		),
+		list(
+			"brightness" = 1.0,
+			"color" = "#61ddf3"
+		),
+		list(
+			"brightness" = 0.3,
+			"color" = "#253682"
+		),
+		list(
+			"brightness" = 0.1,
+			"color" = "#27024B"
+		)
+	)
+
+/obj/effect/fake_sun/underwater
+	do_weather = TRUE
+	weather_visuals_icon = 'icons/effects/weather.dmi'
+	weather_visuals_icon_state = "underwater"
+	possible_light_setups = list(
+		list(
+			"brightness" = 1,
+			"color" = "#1c49ff"
+		)
+	)

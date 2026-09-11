@@ -73,7 +73,7 @@
 	say_got_target = list("Purge!","Cleanse!","Burn!") */
 
 	meat_amount = 0
-	meat_type = /obj/item/weapon/reagent_containers/food/snacks/meat
+	meat_type = /obj/item/reagent_containers/food/snacks/meat
 
 	var/turns_since_scan = 0
 	var/mob/flee_target
@@ -145,7 +145,7 @@
 						   "rubs against [friend].",
 						   "purrs."))
 	else
-		usr << "<span class='notice'>[src] ignores you.</span>"
+		usr << "<b>[src] ignores you.</b>"
 	return */
 
 /mob/living/simple_mob/clockwork/fluff/Ignis
@@ -237,7 +237,7 @@
 	charging = 1
 	movement_shake_radius = 3
 	movement_sound = 'sound/effects/mob_effects/snowbull_charge.ogg'
-	visible_message(span("danger","\The [src] prepares to charge at \the [A]!"))
+	visible_message(span_warning("\The [src] prepares to charge at \the [A]!"))
 	update_icon()
 	sleep(charging_warning)
 	var/chargeturf = get_turf(A)
@@ -251,7 +251,7 @@
 		movement_shake_radius = null
 		movement_sound = null
 		update_icon()
-		visible_message(span("danger", "\The [src] desists from charging at \the [A]"))
+		visible_message(span_warning("\The [src] desists from charging at \the [A]"))
 		return
 	for(var/distance = get_dist(src.loc, T), src.loc!=T && distance>0, distance--)
 		var/movedir = get_dir(src.loc, T)
@@ -326,12 +326,12 @@
 	var/beforehealth = icon_living
 	var/healthpercent = health/maxHealth
 	switch(healthpercent)
-		if(0.25 to 0)
+		if(0 to 0.25)
 			icon_living = "snowbull-25"
-		if(0.50 to 0.26)
+		if(0.26 to 0.50)
 			icon_living = "snowbull-50"
-		if(0.75 to 0.51)
-			icon_living = "snowbull-75"	
+		if(0.51 to 0.75)
+			icon_living = "snowbull-75"
 		if(0.76 to INFINITY)
 			icon_living = "snowbull-100"
 	if(beforehealth != icon_living)
@@ -371,7 +371,7 @@
 /datum/ai_holder/simple_mob/snowbull/proc/checkthreatened(var/possible_target, var/target_threatlevel = 0)
 	if(check_attacker(possible_target))
 		return TRUE
-	if(untrusting == 1 && target_threatlevel > 130 && possible_target in range(5))
+	if(untrusting == 1 && target_threatlevel > 130 && (possible_target in range(5)))
 		return TRUE
 	if(untrusting > 1 && target_threatlevel > 100)
 		return TRUE
@@ -412,6 +412,3 @@
 				holder.ISay(safepick(holder.say_list.say_stand_down))
 				playsound(holder, holder.say_list.stand_down_sound, 50, 1) // We do this twice to make the sound -very- noticable to the target.
 				playsound(target, holder.say_list.stand_down_sound, 50, 1) // Actual aim-mode also does that so at least it's consistant.
-
-
-

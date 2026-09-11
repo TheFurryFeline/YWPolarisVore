@@ -5,16 +5,16 @@
 	var/list/inside_emotes = list()
 	var/recent_squish = 0
 	sprite_sheets = list(
-		SPECIES_TESHARI = 'icons/mob/species/teshari/shoes.dmi',
-		SPECIES_VOX = 'icons/mob/species/vox/shoes.dmi',
-		SPECIES_WEREBEAST = 'icons/mob/species/werebeast/feet.dmi')
+		SPECIES_TESHARI = 'icons/inventory/feet/mob_teshari.dmi',
+		SPECIES_VOX = 'icons/inventory/feet/mob_vox.dmi',
+		SPECIES_WEREBEAST = 'icons/inventory/feet/mob_vr_werebeast.dmi')
 
 /obj/item/clothing/shoes/New()
 	inside_emotes = list(
-		"<font color='red'>You feel weightless for a moment as \the [name] moves upwards.</font>",
-		"<font color='red'>\The [name] are a ride you've got no choice but to participate in as the wearer moves.</font>",
-		"<font color='red'>The wearer of \the [name] moves, pressing down on you.</font>",
-		"<font color='red'>More motion while \the [name] move, feet pressing down against you.</font>"
+		span_red("You feel weightless for a moment as \the [name] moves upwards."),
+		span_red("\The [name] are a ride you've got no choice but to participate in as the wearer moves."),
+		span_red("The wearer of \the [name] moves, pressing down on you."),
+		span_red("More motion while \the [name] move, feet pressing down against you.")
 	)
 
 	..()
@@ -32,35 +32,43 @@
 
 //This is a crazy 'sideways' override.
 /obj/item/clothing/shoes/attackby(var/obj/item/I, var/mob/user)
-	if(istype(I,/obj/item/weapon/holder/micro))
+	if(istype(I,/obj/item/holder/micro))
 		var/full = 0
 		for(var/mob/M in src)
+			if(istype(M,/mob/living/voice)) //Don't count voices as people!
+				continue
 			full++
 		if(full >= 2)
-			to_chat(user, "<span class='warning'>You can't fit anyone else into \the [src]!</span>")
+			to_chat(user, span_warning("You can't fit anyone else into \the [src]!"))
 		else
-			var/obj/item/weapon/holder/micro/holder = I
+			var/obj/item/holder/micro/holder = I
 			if(holder.held_mob && (holder.held_mob in holder))
-				to_chat(holder.held_mob, "<span class='warning'>[user] stuffs you into \the [src]!</span>")
-				holder.held_mob.forceMove(src)
-				to_chat(user, "<span class='notice'>You stuff \the [holder.held_mob] into \the [src]!</span>")
+				var/mob/living/M = holder.held_mob
+				holder.dump_mob()
+				to_chat(M, span_warning("[user] stuffs you into \the [src]!"))
+				M.forceMove(src)
+				to_chat(user, span_notice("You stuff \the [M] into \the [src]!"))
 	else
 		..()
 
 /obj/item/clothing/shoes/attack_self(var/mob/user)
 	for(var/mob/M in src)
+		if(istype(M,/mob/living/voice)) //Don't knock voices out!
+			continue
 		M.forceMove(get_turf(user))
-		to_chat(M, "<span class='warning'>[user] shakes you out of \the [src]!</span>")
-		to_chat(user, "<span class='notice'>You shake [M] out of \the [src]!</span>")
+		to_chat(M, span_warning("[user] shakes you out of \the [src]!"))
+		to_chat(user, span_notice("You shake [M] out of \the [src]!"))
 
 	..()
 
 /obj/item/clothing/shoes/container_resist(mob/living/micro)
 	var/mob/living/carbon/human/macro = loc
+	if(istype(micro,/mob/living/voice)) //Voices shouldn't be able to resist but we have this here just in case.
+		return
 	if(!istype(macro))
-		to_chat(micro, "<span class='notice'>You start to climb out of [src]!</span>")
+		to_chat(micro, span_notice("You start to climb out of [src]!"))
 		if(do_after(micro, 50, src))
-			to_chat(micro, "<span class='notice'>You climb out of [src]!</span>")
+			to_chat(micro, span_notice("You climb out of [src]!"))
 			micro.forceMove(loc)
 		return
 
@@ -72,27 +80,28 @@
 		escape_message_micro = "You start to climb around the larger creature's feet and ankles!"
 		escape_time = 100
 
-	to_chat(micro, "<span class='notice'>[escape_message_micro]</span>")
-	to_chat(macro, "<span class='danger'>[escape_message_macro]</span>")
+	to_chat(micro, span_notice("[escape_message_micro]"))
+	to_chat(macro, span_danger("[escape_message_macro]"))
 	if(!do_after(micro, escape_time, macro))
-		to_chat(micro, "<span class='danger'>You're pinned underfoot!</span>")
-		to_chat(macro, "<span class='danger'>You pin the escapee underfoot!</span>")
+		to_chat(micro, span_danger("You're pinned underfoot!"))
+		to_chat(macro, span_danger("You pin the escapee underfoot!"))
 		return
 
-	to_chat(micro, "<span class='notice'>You manage to escape [src]!</span>")
-	to_chat(macro, "<span class='danger'>Someone has climbed out of your [src]!</span>")
+	to_chat(micro, span_notice("You manage to escape [src]!"))
+	to_chat(macro, span_danger("Someone has climbed out of your [src]!"))
 	micro.forceMove(macro.loc)
 
 /obj/item/clothing/gloves
 	sprite_sheets = list(
-		SPECIES_TESHARI = 'icons/mob/species/teshari/gloves.dmi',
-		SPECIES_VOX = 'icons/mob/species/vox/gloves.dmi',
-		SPECIES_WEREBEAST = 'icons/mob/species/werebeast/hands.dmi')
+		SPECIES_TESHARI = 'icons/inventory/hands/mob_teshari.dmi',
+		SPECIES_VOX = 'icons/inventory/hands/mob_vox.dmi',
+		SPECIES_WEREBEAST = 'icons/inventory/hands/mob_vr_werebeast.dmi')
 
 /obj/item/clothing/ears
 	sprite_sheets = list(
-		SPECIES_TESHARI = 'icons/mob/species/teshari/ears.dmi',
-		SPECIES_WEREBEAST = 'icons/mob/species/werebeast/ears.dmi')
+		SPECIES_TESHARI = 'icons/inventory/ears/mob_teshari.dmi',
+		SPECIES_VOX = 'icons/inventory/ears/mob_vox.dmi',
+		SPECIES_WEREBEAST = 'icons/inventory/ears/mob_vr_werebeast.dmi')
 
 /obj/item/clothing/relaymove(var/mob/living/user,var/direction)
 
@@ -104,22 +113,28 @@
 	spawn(100)
 		recent_struggle = 0
 
-	if(ishuman(src.loc))
+	if(ishuman(src.loc)) //Is this on a person?
 		var/mob/living/carbon/human/H = src.loc
-		if(H.shoes == src)
-			to_chat(H, "<font color='red'>[user]'s tiny body presses against you in \the [src], squirming!</font>")
-			to_chat(user, "<font color='red'>Your body presses out against [H]'s form! Well, what little you can get to!</font>")
+		if(istype(user,/mob/living/voice)) //Is this a possessed item? Spooky. It can move on it's own!
+			to_chat(H, span_red("The [src] shifts about, almost as if squirming!"))
+			to_chat(user, span_red("You cause the [src] to shift against [H]'s form! Well, what little you can get to, given your current state!"))
+		else if(H.shoes == src)
+			to_chat(H, span_red("[user]'s tiny body presses against you in \the [src], squirming!"))
+			to_chat(user, span_red("Your body presses out against [H]'s form! Well, what little you can get to!"))
 		else
-			to_chat(H, "<font color='red'>[user]'s form shifts around in the \the [src], squirming!</font>")
-			to_chat(user, "<font color='red'>You move around inside the [src], to no avail.</font>")
+			to_chat(H, span_red("[user]'s form shifts around in the \the [src], squirming!"))
+			to_chat(user, span_red("You move around inside the [src], to no avail."))
+	else if(istype(user,/mob/living/voice)) //Possessed!
+		src.visible_message(span_red("The [src] shifts about!"))
+		to_chat(user, span_red("You cause the [src] to shift about!"))
 	else
-		src.visible_message("<font color='red'>\The [src] moves a little!</font>")
-		to_chat(user, "<font color='red'>You throw yourself against the inside of \the [src]!</font>")
+		src.visible_message(span_red("\The [src] moves a little!"))
+		to_chat(user, span_red("You throw yourself against the inside of \the [src]!"))
 
 //Mask
 /obj/item/clothing/mask
 	name = "mask"
-	icon = 'icons/obj/clothing/masks_vr.dmi' // This is intentional because of our custom species.
+	icon = 'icons/inventory/face/item_vr.dmi' // This is intentional because of our custom species.
 	item_icons = list(
 		slot_l_hand_str = 'icons/mob/items/lefthand_masks.dmi',
 		slot_r_hand_str = 'icons/mob/items/righthand_masks.dmi',
@@ -128,41 +143,40 @@
 	slot_flags = SLOT_MASK
 	body_parts_covered = FACE|EYES
 	item_icons = list(
-		slot_wear_mask_str = 'icons/mob/mask_vr.dmi'
+		slot_wear_mask_str = 'icons/inventory/face/mob_vr.dmi'
 		)
 	sprite_sheets = list(
-		SPECIES_TESHARI		= 'icons/mob/species/teshari/masks_vr.dmi',
-		SPECIES_VOX 		= 'icons/mob/species/vox/masks.dmi',
-		SPECIES_TAJ 		= 'icons/mob/species/tajaran/mask_vr.dmi',
-		SPECIES_UNATHI 		= 'icons/mob/species/unathi/mask_vr.dmi',
-		SPECIES_SERGAL 		= 'icons/mob/species/sergal/mask_vr.dmi',
-		SPECIES_NEVREAN 	= 'icons/mob/species/nevrean/mask_vr.dmi',
-		SPECIES_ZORREN_HIGH	= 'icons/mob/species/fox/mask_vr.dmi',
-		SPECIES_ZORREN_FLAT = 'icons/mob/species/fennec/mask_vr.dmi',
-		SPECIES_AKULA 		= 'icons/mob/species/akula/mask_vr.dmi',
-		SPECIES_VULPKANIN 	= 'icons/mob/species/vulpkanin/mask.dmi',
-		SPECIES_XENOCHIMERA	= 'icons/mob/species/tajaran/mask_vr.dmi',
-		SPECIES_WEREBEAST	= 'icons/mob/species/werebeast/masks.dmi',
-		SPECIES_GREY_YW     = 'icons/mob/species/grey/mask.dmi'/*ywedit*/
+		SPECIES_TESHARI		= 'icons/inventory/face/mob_teshari.dmi',
+		SPECIES_VOX 		= 'icons/inventory/face/mob_vox.dmi',
+		SPECIES_TAJ 		= 'icons/inventory/face/mob_tajaran.dmi',
+		SPECIES_UNATHI 		= 'icons/inventory/face/mob_unathi.dmi',
+		SPECIES_SERGAL 		= 'icons/inventory/face/mob_vr_sergal.dmi',
+		SPECIES_NEVREAN 	= 'icons/inventory/face/mob_vr_nevrean.dmi',
+		SPECIES_ZORREN_HIGH	= 'icons/inventory/face/mob_vr_fox.dmi',
+		SPECIES_ZORREN_FLAT = 'icons/inventory/face/mob_vr_fennec.dmi',
+		SPECIES_AKULA 		= 'icons/inventory/face/mob_vr_akula.dmi',
+		SPECIES_VULPKANIN 	= 'icons/inventory/face/mob_vr_vulpkanin.dmi',
+		SPECIES_XENOCHIMERA	= 'icons/inventory/face/mob_vr_tajaran.dmi',
+		SPECIES_WEREBEAST	= 'icons/inventory/face/mob_vr_werebeast.dmi', //YW EDIT: temporary fix
+		SPECIES_GREY_YW     = 'icons/inventory/face/mob_grey.dmi'/*ywedit*/
 		)
-//"Spider" 		= 'icons/mob/species/spider/mask_vr.dmi' Add this later when they have custom mask sprites and everything.
+//"Spider" 		= 'icons/inventory/mask/mob_spider.dmi' Add this later when they have custom mask sprites and everything.
 
 //Switch to taur sprites if a taur equips
 /obj/item/clothing/suit
 	sprite_sheets = list(
-		SPECIES_TESHARI = 'icons/mob/species/teshari/suit.dmi',
-		SPECIES_VOX = 'icons/mob/species/vox/suit.dmi',
-		SPECIES_WEREBEAST = 'icons/mob/species/werebeast/suit.dmi')
+		SPECIES_TESHARI = 'icons/inventory/suit/mob_teshari.dmi',
+		SPECIES_VOX = 'icons/inventory/suit/mob_vox.dmi',
+		SPECIES_WEREBEAST = 'icons/inventory/suit/mob_vr_werebeast.dmi')
 
 /obj/item/clothing/under
 	sensor_mode = 3
 	var/sensorpref = 5
 	sprite_sheets = list(
-		SPECIES_TESHARI = 'icons/mob/species/teshari/uniform.dmi',
-		SPECIES_VOX = 'icons/mob/species/vox/uniform.dmi',
-		SPECIES_WEREBEAST = 'icons/mob/species/werebeast/uniform.dmi',
-		SPECIES_GREY_YW = 'icons/mob/species/grey/uniform.dmi'/*ywedit*/
-		)
+		SPECIES_TESHARI = 'icons/inventory/uniform/mob_teshari.dmi',
+		SPECIES_VOX = 'icons/inventory/uniform/mob_vox.dmi',
+		SPECIES_WEREBEAST = 'icons/inventory/uniform/mob_vr_werebeast.dmi', //YW EDIT: temporary fix
+		SPECIES_GREY_YW = 'icons/inventory/uniform/mob_grey.dmi'/*ywedit*/)
 
 /obj/item/clothing/under/New(var/mob/living/carbon/human/H)
 	..()
@@ -179,6 +193,6 @@
 
 /obj/item/clothing/head
 	sprite_sheets = list(
-		SPECIES_TESHARI = 'icons/mob/species/teshari/head.dmi',
-		SPECIES_VOX = 'icons/mob/species/vox/head.dmi',
-		SPECIES_WEREBEAST = 'icons/mob/species/werebeast/head.dmi')
+		SPECIES_TESHARI = 'icons/inventory/head/mob_teshari.dmi',
+		SPECIES_VOX = 'icons/inventory/head/mob_vox.dmi',
+		SPECIES_WEREBEAST = 'icons/inventory/head/mob_vr_werebeast.dmi')

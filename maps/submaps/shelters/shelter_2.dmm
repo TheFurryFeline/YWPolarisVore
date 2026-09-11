@@ -10,12 +10,12 @@
 /area/survivalpod)
 "c" = (
 /obj/structure/table/steel,
-/obj/item/weapon/reagent_containers/food/drinks/glass2/rocks{
+/obj/item/reagent_containers/food/drinks/glass2/rocks{
 	pixel_x = 7;
 	pixel_y = 2
 	},
 /obj/random/mre,
-/obj/item/weapon/material/kitchen/utensil/fork{
+/obj/item/material/kitchen/utensil/fork{
 	pixel_x = 12
 	},
 /turf/simulated/floor/carpet/bcarpet,
@@ -32,36 +32,40 @@
 /area/survivalpod)
 "f" = (
 /obj/machinery/smartfridge/survival_pod,
-/obj/item/weapon/storage/mre/random,
-/obj/item/weapon/storage/mre/random,
-/obj/item/weapon/storage/mre/random,
-/obj/item/weapon/storage/mre/random,
-/obj/item/weapon/storage/mre/random,
-/obj/item/weapon/storage/mre/random,
-/obj/item/weapon/storage/mre/menu9,
-/obj/item/weapon/storage/mre/menu9,
-/obj/item/weapon/storage/mre/menu10,
-/obj/item/weapon/storage/mre/menu10,
-/obj/item/weapon/storage/mre/menu11,
-/obj/item/weapon/storage/mre/menu11,
-/obj/item/device/fbp_backup_cell,
-/obj/item/device/fbp_backup_cell,
-/obj/item/device/fbp_backup_cell,
-/obj/item/device/fbp_backup_cell,
-/obj/item/device/fbp_backup_cell,
-/obj/item/weapon/storage/pill_bottle/antitox,
-/obj/item/weapon/storage/box/survival/space,
-/obj/item/device/healthanalyzer,
-/obj/item/weapon/storage/pill_bottle/dice_nerd,
+/obj/item/storage/mre/random,
+/obj/item/storage/mre/random,
+/obj/item/storage/mre/random,
+/obj/item/storage/mre/random,
+/obj/item/storage/mre/random,
+/obj/item/storage/mre/random,
+/obj/item/storage/mre/menu9,
+/obj/item/storage/mre/menu9,
+/obj/item/storage/mre/menu10,
+/obj/item/storage/mre/menu10,
+/obj/item/storage/mre/menu11,
+/obj/item/storage/mre/menu11,
+/obj/item/fbp_backup_cell,
+/obj/item/fbp_backup_cell,
+/obj/item/fbp_backup_cell,
+/obj/item/fbp_backup_cell,
+/obj/item/fbp_backup_cell,
+/obj/item/storage/firstaid/fire,
+/obj/item/storage/firstaid/toxin,
+/obj/item/storage/firstaid/o2,
+/obj/item/storage/box/survival/space,
+/obj/item/clothing/accessory/watch/survival,
+/obj/item/emergency_beacon,
+/obj/item/healthanalyzer,
+/obj/item/storage/pill_bottle/dice_nerd,
 /turf/simulated/shuttle/floor/voidcraft,
 /area/survivalpod)
 "g" = (
-/obj/item/device/gps/computer,
+/obj/item/gps/computer,
 /turf/simulated/shuttle/floor/voidcraft,
 /area/survivalpod)
 "h" = (
 /obj/machinery/shower,
-/obj/item/weapon/soap/deluxe,
+/obj/item/soap/deluxe,
 /obj/structure/curtain,
 /turf/simulated/shuttle/floor/voidcraft,
 /area/survivalpod)
@@ -84,7 +88,7 @@
 /area/survivalpod)
 "m" = (
 /obj/structure/bed/pod,
-/obj/item/weapon/bedsheet/blue,
+/obj/item/bedsheet/blue,
 /turf/simulated/shuttle/floor/voidcraft,
 /area/survivalpod)
 "n" = (
@@ -101,14 +105,14 @@
 "o" = (
 /obj/structure/bed/chair/comfy/black,
 /obj/structure/window/reinforced/survival_pod{
-	icon_state = "pwindow";
-	dir = 1
+	dir = 1;
+	icon_state = "pwindow"
 	},
 /turf/simulated/floor/carpet/bcarpet,
 /area/survivalpod)
 "p" = (
 /obj/structure/table/survival_pod,
-/obj/item/weapon/storage/firstaid/adv,
+/obj/item/storage/firstaid/adv,
 /turf/simulated/shuttle/floor/voidcraft,
 /area/survivalpod)
 "q" = (
@@ -129,11 +133,11 @@
 	light_color = "#DDFFD3"
 	},
 /obj/structure/table/steel,
-/obj/item/weapon/reagent_containers/food/drinks/glass2/rocks{
+/obj/item/reagent_containers/food/drinks/glass2/rocks{
 	pixel_x = 7;
 	pixel_y = 2
 	},
-/obj/item/weapon/reagent_containers/food/drinks/bottle/wine{
+/obj/item/reagent_containers/food/drinks/bottle/wine{
 	pixel_x = -6;
 	pixel_y = 10
 	},
@@ -144,8 +148,8 @@
 	pixel_y = -2
 	},
 /obj/structure/window/reinforced/survival_pod{
-	icon_state = "pwindow";
-	dir = 1
+	dir = 1;
+	icon_state = "pwindow"
 	},
 /obj/structure/table/steel{
 	pixel_y = -9
@@ -154,15 +158,15 @@
 /area/survivalpod)
 "u" = (
 /obj/machinery/door/window/survival_pod{
-	icon_state = "windoor";
-	dir = 1
+	dir = 1;
+	icon_state = "windoor"
 	},
 /turf/simulated/floor/carpet/bcarpet,
 /area/survivalpod)
 "v" = (
 /obj/structure/window/reinforced/survival_pod{
-	icon_state = "pwindow";
-	dir = 1
+	dir = 1;
+	icon_state = "pwindow"
 	},
 /obj/machinery/holoplant,
 /turf/simulated/floor/carpet/bcarpet,
@@ -177,8 +181,7 @@
 /area/survivalpod)
 "y" = (
 /obj/structure/sink/kitchen{
-	icon_state = "sink_alt";
-	dir = 4;
+	dir = 8;
 	pixel_x = -13
 	},
 /turf/simulated/floor/carpet/bcarpet,

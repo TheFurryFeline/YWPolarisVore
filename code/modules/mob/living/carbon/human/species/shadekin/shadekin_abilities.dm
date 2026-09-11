@@ -26,17 +26,28 @@
 	verbpath = /mob/living/carbon/human/proc/phase_shift
 	ability_icon_state = "tech_passwall"
 
+/* //ChompEDIT - Moved to modular_chomp
 /mob/living/carbon/human/proc/phase_shift()
 	set name = "Phase Shift (100)"
 	set desc = "Shift yourself out of alignment with realspace to travel quickly to different areas."
-	set category = "Shadekin"
+	set category = "Abilities.Shadekin"
+
+	//RS Port #658 Start
+	var/area/A = get_area(src)
+	if(!client?.holder && A.flag_check(AREA_BLOCK_PHASE_SHIFT))
+		to_chat(src, span_warning("You can't do that here!"))
+		return
+	//RS Port #658 End
 
 	var/ability_cost = 100
 
 	var/darkness = 1
 	var/turf/T = get_turf(src)
 	if(!T)
-		to_chat(src,"<span class='warning'>You can't use that here!</span>")
+		to_chat(src,span_warning("You can't use that here!"))
+		return FALSE
+
+	if(ability_flags & AB_PHASE_SHIFTING)
 		return FALSE
 
 	var/brightness = T.get_lumcount() //Brightness in 0.0 to 1.0
@@ -45,7 +56,7 @@
 	var/watcher = 0
 	for(var/mob/living/carbon/human/watchers in oview(7,src ))	// If we can see them...
 		if(watchers in oviewers(7,src))	// And they can see us...
-			if(!(watchers.stat) && !isbelly(watchers.loc) && !istype(watchers.loc, /obj/item/weapon/holder))	// And they are alive and not being held by someone...
+			if(!(watchers.stat) && !isbelly(watchers.loc) && !istype(watchers.loc, /obj/item/holder))	// And they are alive and not being held by someone...
 				watcher++	// They are watching us!
 
 	ability_cost = CLAMP(ability_cost/(0.01+darkness*2),50, 80)//This allows for 1 watcher in full light
@@ -56,13 +67,13 @@
 
 	var/datum/species/shadekin/SK = species
 	if(!istype(SK))
-		to_chat(src, "<span class='warning'>Only a shadekin can use that!</span>")
+		to_chat(src, span_warning("Only a shadekin can use that!"))
 		return FALSE
 	else if(stat)
-		to_chat(src, "<span class='warning'>Can't use that ability in your state!</span>")
+		to_chat(src, span_warning("Can't use that ability in your state!"))
 		return FALSE
 	else if(shadekin_get_energy() < ability_cost && !(ability_flags & AB_PHASE_SHIFTED))
-		to_chat(src, "<span class='warning'>Not enough energy for that ability!</span>")
+		to_chat(src, span_warning("Not enough energy for that ability!"))
 		return FALSE
 
 	if(!(ability_flags & AB_PHASE_SHIFTED))
@@ -70,30 +81,41 @@
 	playsound(src, 'sound/effects/stealthoff.ogg', 75, 1)
 
 	if(!T.CanPass(src,T) || loc != T)
-		to_chat(src,"<span class='warning'>You can't use that here!</span>")
+		to_chat(src,span_warning("You can't use that here!"))
 		return FALSE
-
-	forceMove(T)
-	var/original_canmove = canmove
-	SetStunned(0)
-	SetWeakened(0)
-	if(buckled)
-		buckled.unbuckle_mob()
-	if(pulledby)
-		pulledby.stop_pulling()
-	stop_pulling()
-	canmove = FALSE
 
 	//Shifting in
 	if(ability_flags & AB_PHASE_SHIFTED)
+		phase_in(T)
+	//Shifting out
+	else
+		phase_out(T)
+
+
+/mob/living/carbon/human/proc/phase_in(var/turf/T)
+	if(ability_flags & AB_PHASE_SHIFTED)
+
+		// pre-change
+		forceMove(T)
+		var/original_canmove = canmove
+		SetStunned(0)
+		SetWeakened(0)
+		if(buckled)
+			buckled.unbuckle_mob()
+		if(pulledby)
+			pulledby.stop_pulling()
+		stop_pulling()
+
+		// change
+		canmove = FALSE
 		ability_flags &= ~AB_PHASE_SHIFTED
+		ability_flags |= AB_PHASE_SHIFTING
 		mouse_opacity = 1
-		name = real_name
-		for(var/belly in vore_organs)
-			var/obj/belly/B = belly
+		name = get_visible_name()
+		for(var/obj/belly/B as anything in vore_organs)
 			B.escapable = initial(B.escapable)
 
-		//overlays.Cut()
+		//cut_overlays()
 		invisibility = initial(invisibility)
 		see_invisible = initial(see_invisible)
 		incorporeal_move = initial(incorporeal_move)
@@ -109,6 +131,7 @@
 		sleep(5) //The duration of the TP animation
 		canmove = original_canmove
 		alpha = initial(alpha)
+		remove_modifiers_of_type(/datum/modifier/shadekin_phase_vision)
 
 		//Potential phase-in vore
 		if(can_be_drop_pred) //Toggleable in vore panel
@@ -117,7 +140,9 @@
 				var/mob/living/target = pick(potentials)
 				if(istype(target) && target.devourable && target.can_be_drop_prey && vore_selected)
 					target.forceMove(vore_selected)
-					to_chat(target,"<span class='warning'>\The [src] phases in around you, [vore_selected.vore_verb]ing you into their [vore_selected.name]!</span>")
+					to_chat(target,span_vwarning("\The [src] phases in around you, [vore_selected.vore_verb]ing you into their [vore_selected.name]!"))
+
+		ability_flags &= ~AB_PHASE_SHIFTING
 
 		//Affect nearby lights
 		var/destroy_lights = 0
@@ -131,24 +156,39 @@
 					L.broken()
 			else
 				L.flicker(10)
-	//Shifting out
-	else
+
+/mob/living/carbon/human/proc/phase_out(var/turf/T)
+	if(!(ability_flags & AB_PHASE_SHIFTED))
+		// pre-change
+		forceMove(T)
+		var/original_canmove = canmove
+		SetStunned(0)
+		SetWeakened(0)
+		if(buckled)
+			buckled.unbuckle_mob()
+		if(pulledby)
+			pulledby.stop_pulling()
+		stop_pulling()
+		canmove = FALSE
+
+		// change
 		ability_flags |= AB_PHASE_SHIFTED
+		ability_flags |= AB_PHASE_SHIFTING
 		mouse_opacity = 0
 		custom_emote(1,"phases out!")
-		name = "Something"
+		name = get_visible_name()
 
-		for(var/belly in vore_organs)
-			var/obj/belly/B = belly
+		for(var/obj/belly/B as anything in vore_organs)
 			B.escapable = FALSE
 
 		var/obj/effect/temp_visual/shadekin/phase_out/phaseanim = new /obj/effect/temp_visual/shadekin/phase_out(src.loc)
 		phaseanim.dir = dir
 		alpha = 0
+		add_modifier(/datum/modifier/shadekin_phase_vision)
 		sleep(5)
 		invisibility = INVISIBILITY_LEVEL_TWO
 		see_invisible = INVISIBILITY_LEVEL_TWO
-		//overlays.Cut()
+		//cut_overlays()
 		update_icon()
 		alpha = 127
 
@@ -156,6 +196,18 @@
 		incorporeal_move = TRUE
 		density = FALSE
 		force_max_speed = TRUE
+		ability_flags &= ~AB_PHASE_SHIFTING
+*/ //ChompEDIT END - moved to modular_chomp
+
+//CHOMPEdit Start - Shadekin probably shouldn't be hit while phasing
+/datum/modifier/shadekin_phase
+	name = "Shadekin Phasing"
+	evasion = 100
+//CHOMPEdit End
+
+/datum/modifier/shadekin_phase_vision
+	name = "Shadekin Phase Vision"
+	vision_flags = SEE_THRU
 
 //////////////////////////
 ///  REGENERATE OTHER  ///
@@ -169,22 +221,22 @@
 /mob/living/carbon/human/proc/regenerate_other()
 	set name = "Regenerate Other (50)"
 	set desc = "Spend energy to heal physical wounds in another creature."
-	set category = "Shadekin"
+	set category = "Abilities.Shadekin"
 
 	var/ability_cost = 50
 
 	var/datum/species/shadekin/SK = species
 	if(!istype(SK))
-		to_chat(src, "<span class='warning'>Only a shadekin can use that!</span>")
+		to_chat(src, span_warning("Only a shadekin can use that!"))
 		return FALSE
 	else if(stat)
-		to_chat(src, "<span class='warning'>Can't use that ability in your state!</span>")
+		to_chat(src, span_warning("Can't use that ability in your state!"))
 		return FALSE
 	else if(shadekin_get_energy() < ability_cost)
-		to_chat(src, "<span class='warning'>Not enough energy for that ability!</span>")
+		to_chat(src, span_warning("Not enough energy for that ability!"))
 		return FALSE
 	else if(ability_flags & AB_PHASE_SHIFTED)
-		to_chat(src, "<span class='warning'>You can't use that while phase shifted!</span>")
+		to_chat(src, span_warning("You can't use that while phase shifted!"))
 		return FALSE
 
 	var/list/viewed = oview(1)
@@ -192,17 +244,17 @@
 	for(var/mob/living/L in viewed)
 		targets += L
 	if(!targets.len)
-		to_chat(src,"<span class='warning'>Nobody nearby to mend!</span>")
+		to_chat(src,span_warning("Nobody nearby to mend!"))
 		return FALSE
 
-	var/mob/living/target = input(src,"Pick someone to mend:","Mend Other") as null|anything in targets
+	var/mob/living/target = tgui_input_list(src,"Pick someone to mend:","Mend Other", targets)
 	if(!target)
 		return FALSE
 
 	target.add_modifier(/datum/modifier/shadekin/heal_boop,1 MINUTE)
 	playsound(src, 'sound/effects/EMPulse.ogg', 75, 1)
 	shadekin_adjust_energy(-ability_cost)
-	visible_message("<span class='notice'>\The [src] gently places a hand on \the [target]...</span>")
+	visible_message(span_notice("\The [src] gently places a hand on \the [target]..."))
 	face_atom(target)
 	return TRUE
 
@@ -211,8 +263,8 @@
 	desc = "You feel serene and well rested."
 	mob_overlay_state = "green_sparkles"
 
-	on_created_text = "<span class='notice'>Sparkles begin to appear around you, and all your ills seem to fade away.</span>"
-	on_expired_text = "<span class='notice'>The sparkles have faded, although you feel much healthier than before.</span>"
+	on_created_text = span_notice("Sparkles begin to appear around you, and all your ills seem to fade away.")
+	on_expired_text = span_notice("The sparkles have faded, although you feel much healthier than before.")
 	stacks = MODIFIER_STACK_EXTEND
 
 /datum/modifier/shadekin/heal_boop/tick()
@@ -238,22 +290,22 @@
 /mob/living/carbon/human/proc/create_shade()
 	set name = "Create Shade (25)"
 	set desc = "Create a field of darkness that follows you."
-	set category = "Shadekin"
+	set category = "Abilities.Shadekin"
 
 	var/ability_cost = 25
 
 	var/datum/species/shadekin/SK = species
 	if(!istype(SK))
-		to_chat(src, "<span class='warning'>Only a shadekin can use that!</span>")
+		to_chat(src, span_warning("Only a shadekin can use that!"))
 		return FALSE
 	else if(stat)
-		to_chat(src, "<span class='warning'>Can't use that ability in your state!</span>")
+		to_chat(src, span_warning("Can't use that ability in your state!"))
 		return FALSE
 	else if(shadekin_get_energy() < ability_cost)
-		to_chat(src, "<span class='warning'>Not enough energy for that ability!</span>")
+		to_chat(src, span_warning("Not enough energy for that ability!"))
 		return FALSE
 	else if(ability_flags & AB_PHASE_SHIFTED)
-		to_chat(src, "<span class='warning'>You can't use that while phase shifted!</span>")
+		to_chat(src, span_warning("You can't use that while phase shifted!"))
 		return FALSE
 
 	playsound(src, 'sound/effects/bamf.ogg', 75, 1)
@@ -267,8 +319,8 @@
 	desc = "Darkness envelops you."
 	mob_overlay_state = ""
 
-	on_created_text = "<span class='notice'>You drag part of The Dark into realspace, enveloping yourself.</span>"
-	on_expired_text = "<span class='warning'>You lose your grasp on The Dark and realspace reasserts itself.</span>"
+	on_created_text = span_notice("You drag part of The Dark into realspace, enveloping yourself.")
+	on_expired_text = span_warning("You lose your grasp on The Dark and realspace reasserts itself.")
 	stacks = MODIFIER_STACK_EXTEND
 	var/mob/living/simple_mob/shadekin/my_kin
 

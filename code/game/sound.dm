@@ -1,6 +1,5 @@
 /proc/playsound(atom/source, soundin, vol as num, vary, extrarange as num, falloff, is_global, frequency = null, channel = 0, pressure_affected = TRUE, ignore_walls = TRUE, preference = null, volume_channel = null)
-	if(isarea(source))
-		throw EXCEPTION("playsound(): source is an area")
+	if(Master.current_runlevel < RUNLEVEL_LOBBY)
 		return
 
 	var/turf/turf_source = get_turf(source)
@@ -9,23 +8,24 @@
 	var/area/area_source = turf_source.loc
 
 	//allocate a channel if necessary now so its the same for everyone
-	channel = channel || open_sound_channel()
+	channel = channel || SSsounds.random_available_channel()
 
  	// Looping through the player list has the added bonus of working for mobs inside containers
 	var/sound/S = sound(get_sfx(soundin))
 	var/maxdistance = (world.view + extrarange) * 2  //VOREStation Edit - 3 to 2
-	var/list/listeners = player_list
+	var/list/listeners = player_list.Copy()
 	if(!ignore_walls) //these sounds don't carry through walls
-		listeners = listeners & hearers(maxdistance,turf_source)
-	for(var/P in listeners)
-		var/mob/M = P
+		for(var/mob/listen in listeners)
+			if(!(get_turf(listen) in hear(maxdistance,source)))
+				listeners -= listen
+	for(var/mob/M as anything in listeners)
 		if(!M || !M.client)
 			continue
 		var/turf/T = get_turf(M)
 		if(!T)
 			continue
 		var/area/A = T.loc
-		if((A.soundproofed || area_source.soundproofed) && (A != area_source))
+		if((A.flag_check(AREA_SOUNDPROOF) || area_source.flag_check(AREA_SOUNDPROOF)) && (A != area_source))
 			continue
 		var/distance = get_dist(T, turf_source)
 
@@ -33,17 +33,30 @@
 			if(T && T.z == turf_source.z)
 				M.playsound_local(turf_source, soundin, vol, vary, frequency, falloff, is_global, channel, pressure_affected, S, preference, volume_channel)
 
+/mob/proc/check_sound_preference(list/preference)
+	if(!islist(preference))
+		preference = list(preference)
+
+	for(var/p in preference)
+		// Ignore nulls
+		if(p)
+			if(!read_preference(p))
+				return FALSE
+
+	return TRUE
+
 /mob/proc/playsound_local(turf/turf_source, soundin, vol as num, vary, frequency, falloff, is_global, channel = 0, pressure_affected = TRUE, sound/S, preference, volume_channel = null)
 	if(!client || ear_deaf > 0)
 		return
-	if(preference && !client.is_preference_enabled(preference))
+
+	if(!check_sound_preference(preference))
 		return
 
 	if(!S)
 		S = sound(get_sfx(soundin))
 
 	S.wait = 0 //No queue
-	S.channel = channel || open_sound_channel()
+	S.channel = channel || SSsounds.random_available_channel()
 
 	// I'm not sure if you can modify S.volume, but I'd rather not try to find out what
 	// horrible things lurk in BYOND's internals, so we're just gonna do vol *=
@@ -109,24 +122,23 @@
 			var/mob/MO = M
 			MO.playsound_local(get_turf(MO), sound, volume, vary, pressure_affected = FALSE)
 
-/proc/open_sound_channel()
-	var/static/next_channel = 1	//loop through the available 1024 - (the ones we reserve) channels and pray that its not still being used
-	. = ++next_channel
-	if(next_channel > CHANNEL_HIGHEST_AVAILABLE)
-		next_channel = 1
-
 /mob/proc/stop_sound_channel(chan)
 	src << sound(null, repeat = 0, wait = 0, channel = chan)
+
+/mob/proc/set_sound_channel_volume(channel, volume)
+	var/sound/S = sound(null, FALSE, FALSE, channel, volume)
+	S.status = SOUND_UPDATE
+	src << S
 
 /proc/get_rand_frequency()
 	return rand(32000, 55000) //Frequency stuff only works with 45kbps oggs.
 
 /client/proc/playtitlemusic()
-	if(!ticker || !all_lobby_tracks.len || !media)	return
-	if(is_preference_enabled(/datum/client_preference/play_lobby_music))
-		var/datum/track/T = pick(all_lobby_tracks)
+	if(!ticker || !SSmedia_tracks.lobby_tracks.len || !media)	return
+	if(prefs?.read_preference(/datum/preference/toggle/play_lobby_music))
+		var/datum/track/T = pick(SSmedia_tracks.lobby_tracks)
 		media.push_music(T.url, world.time, 0.85)
-		to_chat(src,"<span class='notice'>Lobby music: <b>[T.title]</b> by <b>[T.artist]</b>.</span>")
+		to_chat(src,span_notice("Lobby music: <b>[T.title]</b> by <b>[T.artist]</b>."))
 
 /proc/get_sfx(soundin)
 	if(istext(soundin))
@@ -265,6 +277,11 @@
 					'sound/vore/sunesound/prey/death_04.ogg','sound/vore/sunesound/prey/death_05.ogg','sound/vore/sunesound/prey/death_06.ogg',
 					'sound/vore/sunesound/prey/death_07.ogg','sound/vore/sunesound/prey/death_08.ogg','sound/vore/sunesound/prey/death_09.ogg',
 					'sound/vore/sunesound/prey/death_10.ogg')
+			if ("belches") soundin = pick(
+					'sound/vore/belches/belch1.ogg','sound/vore/belches/belch2.ogg','sound/vore/belches/belch3.ogg','sound/vore/belches/belch4.ogg',
+					'sound/vore/belches/belch5.ogg','sound/vore/belches/belch6.ogg','sound/vore/belches/belch7.ogg','sound/vore/belches/belch8.ogg',
+					'sound/vore/belches/belch9.ogg','sound/vore/belches/belch10.ogg','sound/vore/belches/belch11.ogg','sound/vore/belches/belch12.ogg',
+					'sound/vore/belches/belch13.ogg','sound/vore/belches/belch14.ogg','sound/vore/belches/belch15.ogg')
 			//END VORESTATION EDIT
 			if ("terminal_type")
 				soundin = pick('sound/machines/terminal_button01.ogg', 'sound/machines/terminal_button02.ogg', 'sound/machines/terminal_button03.ogg', \
@@ -285,6 +302,24 @@
 					'sound/items/pickup/generic3.ogg')
 	return soundin
 
-//Are these even used?
+//Are these even used?	//Yes
 var/list/keyboard_sound = list ('sound/effects/keyboard/keyboard1.ogg','sound/effects/keyboard/keyboard2.ogg','sound/effects/keyboard/keyboard3.ogg', 'sound/effects/keyboard/keyboard4.ogg')
 var/list/bodyfall_sound = list('sound/effects/bodyfall1.ogg','sound/effects/bodyfall2.ogg','sound/effects/bodyfall3.ogg','sound/effects/bodyfall4.ogg')
+var/list/teppi_sound = list('sound/voice/teppi/gyooh1.ogg', 'sound/voice/teppi/gyooh2.ogg', 'sound/voice/teppi/gyooh3.ogg',  'sound/voice/teppi/gyooh4.ogg', 'sound/voice/teppi/gyooh5.ogg', 'sound/voice/teppi/gyooh6.ogg', 'sound/voice/teppi/snoot1.ogg', 'sound/voice/teppi/snoot2.ogg')
+var/list/talk_sound = list('sound/talksounds/a.ogg','sound/talksounds/b.ogg','sound/talksounds/c.ogg','sound/talksounds/d.ogg','sound/talksounds/e.ogg','sound/talksounds/f.ogg','sound/talksounds/g.ogg','sound/talksounds/h.ogg')
+var/list/emote_sound = list('sound/talksounds/me_a.ogg','sound/talksounds/me_b.ogg','sound/talksounds/me_c.ogg','sound/talksounds/me_d.ogg','sound/talksounds/me_e.ogg','sound/talksounds/me_f.ogg')
+
+//Goon sounds
+var/list/goon_speak_one_sound = list('sound/talksounds/goon/speak_1.ogg', 'sound/talksounds/goon/speak_1_ask.ogg', 'sound/talksounds/goon/speak_1_exclaim.ogg')
+var/list/goon_speak_two_sound = list('sound/talksounds/goon/speak_2.ogg', 'sound/talksounds/goon/speak_2_ask.ogg', 'sound/talksounds/goon/speak_2_exclaim.ogg')
+var/list/goon_speak_three_sound = list('sound/talksounds/goon/speak_3.ogg', 'sound/talksounds/goon/speak_3_ask.ogg', 'sound/talksounds/goon/speak_3_exclaim.ogg')
+var/list/goon_speak_four_sound = list('sound/talksounds/goon/speak_4.ogg', 'sound/talksounds/goon/speak_4_ask.ogg', 'sound/talksounds/goon/speak_4_exclaim.ogg')
+var/list/goon_speak_blub_sound = list('sound/talksounds/goon/blub.ogg', 'sound/talksounds/goon/blub_ask.ogg', 'sound/talksounds/goon/blub_exclaim.ogg')
+var/list/goon_speak_bottalk_sound = list('sound/talksounds/goon/bottalk_1.ogg', 'sound/talksounds/goon/bottalk_2.ogg', 'sound/talksounds/goon/bottalk_3.ogg', 'sound/talksounds/goon/bottalk_4.wav')
+var/list/goon_speak_buwoo_sound = list('sound/talksounds/goon/buwoo.ogg', 'sound/talksounds/goon/buwoo_ask.ogg', 'sound/talksounds/goon/buwoo_exclaim.ogg')
+var/list/goon_speak_cow_sound = list('sound/talksounds/goon/cow.ogg', 'sound/talksounds/goon/cow_ask.ogg', 'sound/talksounds/goon/cow_exclaim.ogg')
+var/list/goon_speak_lizard_sound = list('sound/talksounds/goon/lizard.ogg', 'sound/talksounds/goon/lizard_ask.ogg', 'sound/talksounds/goon/lizard_exclaim.ogg')
+var/list/goon_speak_pug_sound = list('sound/talksounds/goon/pug.ogg', 'sound/talksounds/goon/pug_ask.ogg', 'sound/talksounds/goon/pug_exclaim.ogg')
+var/list/goon_speak_pugg_sound = list('sound/talksounds/goon/pugg.ogg', 'sound/talksounds/goon/pugg_ask.ogg', 'sound/talksounds/goon/pugg_exclaim.ogg')
+var/list/goon_speak_roach_sound = list('sound/talksounds/goon/roach.ogg', 'sound/talksounds/goon/roach_ask.ogg', 'sound/talksounds/goon/roach_exclaim.ogg')
+var/list/goon_speak_skelly_sound = list('sound/talksounds/goon/skelly.ogg', 'sound/talksounds/goon/skelly_ask.ogg', 'sound/talksounds/goon/skelly_exclaim.ogg')

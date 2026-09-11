@@ -3,7 +3,10 @@
 	name = "electric field"
 	effect_type = EFFECT_ENERGY
 
+	effect_color = "#ffff00"
+
 /datum/artifact_effect/electric_field/DoEffectTouch(var/mob/user)
+	var/atom/holder = get_master_holder()
 	var/list/nearby_mobs = list()
 	for(var/mob/living/L in oview(effectrange, get_turf(holder)))
 		if(L == user)	// You're "grounded" when you contact the artifact.
@@ -16,7 +19,7 @@
 
 	for(var/mob/living/L in nearby_mobs)
 		if(L.isSynthetic())
-			to_chat(L, "<span class='danger'>ERROR: Electrical fault detected!</span>")
+			to_chat(L, span_danger("ERROR: Electrical fault detected!"))
 			L.stuttering += 3
 
 		if(ishuman(L))
@@ -27,6 +30,7 @@
 			L.electrocute_act(rand(25, 40), holder, 0.75, BP_TORSO)
 
 /datum/artifact_effect/electric_field/DoEffectAura()
+	var/atom/holder = get_master_holder()
 	var/list/nearby_mobs = list()
 	for(var/mob/living/L in oview(effectrange, get_turf(holder)))
 		if(!L.stat)
@@ -37,7 +41,7 @@
 
 	for(var/mob/living/L in nearby_mobs)
 		if(L.isSynthetic())
-			to_chat(L, "<span class='danger'>ERROR: Electrical fault detected!</span>")
+			to_chat(L, span_danger("ERROR: Electrical fault detected!"))
 			L.stuttering += 3
 
 		if(ishuman(L))
@@ -48,6 +52,7 @@
 			L.electrocute_act(rand(1, 10), holder, 0.75, BP_TORSO)
 
 /datum/artifact_effect/electric_field/DoEffectPulse()
+	var/atom/holder = get_master_holder()
 	var/list/nearby_mobs = list()
 	for(var/mob/living/L in oview(effectrange, get_turf(holder)))
 		if(!L.stat)
@@ -58,7 +63,7 @@
 
 	for(var/mob/living/L in nearby_mobs)
 		if(L.isSynthetic())
-			to_chat(L, "<span class='danger'>ERROR: Electrical fault detected!</span>")
+			to_chat(L, span_danger("ERROR: Electrical fault detected!"))
 			L.stuttering += 3
 
 		if(ishuman(L))

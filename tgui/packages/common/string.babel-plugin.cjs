@@ -1,5 +1,7 @@
 /**
- * @file
+ * This plugin saves overall about 10KB on the final bundle size, so it's
+ * sort of worth it.
+ *
  * We are using a .cjs extension because:
  *
  * 1. Webpack CLI only supports CommonJS modules;
@@ -9,14 +11,15 @@
  * We need to copy-paste the whole "multiline" function because we can't
  * synchronously import an ES module from a CommonJS module.
  *
- * This plugin saves overall about 10KB on the final bundle size, so it's
- * sort of worth it.
+ * @file
+ * @copyright 2020 Aleksej Komarov
+ * @license MIT
  */
 
 /**
  * Removes excess whitespace and indentation from the string.
  */
-const multiline = str => {
+const multiline = (str) => {
   const lines = str.split('\n');
   // Determine base indentation
   let minIndent;
@@ -37,15 +40,15 @@ const multiline = str => {
   // Remove this base indentation and trim the resulting string
   // from both ends.
   return lines
-    .map(line => line.substr(minIndent).trimRight())
+    .map((line) => line.substr(minIndent).trimRight())
     .join('\n')
     .trim();
 };
 
-const StringPlugin = ref => {
+const StringPlugin = (ref) => {
   return {
     visitor: {
-      TaggedTemplateExpression: path => {
+      TaggedTemplateExpression: (path) => {
         if (path.node.tag.name === 'multiline') {
           const { quasi } = path.node;
           if (quasi.expressions.length > 0) {

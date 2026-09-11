@@ -3,24 +3,26 @@
 	desc = "Utilizing cutting edge tech from Hephaestus, the Mark VII is the latest and greatest in semi-powered personal protection systems; like the civilian AutoLok suit, the Mark VII can automatically adapt to fit most species without issue via RFID tags. This significantly reduces the time required for response teams to suit up, as it eliminates the need for dedicated cycler units. It also has an integrated, unremovable helmet. Standard air tanks, suit coolers, and magboots may be installed and removed as needed."
 	icon_state = "ertsuit"
 	item_state = "ertsuit"
-	armor = list(melee = 60, bullet = 50, laser = 30,energy = 15, bomb = 30, bio = 100, rad = 100)
+	armor = list(melee = 65, bullet = 55, laser = 55,energy = 15, bomb = 50, bio = 100, rad = 100)
 	slowdown = 0.5
 	siemens_coefficient = 0.5
-	species_restricted = list("exclude",SPECIES_DIONA,SPECIES_VOX,SPECIES_TESHARI)	//this thing can autoadapt
-	icon = 'icons/obj/clothing/suits_vr.dmi'
+	species_restricted = list("exclude",SPECIES_DIONA,SPECIES_VOX,SPECIES_TESHARI,SPECIES_ALTEVIAN)	//this thing can autoadapt
+	icon = 'icons/inventory/suit/item_vr.dmi'
+	default_worn_icon = 'icons/inventory/suit/mob_vr.dmi'
 	w_class = ITEMSIZE_NORMAL //the mark vii packs itself down when not in use, thanks future-materials
 	breach_threshold = 16 //Extra Thicc
 	resilience = 0.05 //Military Armor
 	min_pressure_protection = 0 * ONE_ATMOSPHERE
 	max_pressure_protection = 15* ONE_ATMOSPHERE
 	max_heat_protection_temperature = SPACE_SUIT_MAX_HEAT_PROTECTION_TEMPERATURE+10000
+	allowed = list(/obj/item/flashlight,/obj/item/tank,/obj/item/suit_cooling_unit,/obj/item/gun,/obj/item/ammo_magazine,/obj/item/ammo_casing,/obj/item/melee/baton,/obj/item/melee/energy/sword,/obj/item/handcuffs)
 
 /obj/item/clothing/suit/space/void/responseteam/command
 	name = "Mark VII-C Emergency Response Team Commander Suit"
 
 /obj/item/clothing/suit/space/void/responseteam/command/Initialize()
 	..()
-	helmet = new /obj/item/clothing/head/helmet/space/void/responseteam/command //autoinstall the helmet
+	attach_helmet(new /obj/item/clothing/head/helmet/space/void/responseteam/command) //autoinstall the helmet
 
 /obj/item/clothing/suit/space/void/responseteam/medical
 	name = "Mark VII-M Emergency Medical Response Suit"
@@ -29,7 +31,7 @@
 
 /obj/item/clothing/suit/space/void/responseteam/medical/Initialize()
 	..()
-	helmet = new /obj/item/clothing/head/helmet/space/void/responseteam/medical //autoinstall the helmet
+	attach_helmet(new /obj/item/clothing/head/helmet/space/void/responseteam/medical) //autoinstall the helmet
 
 /obj/item/clothing/suit/space/void/responseteam/engineer
 	name = "Mark VII-E Emergency Engineering Response Suit"
@@ -38,7 +40,7 @@
 
 /obj/item/clothing/suit/space/void/responseteam/engineer/Initialize()
 	..()
-	helmet = new /obj/item/clothing/head/helmet/space/void/responseteam/engineer //autoinstall the helmet
+	attach_helmet(new /obj/item/clothing/head/helmet/space/void/responseteam/engineer) //autoinstall the helmet
 
 /obj/item/clothing/suit/space/void/responseteam/security
 	name = "Mark VII-S Emergency Security Response Suit"
@@ -47,7 +49,7 @@
 
 /obj/item/clothing/suit/space/void/responseteam/security/Initialize()
 	..()
-	helmet = new /obj/item/clothing/head/helmet/space/void/responseteam/security //autoinstall the helmet
+	attach_helmet(new /obj/item/clothing/head/helmet/space/void/responseteam/security) //autoinstall the helmet
 
 /obj/item/clothing/suit/space/void/responseteam/janitor
 	name = "Mark VII-J Emergency Cleanup Response Suit"
@@ -59,7 +61,7 @@
 
 /obj/item/clothing/suit/space/void/responseteam/janitor/Initialize()
 	..()
-	helmet = new /obj/item/clothing/head/helmet/space/void/responseteam/janitor //autoinstall the helmet
+	attach_helmet(new /obj/item/clothing/head/helmet/space/void/responseteam/janitor) //autoinstall the helmet
 
 
 //override the attackby screwdriver proc so that people can't remove the helmet
@@ -68,16 +70,16 @@
 	if(!isliving(user))
 		return
 
-	if(istype(W, /obj/item/clothing/accessory) || istype(W, /obj/item/weapon/hand_labeler))
+	if(istype(W, /obj/item/clothing/accessory) || istype(W, /obj/item/hand_labeler))
 		return ..()
 
 	if(user.get_inventory_slot(src) == slot_wear_suit)
-		to_chat(user, "<span class='warning'>You cannot modify \the [src] while it is being worn.</span>")
+		to_chat(user, span_warning("You cannot modify \the [src] while it is being worn."))
 		return
 
-	if(W.is_screwdriver())
+	if(W.has_tool_quality(TOOL_SCREWDRIVER))
 		if(boots || tank || cooler)
-			var/choice = input("What component would you like to remove?") as null|anything in list(boots,tank,cooler)
+			var/choice = tgui_input_list(usr, "What component would you like to remove?", "Remove Component", list(boots,tank,cooler))
 			if(!choice) return
 
 			if(choice == tank)	//No, a switch doesn't work here. Sorry. ~Techhead
@@ -106,10 +108,11 @@
 	desc = "As a vital part of the Mark VII suit, the integral helmet cannot be removed - so don't try."
 	icon_state = "erthelmet"
 	item_state = "erthelmet"
-	species_restricted = list("exclude",SPECIES_DIONA,SPECIES_VOX,SPECIES_TESHARI)	//this thing can autoadapt too
+	species_restricted = list("exclude",SPECIES_DIONA,SPECIES_VOX,SPECIES_TESHARI,SPECIES_ALTEVIAN)	//this thing can autoadapt too
 	armor = list(melee = 60, bullet = 50, laser = 30,energy = 15, bomb = 30, bio = 100, rad = 100)
 	siemens_coefficient = 0.5
-	icon = 'icons/obj/clothing/hats_vr.dmi'
+	icon = 'icons/inventory/head/item_vr.dmi'
+	default_worn_icon = 'icons/inventory/head/mob_vr.dmi'
 	enables_planes = list(VIS_CH_ID,VIS_CH_HEALTH_VR,VIS_AUGMENTED)
 	var/away_planes = null
 	plane_slots = list(slot_head)
@@ -166,75 +169,78 @@
 
 /obj/item/clothing/suit/space/void/responseteam
 	sprite_sheets = list(
-		SPECIES_HUMAN			= 'icons/mob/spacesuit_vr.dmi',
-		SPECIES_TAJ 			= 'icons/mob/species/tajaran/suit_vr.dmi',
-		SPECIES_SKRELL 			= 'icons/mob/species/skrell/suit_vr.dmi',
-		SPECIES_UNATHI 			= 'icons/mob/species/unathi/suit_vr.dmi',
-		SPECIES_XENOHYBRID 		= 'icons/mob/species/unathi/suit_vr.dmi',
-		SPECIES_AKULA			= 'icons/mob/species/akula/suit_vr.dmi',
-		SPECIES_SERGAL			= 'icons/mob/species/sergal/suit_vr.dmi',
-		SPECIES_VULPKANIN		= 'icons/mob/species/vulpkanin/suit_vr.dmi',
-		SPECIES_ZORREN_HIGH		= 'icons/mob/species/vulpkanin/suit_vr.dmi',
-		SPECIES_FENNEC			= 'icons/mob/species/vulpkanin/suit_vr.dmi',
-		SPECIES_SHADEKIN_CREW		= 'icons/mob/species/vulpkanin/suit_vr.dmi',
-		SPECIES_VASILISSAN		= 'icons/mob/spacesuit_vr.dmi',
-		SPECIES_NEVREAN			= 'icons/mob/spacesuit_vr.dmi',
-		SPECIES_RAPALA			= 'icons/mob/spacesuit_vr.dmi',
-		SPECIES_ALRAUNE			= 'icons/mob/spacesuit_vr.dmi',
-		SPECIES_ZADDAT			= 'icons/mob/spacesuit_vr.dmi'
+		SPECIES_HUMAN			= 'icons/inventory/suit/mob_vr.dmi',
+		SPECIES_TAJ 			= 'icons/inventory/suit/mob_vr_tajaran.dmi',
+		SPECIES_LLEILL 			= 'icons/inventory/suit/mob_vr_tajaran.dmi',
+		SPECIES_SKRELL 			= 'icons/inventory/suit/mob_vr_skrell.dmi',
+		SPECIES_UNATHI 			= 'icons/inventory/suit/mob_vr_unathi.dmi',
+		SPECIES_XENOHYBRID 		= 'icons/inventory/suit/mob_vr_unathi.dmi',
+		SPECIES_AKULA			= 'icons/inventory/suit/mob_vr_akula.dmi',
+		SPECIES_SERGAL			= 'icons/inventory/suit/mob_vr_sergal.dmi',
+		SPECIES_VULPKANIN		= 'icons/inventory/suit/mob_vr_vulpkanin.dmi',
+		SPECIES_ZORREN_HIGH		= 'icons/inventory/suit/mob_vr_vulpkanin.dmi',
+		SPECIES_FENNEC			= 'icons/inventory/suit/mob_vr_vulpkanin.dmi',
+		SPECIES_SHADEKIN_CREW		= 'icons/inventory/suit/mob_vr_vulpkanin.dmi',
+		SPECIES_VASILISSAN		= 'icons/inventory/suit/mob_vr.dmi',
+		SPECIES_NEVREAN			= 'icons/inventory/suit/mob_vr.dmi',
+		SPECIES_RAPALA			= 'icons/inventory/suit/mob_vr.dmi',
+		SPECIES_ALRAUNE			= 'icons/inventory/suit/mob_vr.dmi',
+		SPECIES_ZADDAT			= 'icons/inventory/suit/mob_vr.dmi'
 		)
 	sprite_sheets_obj = list(
-		SPECIES_TAJ			= 'icons/obj/clothing/suits_vr.dmi',
-		SPECIES_SKRELL			= 'icons/obj/clothing/suits_vr.dmi',
-		SPECIES_UNATHI			= 'icons/obj/clothing/suits_vr.dmi',
-		SPECIES_XENOHYBRID		= 'icons/obj/clothing/suits_vr.dmi',
-		SPECIES_AKULA			= 'icons/obj/clothing/suits_vr.dmi',
-		SPECIES_SERGAL			= 'icons/obj/clothing/suits_vr.dmi',
-		SPECIES_VULPKANIN		= 'icons/obj/clothing/suits_vr.dmi',
-		SPECIES_ZORREN_HIGH		= 'icons/obj/clothing/suits_vr.dmi',
-		SPECIES_FENNEC			= 'icons/obj/clothing/suits_vr.dmi',
-		SPECIES_SHADEKIN_CREW		= 'icons/obj/clothing/suits_vr.dmi',
-		SPECIES_VASILISSAN		= 'icons/obj/clothing/suits_vr.dmi',
-		SPECIES_NEVREAN			= 'icons/obj/clothing/suits_vr.dmi',
-		SPECIES_RAPALA			= 'icons/obj/clothing/suits_vr.dmi',
-		SPECIES_ALRAUNE			= 'icons/obj/clothing/suits_vr.dmi',
-		SPECIES_ZADDAT			= 'icons/obj/clothing/suits_vr.dmi'
+		SPECIES_TAJ			= 'icons/inventory/suit/item_vr.dmi',
+		SPECIES_SKRELL			= 'icons/inventory/suit/item_vr.dmi',
+		SPECIES_UNATHI			= 'icons/inventory/suit/item_vr.dmi',
+		SPECIES_XENOHYBRID		= 'icons/inventory/suit/item_vr.dmi',
+		SPECIES_AKULA			= 'icons/inventory/suit/item_vr.dmi',
+		SPECIES_SERGAL			= 'icons/inventory/suit/item_vr.dmi',
+		SPECIES_VULPKANIN		= 'icons/inventory/suit/item_vr.dmi',
+		SPECIES_ZORREN_HIGH		= 'icons/inventory/suit/item_vr.dmi',
+		SPECIES_FENNEC			= 'icons/inventory/suit/item_vr.dmi',
+		SPECIES_SHADEKIN_CREW		= 'icons/inventory/suit/item_vr.dmi',
+		SPECIES_VASILISSAN		= 'icons/inventory/suit/item_vr.dmi',
+		SPECIES_NEVREAN			= 'icons/inventory/suit/item_vr.dmi',
+		SPECIES_RAPALA			= 'icons/inventory/suit/item_vr.dmi',
+		SPECIES_ALRAUNE			= 'icons/inventory/suit/item_vr.dmi',
+		SPECIES_ZADDAT			= 'icons/inventory/suit/item_vr.dmi',
+		SPECIES_LLEILL			= 'icons/inventory/suit/item_vr.dmi'
 		)
 
 /obj/item/clothing/head/helmet/space/void/responseteam
 	sprite_sheets = list(
-		SPECIES_HUMAN			= 'icons/mob/head_vr.dmi',
-		SPECIES_TAJ 			= 'icons/mob/species/tajaran/helmet_vr.dmi',
-		SPECIES_SKRELL 			= 'icons/mob/species/skrell/helmet_vr.dmi',
-		SPECIES_UNATHI 			= 'icons/mob/species/unathi/helmet_vr.dmi',
-		SPECIES_XENOHYBRID 		= 'icons/mob/species/unathi/helmet_vr.dmi',
-		SPECIES_AKULA			= 'icons/mob/species/unathi/helmet_vr.dmi',
-		SPECIES_SERGAL			= 'icons/mob/species/unathi/helmet_vr.dmi',
-		SPECIES_VULPKANIN		= 'icons/mob/species/vulpkanin/helmet_vr.dmi',
-		SPECIES_ZORREN_HIGH		= 'icons/mob/species/vulpkanin/helmet_vr.dmi',
-		SPECIES_FENNEC			= 'icons/mob/species/vulpkanin/helmet_vr.dmi',
-		SPECIES_SHADEKIN_CREW		= 'icons/mob/species/vulpkanin/helmet_vr.dmi',
-		SPECIES_VASILISSAN		= 'icons/mob/head_vr.dmi',
-		SPECIES_NEVREAN			= 'icons/mob/head_vr.dmi',
-		SPECIES_RAPALA			= 'icons/mob/head_vr.dmi',
-		SPECIES_ALRAUNE			= 'icons/mob/head_vr.dmi',
-		SPECIES_ZADDAT			= 'icons/mob/head_vr.dmi'
+		SPECIES_HUMAN			= 'icons/inventory/head/mob_vr.dmi',
+		SPECIES_TAJ 			= 'icons/inventory/head/mob_vr_tajaran.dmi',
+		SPECIES_LLEILL 			= 'icons/inventory/suit/mob_vr_tajaran.dmi',
+		SPECIES_SKRELL 			= 'icons/inventory/head/mob_vr_skrell.dmi',
+		SPECIES_UNATHI 			= 'icons/inventory/head/mob_vr_unathi.dmi',
+		SPECIES_XENOHYBRID 		= 'icons/inventory/head/mob_vr_unathi.dmi',
+		SPECIES_AKULA			= 'icons/inventory/head/mob_vr_unathi.dmi',
+		SPECIES_SERGAL			= 'icons/inventory/head/mob_vr_unathi.dmi',
+		SPECIES_VULPKANIN		= 'icons/inventory/head/mob_vr_vulpkanin.dmi',
+		SPECIES_ZORREN_HIGH		= 'icons/inventory/head/mob_vr_vulpkanin.dmi',
+		SPECIES_FENNEC			= 'icons/inventory/head/mob_vr_vulpkanin.dmi',
+		SPECIES_SHADEKIN_CREW		= 'icons/inventory/head/mob_vr_vulpkanin.dmi',
+		SPECIES_VASILISSAN		= 'icons/inventory/head/mob_vr.dmi',
+		SPECIES_NEVREAN			= 'icons/inventory/head/mob_vr.dmi',
+		SPECIES_RAPALA			= 'icons/inventory/head/mob_vr.dmi',
+		SPECIES_ALRAUNE			= 'icons/inventory/head/mob_vr.dmi',
+		SPECIES_ZADDAT			= 'icons/inventory/head/mob_vr.dmi'
 		)
 	sprite_sheets_obj = list(
-		SPECIES_TAJ 			= 'icons/obj/clothing/hats_vr.dmi',
-		SPECIES_SKRELL			= 'icons/obj/clothing/hats_vr.dmi',
-		SPECIES_UNATHI			= 'icons/obj/clothing/hats_vr.dmi',
-		SPECIES_XENOHYBRID		= 'icons/obj/clothing/hats_vr.dmi',
-		SPECIES_AKULA			= 'icons/obj/clothing/hats_vr.dmi',
-		SPECIES_SERGAL			= 'icons/obj/clothing/hats_vr.dmi',
-		SPECIES_VULPKANIN		= 'icons/obj/clothing/hats_vr.dmi',
-		SPECIES_ZORREN_HIGH		= 'icons/obj/clothing/hats_vr.dmi',
-		SPECIES_FENNEC			= 'icons/obj/clothing/hats_vr.dmi',
-		SPECIES_SHADEKIN_CREW		= 'icons/obj/clothing/hats_vr.dmi',
-		SPECIES_VASILISSAN		= 'icons/obj/clothing/hats_vr.dmi',
-		SPECIES_NEVREAN			= 'icons/obj/clothing/hats_vr.dmi',
-		SPECIES_RAPALA			= 'icons/obj/clothing/hats_vr.dmi',
-		SPECIES_ALRAUNE			= 'icons/obj/clothing/hats_vr.dmi',
-		SPECIES_ZADDAT			= 'icons/obj/clothing/hats_vr.dmi'
+		SPECIES_TAJ 			= 'icons/inventory/head/item_vr.dmi',
+		SPECIES_SKRELL			= 'icons/inventory/head/item_vr.dmi',
+		SPECIES_UNATHI			= 'icons/inventory/head/item_vr.dmi',
+		SPECIES_XENOHYBRID		= 'icons/inventory/head/item_vr.dmi',
+		SPECIES_AKULA			= 'icons/inventory/head/item_vr.dmi',
+		SPECIES_SERGAL			= 'icons/inventory/head/item_vr.dmi',
+		SPECIES_VULPKANIN		= 'icons/inventory/head/item_vr.dmi',
+		SPECIES_ZORREN_HIGH		= 'icons/inventory/head/item_vr.dmi',
+		SPECIES_FENNEC			= 'icons/inventory/head/item_vr.dmi',
+		SPECIES_SHADEKIN_CREW		= 'icons/inventory/head/item_vr.dmi',
+		SPECIES_VASILISSAN		= 'icons/inventory/head/item_vr.dmi',
+		SPECIES_NEVREAN			= 'icons/inventory/head/item_vr.dmi',
+		SPECIES_RAPALA			= 'icons/inventory/head/item_vr.dmi',
+		SPECIES_ALRAUNE			= 'icons/inventory/head/item_vr.dmi',
+		SPECIES_ZADDAT			= 'icons/inventory/head/item_vr.dmi',
+		SPECIES_LLEILL			= 'icons/inventory/suit/item_vr.dmi'
 		)
-	sprite_sheets_refit = list()	//have to nullify this as well just to be thorough

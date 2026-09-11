@@ -18,17 +18,16 @@
 	origin_tech = list(TECH_MATERIAL = 3, TECH_BIO = 4, TECH_MAGNET = 4, TECH_DATA = 3)
 	required_type = list(/obj/mecha/medical)
 
-/obj/item/mecha_parts/mecha_equipment/tool/syringe_gun/New()
-	..()
+/obj/item/mecha_parts/mecha_equipment/tool/syringe_gun/Initialize()
+	. = ..()
 	flags |= NOREACT
 	syringes = new
 	known_reagents = list("inaprovaline"="Inaprovaline","anti_toxin"="Dylovene")
 	processed_reagents = new
 	create_reagents(max_volume)
-	synth = new (list(src),0)
 
 /obj/item/mecha_parts/mecha_equipment/tool/syringe_gun/detach()
-	synth.stop()
+	STOP_PROCESSING(SSfastprocess, src)
 	return ..()
 
 /obj/item/mecha_parts/mecha_equipment/tool/syringe_gun/critfail()
@@ -45,24 +44,24 @@
 /obj/item/mecha_parts/mecha_equipment/tool/syringe_gun/action(atom/movable/target)
 	if(!action_checks(target))
 		return
-	if(istype(target,/obj/item/weapon/reagent_containers/syringe))
+	if(istype(target,/obj/item/reagent_containers/syringe))
 		return load_syringe(target)
-	if(istype(target,/obj/item/weapon/storage))//Loads syringes from boxes
-		for(var/obj/item/weapon/reagent_containers/syringe/S in target.contents)
+	if(istype(target,/obj/item/storage))//Loads syringes from boxes
+		for(var/obj/item/reagent_containers/syringe/S in target.contents)
 			load_syringe(S)
 		return
 	if(mode)
 		return analyze_reagents(target)
 	if(!syringes.len)
-		occupant_message("<span class=\"alert\">No syringes loaded.</span>")
+		occupant_message(span_warning("No syringes loaded."))
 		return
 	if(reagents.total_volume<=0)
-		occupant_message("<span class=\"alert\">No available reagents to load syringe with.</span>")
+		occupant_message(span_warning("No available reagents to load syringe with."))
 		return
-	set_ready_state(0)
+	set_ready_state(FALSE)
 	chassis.use_power(energy_drain)
 	var/turf/trg = get_turf(target)
-	var/obj/item/weapon/reagent_containers/syringe/S = syringes[1]
+	var/obj/item/reagent_containers/syringe/S = syringes[1]
 	S.forceMove(get_turf(chassis))
 	reagents.trans_to_obj(S, min(S.volume, reagents.total_volume))
 	syringes -= S
@@ -85,7 +84,7 @@
 					S.icon = initial(S.icon)
 					S.reagents.trans_to_mob(M, S.reagents.total_volume, CHEM_BLOOD)
 					M.take_organ_damage(2)
-					S.visible_message("<span class=\"attack\"> [M] was hit by the syringe!</span>")
+					S.visible_message(span_attack("[M] was hit by the syringe!"))
 					break
 				else if(S.loc == trg)
 					S.icon_state = initial(S.icon_state)
@@ -123,7 +122,7 @@
 				m++
 		if(processed_reagents.len)
 			message += " added to production"
-			synth.start()
+			START_PROCESSING(SSfastprocess, src)
 			occupant_message(message)
 			occupant_message("Reagent processing started.")
 			log_message("Reagent processing started.")
@@ -199,7 +198,7 @@
 		output += "Total: [round(reagents.total_volume,0.001)]/[reagents.maximum_volume] - <a href=\"?src=\ref[src];purge_all=1\">Purge All</a>"
 	return output || "None"
 
-/obj/item/mecha_parts/mecha_equipment/tool/syringe_gun/proc/load_syringe(obj/item/weapon/reagent_containers/syringe/S)
+/obj/item/mecha_parts/mecha_equipment/tool/syringe_gun/proc/load_syringe(obj/item/reagent_containers/syringe/S)
 	if(syringes.len<max_syringes)
 		if(get_dist(src,S) >= 2)
 			occupant_message("The syringe is too far away.")
@@ -226,7 +225,7 @@
 		occupant_message("The object is too far away.")
 		return 0
 	if(!A.reagents || istype(A,/mob))
-		occupant_message("<span class=\"alert\">No reagent info gained from [A].</span>")
+		occupant_message(span_warning("No reagent info gained from [A]."))
 		return 0
 	occupant_message("Analyzing reagents...")
 	//VOREStation Block Edit - Start
@@ -243,7 +242,7 @@
 	return 1
 
 /obj/item/mecha_parts/mecha_equipment/tool/syringe_gun/proc/add_known_reagent(r_id,r_name)
-	set_ready_state(0)
+	set_ready_state(FALSE)
 	do_after_cooldown()
 	if(!(r_id in known_reagents))
 		known_reagents += r_id
@@ -264,22 +263,17 @@
 	update_equip_info()
 	return
 
-/datum/global_iterator/mech_synth
-	delay = 100
-
-/datum/global_iterator/mech_synth/process(var/obj/item/mecha_parts/mecha_equipment/tool/syringe_gun/S)
-	if(!S.chassis)
-		return stop()
-	var/energy_drain = S.energy_drain*10
-	if(!S.processed_reagents.len || S.reagents.total_volume >= S.reagents.maximum_volume || !S.chassis.has_charge(energy_drain))
-		S.occupant_message("<span class=\"alert\">Reagent processing stopped.</span>")
-		S.log_message("Reagent processing stopped.")
-		return stop()
-	var/amount = S.synth_speed / S.processed_reagents.len
-	for(var/reagent in S.processed_reagents)
-		S.reagents.add_reagent(reagent,amount)
-		S.chassis.use_power(energy_drain)
-	return 1
+/obj/item/mecha_parts/mecha_equipment/tool/syringe_gun/process()
+	if(!chassis)
+		return PROCESS_KILL
+	if(!processed_reagents.len || reagents.total_volume >= reagents.maximum_volume || !chassis.has_charge(energy_drain))
+		occupant_message(span_warning("Reagent processing stopped."))
+		log_message("Reagent processing stopped.")
+		return PROCESS_KILL
+	var/amount = synth_speed / processed_reagents.len
+	for(var/reagent in processed_reagents)
+		reagents.add_reagent(reagent,amount)
+		chassis.use_power(energy_drain)
 
 /obj/item/mecha_parts/mecha_equipment/crisis_drone
 	name = "crisis dronebay"
@@ -321,10 +315,6 @@
 	. = ..()
 	drone_overlay = new(src.icon, icon_state = droid_state)
 
-/obj/item/mecha_parts/mecha_equipment/crisis_drone/Destroy()
-	STOP_PROCESSING(SSobj, src)
-	..()
-
 /obj/item/mecha_parts/mecha_equipment/crisis_drone/attach(obj/mecha/M as obj)
 	. = ..(M)
 	if(chassis)
@@ -340,7 +330,7 @@
 	STOP_PROCESSING(SSobj, src)
 	shut_down()
 	if(chassis && chassis.occupant)
-		to_chat(chassis.occupant, "<span class='notice'>\The [chassis] shudders as something jams!</span>")
+		to_chat(chassis.occupant, span_notice("\The [chassis] shudders as something jams!"))
 		log_message("[src.name] has malfunctioned. Maintenance required.")
 
 /obj/item/mecha_parts/mecha_equipment/crisis_drone/process()	// Will continually try to find the nearest person above the threshold that is a valid target, and try to heal them.
@@ -431,7 +421,7 @@
 
 /obj/item/mecha_parts/mecha_equipment/crisis_drone/proc/shut_down()
 	if(enabled)
-		chassis.visible_message("<span class='notice'>\The [chassis]'s [src] buzzes as its drone returns to port.</span>")
+		chassis.visible_message(span_notice("\The [chassis]'s [src] buzzes as its drone returns to port."))
 		toggle_drone()
 	if(!isnull(Target))
 		Target = null
@@ -464,10 +454,10 @@
 	if(chassis)
 		enabled = !enabled
 		if(enabled)
-			set_ready_state(0)
+			set_ready_state(FALSE)
 			log_message("Activated.")
 		else
-			set_ready_state(1)
+			set_ready_state(TRUE)
 			log_message("Deactivated.")
 
 /obj/item/mecha_parts/mecha_equipment/crisis_drone/add_equip_overlay(obj/mecha/M as obj)
@@ -484,7 +474,7 @@
 
 /obj/item/mecha_parts/mecha_equipment/crisis_drone/get_equip_info()
 	if(!chassis) return
-	return "<span style=\"color:[equip_ready?"#0f0":"#f00"];\">*</span>&nbsp;[src.name] - <a href='?src=\ref[src];toggle_drone=1'>[enabled?"Dea":"A"]ctivate</a>"
+	return (equip_ready ? span_green("*") : span_red("*")) + "&nbsp;[src.name] - <a href='?src=\ref[src];toggle_drone=1'>[enabled?"Dea":"A"]ctivate</a>"
 
 /obj/item/mecha_parts/mecha_equipment/crisis_drone/rad
 	name = "hazmat dronebay"
@@ -511,4 +501,4 @@
 	ready_sound = 'sound/weapons/flash.ogg'
 	required_type = list(/obj/mecha/medical)
 
-	tooltype = /obj/item/device/healthanalyzer/advanced
+	tooltype = /obj/item/healthanalyzer/advanced

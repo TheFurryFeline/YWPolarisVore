@@ -6,14 +6,14 @@
 	var/desc = "Someone neglected to write a nice description for this poor rock."
 
 	var/datum/time/current_time = new() // Holds the current time for sun positioning.  Note that we assume day and night is the same length because simplicity.
-	var/sun_process_interval = 1 HOUR
+	var/sun_process_interval = 30 MINUTES //YW Edit - Process sun a bit more often (previously 1 HOUR)
 	var/sun_last_process = null // world.time
 
 	var/datum/weather_holder/weather_holder
+	var/datum/sun_holder/sun_holder
 
 	var/sun_position = 0 // 0 means midnight, 1 means noon.
-	var/list/sun = list("range","brightness","color","lum_r","lum_g","lum_b")
-	var/list/datum/lighting_corner/sunlit_corners = list()
+	var/list/sun = list("brightness","color")
 	var/list/expected_z_levels = list()
 
 	var/turf/unsimulated/wall/planetary/planetary_wall_type = /turf/unsimulated/wall/planetary
@@ -31,6 +31,7 @@
 /datum/planet/New()
 	..()
 	weather_holder = new(src)
+	sun_holder = new(src)
 	current_time = current_time.make_random_time()
 	if(moon_name)
 		moon_phase = pick(list(
@@ -61,9 +62,7 @@
 	if(weather_holder)
 		weather_holder.process()
 
-/datum/planet/proc/update_sun_deferred(var/new_range, var/new_brightness, var/new_color)
-	sun["range"] = new_range
+/datum/planet/proc/update_sun_deferred(var/new_brightness, var/new_color)
 	sun["brightness"] = new_brightness
 	sun["color"] = new_color
 	needs_work |= PLANET_PROCESS_SUN
-

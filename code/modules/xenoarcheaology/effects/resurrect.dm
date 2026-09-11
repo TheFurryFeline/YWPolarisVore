@@ -4,7 +4,11 @@
 
 	var/stored_life = 0
 
+	effect_state = "pulsing"
+	effect_color = "#ff0000"
+
 /datum/artifact_effect/resurrect/proc/steal_life(var/mob/living/target = null)
+	var/atom/holder = get_master_holder()
 	if(!istype(target))
 		return 0
 
@@ -16,6 +20,7 @@
 	return 0
 
 /datum/artifact_effect/resurrect/proc/give_life(var/mob/living/target = null)
+	var/atom/holder = get_master_holder()
 	if(!istype(target))
 		return
 
@@ -34,6 +39,7 @@
 			stored_life = 0
 
 /datum/artifact_effect/resurrect/proc/attempt_revive(var/mob/living/L = null)
+	var/atom/holder = get_master_holder()
 	spawn()
 		if(istype(L, /mob/living/simple_mob))
 			var/mob/living/simple_mob/SM = L
@@ -45,16 +51,16 @@
 			living_mob_list += SM
 			SM.update_icon()
 			SM.revive()
-			holder.visible_message("<span class='alien'>\The [SM]'s eyes open in a flash of light!</span>")
+			holder.visible_message(span_alien("\The [SM]'s eyes open in a flash of light!"))
 		else if(ishuman(L))
 			var/mob/living/carbon/human/H = L
 
 			if(!H.client && H.mind)
 				for(var/mob/observer/dead/ghost in player_list)
 					if(ghost.mind == H.mind)
-						to_chat(ghost, "<b><font color = #330033><font size = 3>An artifact is trying to \
-						revive you. Return to your body if you want to be resurrected!</b> \
-						(Verbs -> Ghost -> Re-enter corpse)</font></font>")
+						to_chat(ghost, span_large(span_interface(span_bold("An artifact is trying to \
+						revive you. Return to your body if you want to be resurrected!") + "\
+						(Verbs -> Ghost -> Re-enter corpse)")))
 						break
 
 			H.adjustBruteLoss(-40)
@@ -67,9 +73,10 @@
 				living_mob_list += H
 				H.timeofdeath = null
 
-				holder.visible_message("<span class='alien'>\The [H]'s eyes open in a flash of light!</span>")
+				holder.visible_message(span_alien("\The [H]'s eyes open in a flash of light!"))
 
 /datum/artifact_effect/resurrect/DoEffectTouch(var/mob/user)
+	var/atom/holder = get_master_holder()
 	for(var/mob/living/L in oview(effectrange, get_turf(holder)))
 		stored_life += 4 * steal_life(L)
 
@@ -80,6 +87,7 @@
 			break
 
 /datum/artifact_effect/resurrect/DoEffectAura()
+	var/atom/holder = get_master_holder()
 	for(var/mob/living/L in oview(effectrange, get_turf(holder)))
 		stored_life += steal_life(L)
 
@@ -90,6 +98,7 @@
 			break
 
 /datum/artifact_effect/resurrect/DoEffectPulse()
+	var/atom/holder = get_master_holder()
 	for(var/mob/living/L in oview(effectrange, get_turf(holder)))
 		stored_life += 2 * steal_life(L)
 

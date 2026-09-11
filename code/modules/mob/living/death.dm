@@ -1,5 +1,6 @@
 /mob/living/death(gibbed)
 	clear_fullscreens()
+	update_mob_action_buttons()
 	if(ai_holder)
 		ai_holder.go_sleep()
 
@@ -17,11 +18,19 @@
 		//VOREStation Edit End
 		nest = null
 
-	for(var/s in owned_soul_links)
-		var/datum/soul_link/S = s
+	if(isbelly(loc) && tf_mob_holder)
+		mind?.vore_death = TRUE
+		tf_mob_holder.mind?.vore_death = TRUE
+
+	for(var/datum/soul_link/S as anything in owned_soul_links)
 		S.owner_died(gibbed)
-	for(var/s in shared_soul_links)
-		var/datum/soul_link/S = s
+	for(var/datum/soul_link/S as anything in shared_soul_links)
 		S.sharer_died(gibbed)
 
 	. = ..()
+
+/mob/living/proc/delayed_gib()
+	visible_message(span_danger(span_bold("[src]") + " starts convulsing violently!"), span_danger("You feel as if your body is tearing itself apart!"))
+	Weaken(30)
+	make_jittery(1000)
+	addtimer(CALLBACK(src, PROC_REF(gib)), rand(2 SECONDS, 10 SECONDS))

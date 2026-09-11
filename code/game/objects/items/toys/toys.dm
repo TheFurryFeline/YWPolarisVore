@@ -3,8 +3,6 @@
  *		Balloons
  *		Fake telebeacon
  *		Fake singularity
- *		Toy gun
- *		Toy crossbow
  *		Toy swords
  *		Toy bosun's whistle
  *		Snap pops
@@ -50,13 +48,13 @@
 	if(!proximity) return
 	if (istype(A, /obj/structure/reagent_dispensers/watertank) && get_dist(src,A) <= 1)
 		A.reagents.trans_to_obj(src, 10)
-		to_chat(user, "<span class='notice'>You fill the balloon with the contents of [A].</span>")
+		to_chat(user, span_notice("You fill the balloon with the contents of [A]."))
 		src.desc = "A translucent balloon with some form of liquid sloshing around in it."
 		src.update_icon()
 	return
 
 /obj/item/toy/balloon/attackby(obj/O as obj, mob/user as mob)
-	if(istype(O, /obj/item/weapon/reagent_containers/glass))
+	if(istype(O, /obj/item/reagent_containers/glass))
 		if(O.reagents)
 			if(O.reagents.total_volume < 1)
 				to_chat(user, "The [O] is empty.")
@@ -67,14 +65,14 @@
 					qdel(src)
 				else
 					src.desc = "A translucent balloon with some form of liquid sloshing around in it."
-					to_chat(user, "<span class='notice'>You fill the balloon with the contents of [O].</span>")
+					to_chat(user, span_notice("You fill the balloon with the contents of [O]."))
 					O.reagents.trans_to_obj(src, 10)
 	src.update_icon()
 	return
 
 /obj/item/toy/balloon/throw_impact(atom/hit_atom)
 	if(src.reagents.total_volume >= 1)
-		src.visible_message("<span class='warning'>\The [src] bursts!</span>","You hear a pop and a splash.")
+		src.visible_message(span_warning("\The [src] bursts!"),"You hear a pop and a splash.")
 		src.reagents.touch_turf(get_turf(hit_atom))
 		for(var/atom/A in get_turf(hit_atom))
 			src.reagents.touch(A)
@@ -146,127 +144,6 @@
 	icon_state = "singularity_s1"
 
 /*
- * Toy crossbow
- */
-
-/obj/item/toy/crossbow
-	name = "foam dart crossbow"
-	desc = "A weapon favored by many overactive children. Ages 8 and up."
-	icon = 'icons/obj/gun.dmi'
-	icon_state = "crossbow"
-	item_icons = list(
-		icon_l_hand = 'icons/mob/items/lefthand_guns.dmi',
-		icon_r_hand = 'icons/mob/items/righthand_guns.dmi',
-		)
-	slot_flags = SLOT_HOLSTER
-	w_class = ITEMSIZE_SMALL
-	attack_verb = list("attacked", "struck", "hit")
-	var/bullets = 5
-	drop_sound = 'sound/items/drop/gun.ogg'
-
-	examine(mob/user)
-		. = ..()
-		if(bullets && get_dist(user, src) <= 2)
-			. += "<span class='notice'>It is loaded with [bullets] foam darts!</span>"
-
-	attackby(obj/item/I as obj, mob/user as mob)
-		if(istype(I, /obj/item/toy/ammo/crossbow))
-			if(bullets <= 4)
-				user.drop_item()
-				qdel(I)
-				bullets++
-				to_chat(user, "<span class='notice'>You load the foam dart into the crossbow.</span>")
-			else
-				to_chat(usr, "<span class='warning'>It's already fully loaded.</span>")
-
-
-	afterattack(atom/target as mob|obj|turf|area, mob/user as mob, flag)
-		if(!isturf(target.loc) || target == user) return
-		if(flag) return
-
-		if (locate (/obj/structure/table, src.loc))
-			return
-		else if (bullets)
-			var/turf/trg = get_turf(target)
-			var/obj/effect/foam_dart_dummy/D = new/obj/effect/foam_dart_dummy(get_turf(src))
-			bullets--
-			D.icon_state = "foamdart"
-			D.name = "foam dart"
-			playsound(src, 'sound/items/syringeproj.ogg', 50, 1)
-
-			for(var/i=0, i<6, i++)
-				if (D)
-					if(D.loc == trg) break
-					step_towards(D,trg)
-
-					for(var/mob/living/M in D.loc)
-						if(!istype(M,/mob/living)) continue
-						if(M == user) continue
-						for(var/mob/O in viewers(world.view, D))
-							O.show_message(text("<span class='warning'>\The [] was hit by the foam dart!</span>", M), 1)
-						new /obj/item/toy/ammo/crossbow(M.loc)
-						qdel(D)
-						return
-
-					for(var/atom/A in D.loc)
-						if(A == user) continue
-						if(A.density)
-							new /obj/item/toy/ammo/crossbow(A.loc)
-							qdel(D)
-
-				sleep(1)
-
-			spawn(10)
-				if(D)
-					new /obj/item/toy/ammo/crossbow(D.loc)
-					qdel(D)
-
-			return
-		else if (bullets == 0)
-			user.Weaken(5)
-			for(var/mob/O in viewers(world.view, user))
-				O.show_message(text("<span class='warning'>\The [] realized they were out of ammo and starting scrounging for some!</span>", user), 1)
-
-
-	attack(mob/M as mob, mob/user as mob)
-		src.add_fingerprint(user)
-
-// ******* Check
-
-		if (src.bullets > 0 && M.lying)
-
-			for(var/mob/O in viewers(M, null))
-				if(O.client)
-					O.show_message(text("<span class='danger'>\The [] casually lines up a shot with []'s head and pulls the trigger!</span>", user, M), 1, "<span class='warning'>You hear the sound of foam against skull</span>", 2)
-					O.show_message(text("<span class='warning'>\The [] was hit in the head by the foam dart!</span>", M), 1)
-
-			playsound(src, 'sound/items/syringeproj.ogg', 50, 1)
-			new /obj/item/toy/ammo/crossbow(M.loc)
-			src.bullets--
-		else if (M.lying && src.bullets == 0)
-			for(var/mob/O in viewers(M, null))
-				if (O.client)	O.show_message(text("<span class='danger'>\The [] casually lines up a shot with []'s head, pulls the trigger, then realizes they are out of ammo and drops to the floor in search of some!</span>", user, M), 1, "<span class='warning'>You hear someone fall</span>", 2)
-			user.Weaken(5)
-		return
-
-/obj/item/toy/ammo/crossbow
-	name = "foam dart"
-	desc = "It's nerf or nothing! Ages 8 and up."
-	icon = 'icons/obj/toy.dmi'
-	icon_state = "foamdart"
-	w_class = ITEMSIZE_TINY
-	slot_flags = SLOT_EARS
-	drop_sound = 'sound/items/drop/food.ogg'
-
-/obj/effect/foam_dart_dummy
-	name = ""
-	desc = ""
-	icon = 'icons/obj/toy.dmi'
-	icon_state = "null"
-	anchored = 1
-	density = 0
-
-/*
  * Toy swords
  */
 /obj/item/toy/sword
@@ -285,21 +162,21 @@
 	w_class = ITEMSIZE_SMALL
 	attack_verb = list("attacked", "struck", "hit")
 
-	attack_self(mob/user as mob)
-		src.active = !( src.active )
-		if (src.active)
-			to_chat(user, "<span class='notice'>You extend the plastic blade with a quick flick of your wrist.</span>")
-			playsound(src, 'sound/weapons/saberon.ogg', 50, 1)
-			src.item_state = "[icon_state]_blade"
-			src.w_class = ITEMSIZE_LARGE
-		else
-			to_chat(user, "<span class='notice'>You push the plastic blade back down into the handle.</span>")
-			playsound(src, 'sound/weapons/saberoff.ogg', 50, 1)
-			src.item_state = "[icon_state]"
-			src.w_class = ITEMSIZE_SMALL
-		update_icon()
-		src.add_fingerprint(user)
-		return
+/obj/item/toy/sword/attack_self(mob/user as mob)
+	src.active = !( src.active )
+	if (src.active)
+		to_chat(user, span_notice("You extend the plastic blade with a quick flick of your wrist."))
+		playsound(src, 'sound/weapons/saberon.ogg', 50, 1)
+		src.item_state = "[icon_state]_blade"
+		src.w_class = ITEMSIZE_LARGE
+	else
+		to_chat(user, span_notice("You push the plastic blade back down into the handle."))
+		playsound(src, 'sound/weapons/saberoff.ogg', 50, 1)
+		src.item_state = "[icon_state]"
+		src.w_class = ITEMSIZE_SMALL
+	update_icon()
+	src.add_fingerprint(user)
+	return
 
 /obj/item/toy/sword/update_icon()
 	. = ..()
@@ -317,26 +194,26 @@
 	if(!in_range(src, user))	//Basic checks to prevent abuse
 		return
 	if(user.incapacitated() || !istype(user))
-		to_chat(user, "<span class='warning'>You can't do that right now!</span>")
+		to_chat(user, span_warning("You can't do that right now!"))
 		return
 
-	if(alert("Are you sure you want to recolor your blade?", "Confirm Recolor", "Yes", "No") == "Yes")
-		var/energy_color_input = input(usr,"","Choose Energy Color",lcolor) as color|null
+	if(tgui_alert(user, "Are you sure you want to recolor your blade?", "Confirm Recolor", list("Yes", "No")) == "Yes")
+		var/energy_color_input = input(user,"","Choose Energy Color",lcolor) as color|null
 		if(energy_color_input)
 			lcolor = sanitize_hexcolor(energy_color_input)
 		update_icon()
 
 /obj/item/toy/sword/examine(mob/user)
 	. = ..()
-	. += "<span class='notice'>Alt-click to recolor it.</span>"
+	. += span_notice("Alt-click to recolor it.")
 
-/obj/item/toy/sword/attackby(obj/item/weapon/W, mob/user)
-	if(istype(W, /obj/item/device/multitool) && !active)
+/obj/item/toy/sword/attackby(obj/item/W, mob/user)
+	if(istype(W, /obj/item/multitool) && !active)
 		if(!rainbow)
 			rainbow = TRUE
 		else
 			rainbow = FALSE
-		to_chat(user, "<span class='notice'>You manipulate the color controller in [src].</span>")
+		to_chat(user, span_notice("You manipulate the color controller in [src]."))
 		update_icon()
 /obj/item/toy/katana
 	name = "replica katana"
@@ -365,15 +242,15 @@
 	w_class = ITEMSIZE_TINY
 	drop_sound = null
 
-	throw_impact(atom/hit_atom)
-		..()
-		var/datum/effect/effect/system/spark_spread/s = new /datum/effect/effect/system/spark_spread
-		s.set_up(3, 1, src)
-		s.start()
-		new /obj/effect/decal/cleanable/ash(src.loc)
-		src.visible_message("<span class='warning'>The [src.name] explodes!</span>","<span class='warning'>You hear a snap!</span>")
-		playsound(src, 'sound/effects/snap.ogg', 50, 1)
-		qdel(src)
+/obj/item/toy/snappop/throw_impact(atom/hit_atom)
+	..()
+	var/datum/effect/effect/system/spark_spread/s = new /datum/effect/effect/system/spark_spread
+	s.set_up(3, 1, src)
+	s.start()
+	new /obj/effect/decal/cleanable/ash(src.loc)
+	src.visible_message(span_warning("The [src.name] explodes!"),span_warning("You hear a snap!"))
+	playsound(src, 'sound/effects/snap.ogg', 50, 1)
+	qdel(src)
 
 /obj/item/toy/snappop/Crossed(atom/movable/H as mob|obj)
 	if(H.is_incorporeal())
@@ -381,20 +258,19 @@
 	if((ishuman(H))) //i guess carp and shit shouldn't set them off
 		var/mob/living/carbon/M = H
 		if(M.m_intent == "run")
-			to_chat(M, "<span class='warning'>You step on the snap pop!</span>")
+			to_chat(M, span_warning("You step on the snap pop!"))
 
 			var/datum/effect/effect/system/spark_spread/s = new /datum/effect/effect/system/spark_spread
 			s.set_up(2, 0, src)
 			s.start()
 			new /obj/effect/decal/cleanable/ash(src.loc)
-			src.visible_message("<span class='warning'>The [src.name] explodes!</span>","<span class='warning'>You hear a snap!</span>")
+			src.visible_message(span_warning("The [src.name] explodes!"),span_warning("You hear a snap!"))
 			playsound(src, 'sound/effects/snap.ogg', 50, 1)
 			qdel(src)
 
 /*
  * Bosun's whistle
  */
-
 /obj/item/toy/bosunwhistle
 	name = "bosun's whistle"
 	desc = "A genuine Admiral Krush Bosun's Whistle, for the aspiring ship's captain! Suitable for ages 8 and up, do not swallow."
@@ -407,7 +283,7 @@
 
 /obj/item/toy/bosunwhistle/attack_self(mob/user as mob)
 	if(cooldown < world.time - 35)
-		to_chat(user, "<span class='notice'>You blow on [src], creating an ear-splitting noise!</span>")
+		to_chat(user, span_notice("You blow on [src], creating an ear-splitting noise!"))
 		playsound(src, 'sound/misc/boatswain.ogg', 20, 1)
 		cooldown = world.time
 
@@ -431,12 +307,12 @@
 /obj/item/toy/figure/attack_self(mob/user as mob)
 	if(cooldown < world.time)
 		cooldown = (world.time + 30) //3 second cooldown
-		user.visible_message("<span class='notice'>The [src] says \"[toysay]\".</span>")
+		user.visible_message(span_notice("The [src] says \"[toysay]\"."))
 		playsound(src, 'sound/machines/click.ogg', 20, 1)
 
 /obj/item/toy/figure/cmo
-	name = "Chief Medical Officer action figure"
-	desc = "A \"Space Life\" brand Chief Medical Officer action figure."
+	name = JOB_CHIEF_MEDICAL_OFFICER + " action figure"
+	desc = "A \"Space Life\" brand " + JOB_CHIEF_MEDICAL_OFFICER + " action figure."
 	icon_state = "cmo"
 	toysay = "Suit sensors!"
 
@@ -447,14 +323,14 @@
 	toysay = "Grey tide station wide!"
 
 /obj/item/toy/figure/atmos
-	name = "Atmospheric Technician action figure"
-	desc = "A \"Space Life\" brand Atmospheric Technician action figure."
+	name = JOB_ATMOSPHERIC_TECHNICIAN + " action figure"
+	desc = "A \"Space Life\" brand " + JOB_ATMOSPHERIC_TECHNICIAN + " action figure."
 	icon_state = "atmos"
 	toysay = "Glory to Atmosia!"
 
 /obj/item/toy/figure/bartender
-	name = "Bartender action figure"
-	desc = "A \"Space Life\" brand Bartender action figure."
+	name = JOB_BARTENDER + " action figure"
+	desc = "A \"Space Life\" brand " + JOB_BARTENDER + " action figure."
 	icon_state = "bartender"
 	toysay = "Where's my monkey?"
 
@@ -465,50 +341,50 @@
 	toysay = "I. LIVE. AGAIN."
 
 /obj/item/toy/figure/gardener
-	name = "Gardener action figure"
-	desc = "A \"Space Life\" brand Gardener action figure."
+	name = JOB_ALT_GARDENER + " action figure"
+	desc = "A \"Space Life\" brand " + JOB_ALT_GARDENER + " action figure."
 	icon_state = "botanist"
 	toysay = "Dude, I see colors..."
 
 /obj/item/toy/figure/captain
-	name = "Site Manager action figure"
-	desc = "A \"Space Life\" brand Site Manager action figure."
+	name = JOB_SITE_MANAGER + " action figure"
+	desc = "A \"Space Life\" brand " + JOB_SITE_MANAGER + " action figure."
 	icon_state = "captain"
 	toysay = "How do I open this display case?"
 
 /obj/item/toy/figure/cargotech
-	name = "Cargo Technician action figure"
-	desc = "A \"Space Life\" brand Cargo Technician action figure."
+	name = JOB_CARGO_TECHNICIAN + " action figure"
+	desc = "A \"Space Life\" brand " + JOB_CARGO_TECHNICIAN + " action figure."
 	icon_state = "cargotech"
 	toysay = "For Cargonia!"
 
 /obj/item/toy/figure/ce
-	name = "Chief Engineer action figure"
-	desc = "A \"Space Life\" brand Chief Engineer action figure."
+	name = JOB_CHIEF_ENGINEER + " action figure"
+	desc = "A \"Space Life\" brand " + JOB_CHIEF_ENGINEER + " action figure."
 	icon_state = "ce"
 	toysay = "Wire the solars!"
 
 /obj/item/toy/figure/chaplain
-	name = "Chaplain action figure"
-	desc = "A \"Space Life\" brand Chaplain action figure."
+	name = JOB_CHAPLAIN + " action figure"
+	desc = "A \"Space Life\" brand " + JOB_CHAPLAIN + " action figure."
 	icon_state = "chaplain"
 	toysay = "Gods make me a killing machine please!"
 
 /obj/item/toy/figure/chef
-	name = "Chef action figure"
-	desc = "A \"Space Life\" brand Chef action figure."
+	name = JOB_CHEF + " action figure"
+	desc = "A \"Space Life\" brand " + JOB_CHEF + " action figure."
 	icon_state = "chef"
 	toysay = "I swear it's not human meat."
 
 /obj/item/toy/figure/chemist
-	name = "Chemist action figure"
-	desc = "A \"Space Life\" brand Chemist action figure."
+	name = JOB_CHEMIST + " action figure"
+	desc = "A \"Space Life\" brand " + JOB_CHEMIST + " action figure."
 	icon_state = "chemist"
 	toysay = "Get your pills!"
 
 /obj/item/toy/figure/clown
-	name = "Clown action figure"
-	desc = "A \"Space Life\" brand Clown action figure."
+	name = JOB_CLOWN + " action figure"
+	desc = "A \"Space Life\" brand " + JOB_CLOWN + " action figure."
 	icon_state = "clown"
 	toysay = "<font face='comic sans ms'><b>Honk!</b></font>"
 
@@ -519,8 +395,8 @@
 	toysay = "Arf!"
 
 /obj/item/toy/figure/detective
-	name = "Detective action figure"
-	desc = "A \"Space Life\" brand Detective action figure."
+	name = JOB_DETECTIVE + " action figure"
+	desc = "A \"Space Life\" brand " + JOB_DETECTIVE + " action figure."
 	icon_state = "detective"
 	toysay = "This airlock has grey jumpsuit and insulated glove fibers on it."
 
@@ -531,68 +407,68 @@
 	toysay = "Eliminate all threats!"
 
 /obj/item/toy/figure/engineer
-	name = "Engineer action figure"
-	desc = "A \"Space Life\" brand Engineer action figure."
+	name = JOB_ENGINEER + " action figure"
+	desc = "A \"Space Life\" brand " + JOB_ENGINEER + " action figure."
 	icon_state = "engineer"
 	toysay = "Oh god, the engine is gonna go!"
 
 /obj/item/toy/figure/geneticist
-	name = "Geneticist action figure"
-	desc = "A \"Space Life\" brand Geneticist action figure, which was recently dicontinued."
+	name = JOB_GENETICIST + " action figure"
+	desc = "A \"Space Life\" brand " + JOB_GENETICIST + " action figure, which was recently dicontinued."
 	icon_state = "geneticist"
 	toysay = "I'm not qualified for this job."
 
 /obj/item/toy/figure/hop
-	name = "Head of Personnel action figure"
-	desc = "A \"Space Life\" brand Head of Personnel action figure."
+	name = JOB_HEAD_OF_PERSONNEL + " action figure"
+	desc = "A \"Space Life\" brand " + JOB_HEAD_OF_PERSONNEL + " action figure."
 	icon_state = "hop"
 	toysay = "Giving out all access!"
 
 /obj/item/toy/figure/hos
-	name = "Head of Security action figure"
-	desc = "A \"Space Life\" brand Head of Security action figure."
+	name = JOB_HEAD_OF_SECURITY + " action figure"
+	desc = "A \"Space Life\" brand " + JOB_HEAD_OF_SECURITY + " action figure."
 	icon_state = "hos"
 	toysay = "I'm here to win, anything else is secondary."
 
 /obj/item/toy/figure/qm
-	name = "Quartermaster action figure"
-	desc = "A \"Space Life\" brand Quartermaster action figure."
+	name = JOB_QUARTERMASTER + " action figure"
+	desc = "A \"Space Life\" brand " + JOB_QUARTERMASTER + " action figure."
 	icon_state = "qm"
 	toysay = "Hail Cargonia!"
 
 /obj/item/toy/figure/janitor
-	name = "Janitor action figure"
-	desc = "A \"Space Life\" brand Janitor action figure."
+	name = JOB_JANITOR + " action figure"
+	desc = "A \"Space Life\" brand " + JOB_JANITOR + " action figure."
 	icon_state = "janitor"
 	toysay = "Look at the signs, you idiot."
 
 /obj/item/toy/figure/agent
-	name = "Internal Affairs Agent action figure"
-	desc = "A \"Space Life\" brand Internal Affairs Agent action figure."
+	name = JOB_INTERNAL_AFFAIRS_AGENT + " action figure"
+	desc = "A \"Space Life\" brand " + JOB_INTERNAL_AFFAIRS_AGENT + " action figure."
 	icon_state = "agent"
 	toysay = "Standard Operating Procedure says they're guilty! Hacking is proof they're an Enemy of the Corporation!"
 
 /obj/item/toy/figure/librarian
-	name = "Librarian action figure"
-	desc = "A \"Space Life\" brand Librarian action figure."
+	name = JOB_LIBRARIAN + " action figure"
+	desc = "A \"Space Life\" brand " + JOB_LIBRARIAN + " action figure."
 	icon_state = "librarian"
 	toysay = "One day while..."
 
 /obj/item/toy/figure/md
-	name = "Medical Doctor action figure"
-	desc = "A \"Space Life\" brand Medical Doctor action figure."
+	name = JOB_MEDICAL_DOCTOR + " action figure"
+	desc = "A \"Space Life\" brand " + JOB_MEDICAL_DOCTOR + " action figure."
 	icon_state = "md"
 	toysay = "The patient is already dead!"
 
 /obj/item/toy/figure/mime
-	name = "Mime action figure"
-	desc = "A \"Space Life\" brand Mime action figure."
+	name = JOB_MIME + " action figure"
+	desc = "A \"Space Life\" brand " + JOB_MIME + " action figure."
 	icon_state = "mime"
 	toysay = "..."
 
 /obj/item/toy/figure/miner
-	name = "Shaft Miner action figure"
-	desc = "A \"Space Life\" brand Shaft Miner action figure."
+	name = JOB_SHAFT_MINER + " action figure"
+	desc = "A \"Space Life\" brand " + JOB_SHAFT_MINER + " action figure."
 	icon_state = "miner"
 	toysay = "Oh god, it's eating my intestines!"
 
@@ -603,26 +479,26 @@
 	toysay = "Oh god! Stop shooting, I'm friendly!"
 
 /obj/item/toy/figure/wizard
-	name = "Wizard action figure"
-	desc = "A \"Space Life\" brand Wizard action figure."
+	name = JOB_WIZARD + " action figure"
+	desc = "A \"Space Life\" brand " + JOB_WIZARD + " action figure."
 	icon_state = "wizard"
 	toysay = "Ei Nath!"
 
 /obj/item/toy/figure/rd
-	name = "Research Director action figure"
-	desc = "A \"Space Life\" brand Research Director action figure."
+	name = JOB_RESEARCH_DIRECTOR + " action figure"
+	desc = "A \"Space Life\" brand " + JOB_RESEARCH_DIRECTOR + " action figure."
 	icon_state = "rd"
 	toysay = "Blowing all of the borgs!"
 
 /obj/item/toy/figure/roboticist
-	name = "Roboticist action figure"
-	desc = "A \"Space Life\" brand Roboticist action figure."
+	name = JOB_ROBOTICIST + " action figure"
+	desc = "A \"Space Life\" brand " + JOB_ROBOTICIST + " action figure."
 	icon_state = "roboticist"
 	toysay = "He asked to be borged!"
 
 /obj/item/toy/figure/scientist
-	name = "Scientist action figure"
-	desc = "A \"Space Life\" brand Scientist action figure."
+	name = JOB_SCIENTIST + " action figure"
+	desc = "A \"Space Life\" brand " + JOB_SCIENTIST + " action figure."
 	icon_state = "scientist"
 	toysay = "Someone else must have made those bombs!"
 
@@ -633,40 +509,110 @@
 	toysay = "Get that fucking disk!"
 
 /obj/item/toy/figure/secofficer
-	name = "Security Officer action figure"
-	desc = "A \"Space Life\" brand Security Officer action figure."
+	name = JOB_SECURITY_OFFICER + " action figure"
+	desc = "A \"Space Life\" brand " + JOB_SECURITY_OFFICER + " action figure."
 	icon_state = "secofficer"
 	toysay = "I am the law!"
 
 /obj/item/toy/figure/virologist
-	name = "Virologist action figure"
-	desc = "A \"Space Life\" brand Virologist action figure."
+	name = JOB_ALT_VIROLOGIST + " action figure"
+	desc = "A \"Space Life\" brand " + JOB_ALT_VIROLOGIST + " action figure."
 	icon_state = "virologist"
 	toysay = "The cure is potassium!"
 
 /obj/item/toy/figure/warden
-	name = "Warden action figure"
-	desc = "A \"Space Life\" brand Warden action figure."
+	name = JOB_WARDEN + " action figure"
+	desc = "A \"Space Life\" brand " + JOB_WARDEN + " action figure."
 	icon_state = "warden"
 	toysay = "Execute him for breaking in!"
 
 /obj/item/toy/figure/psychologist
-	name = "Psychologist action figure"
-	desc = "A \"Space Life\" brand Psychologist action figure."
+	name = JOB_ALT_PSYCHOLOGIST + " action figure"
+	desc = "A \"Space Life\" brand " + JOB_ALT_PSYCHOLOGIST + " action figure."
 	icon_state = "psychologist"
 	toysay = "The analyzer says you're fine!"
 
 /obj/item/toy/figure/paramedic
-	name = "Paramedic action figure"
-	desc = "A \"Space Life\" brand Paramedic action figure."
+	name = JOB_PARAMEDIC + " action figure"
+	desc = "A \"Space Life\" brand " + JOB_PARAMEDIC + " action figure."
 	icon_state = "paramedic"
 	toysay = "WHERE ARE YOU??"
 
 /obj/item/toy/figure/ert
-	name = "Emergency Response Team Commander action figure"
-	desc = "A \"Space Life\" brand Emergency Response Team Commander action figure."
+	name = JOB_EMERGENCY_RESPONSE_TEAM + " Commander action figure"
+	desc = "A \"Space Life\" brand " + JOB_EMERGENCY_RESPONSE_TEAM + " Commander action figure."
 	icon_state = "ert"
 	toysay = "We're probably the good guys!"
+
+// Eris
+/obj/item/toy/figure/excelsior
+	name = "\"Excelsior\" figurine"
+	desc = "A curiously unbranded figurine of a Space Soviet, adorned in their iconic armor. There is still a price tag on the back of the base, six-hundred credits, people collect these things? \
+	\"Ever Upward!\""
+	icon_state = "excelsior"
+
+/obj/item/toy/figure/serbian
+	name = "mercenary figurine"
+	desc = "A curiously unbranded figurine, the olive drab a popular pick for many independent Serbian mercenary outfits. Rocket launcher not included."
+	icon_state = "serbian"
+
+/obj/item/toy/figure/acolyte
+	name = "acolyte figurine"
+	desc = "Church of NeoTheology \"New Faith Life\" brand figurine of an acolyte, hooded both physically and spiritually from that which would lead them astray."
+	icon_state = "acolyte"
+
+/obj/item/toy/figure/carrion
+	name = "carrion figurine"
+	desc = "A curiously unbranded figurine depicting a grotesque head of flesh, the Human features seem almost underdeveloped, its skull bulging outwards, mouth agape with torn flesh. \
+	Whoever made this certainly knew how to thin their paints."
+	icon_state = "carrion"
+
+/obj/item/toy/figure/roach
+	name = "roach figurine"
+	desc = "Upon the base is an erected \"Roachman\", its arms outstretched, with more additional roach hands besides them. This is likely the one thing most universally recognized in popular media. \
+	The plaque is covered in hundreds of scratch marks, eliminating any further knowledge of it or its brand."
+	icon_state = "roach"
+
+/obj/item/toy/figure/vagabond
+	name = "vagabond figurine"
+	desc = "An Aster's \"Space Life\" brand figurine showcasing the form of a random deplorable, wearing one of the ship's uniforms, and an orange bandana. \
+	Must of been custom-made to commemorate the Eris' doomed voyage."
+	icon_state = "vagabond"
+
+/obj/item/toy/figure/rooster
+	name = "rooster figurine"
+	desc = "\"Space Vice\" brand figurine, there is no further manufacturer information. It's a man wearing a rooster mask, and a varsity jacket with the letter \"B\" emblazoned on the front. \
+	\"Do you like hurting other people?\""
+	icon_state = "rooster"
+
+/obj/item/toy/figure/barking_dog
+	name = "barking dog figurine"
+	desc = "A metal soldier with the mask of a hound stands upon the base, the plaque seems smeared with caked grime, but despite this you make out a rare double-quote. \
+	\"A dog barks on its master's orders, lest its pack runs astray.\" \"Whatever the task, the grim dog mask would tell you that your life was done.\""
+	icon_state = "barking_dog"
+
+/obj/item/toy/figure/red_soldier
+	name = "red soldier figurine"
+	desc = "A curiously unbranded figurine of a red soldier fighting in the tides of war, their humanity hidden by a gas mask. \"Why do we fight? To win the war, of course.\""
+	icon_state = "red_soldier"
+
+/obj/item/toy/figure/metacat
+	name = "meta-cat figurine"
+	desc = "A curiously unbranded figurine depicting an anthropomorphic cat in a voidsuit, the small plaque claims this to be one of two. \"Always in silent pair, through distance or unlikelihood.\""
+	icon_state = "metacat"
+
+/obj/item/toy/figure/shitcurity
+	name = "shitcurity officer figurine"
+	desc = "An Aster's \"Space Life\" brand figurine of a classic redshirt of \"Nanotrasen's finest\". Their belly distends out into an obvious beer gut, revealing no form of manufacturer bias what-so-ever. \
+	\"I joined just to kill people.\""
+	icon_state = "shitcurity"
+
+/obj/item/toy/figure/metro_patrolman
+	name = "metro patrolman figurine"
+	desc = "The plaque seems flaked with rust residue, \"London Metro\" brand it reads. The man wears some kind of enforcer's uniform, with the acronym \"VPP\" on their left shoulder and cap. \
+	\"Abandoned for Escalation, the patrolman grumbles.\""
+	icon_state = "metro_patrolman"
+
 
 /*
  * Plushies
@@ -750,8 +696,8 @@
 	desc = "A very generic plushie. It seems to not want to exist."
 	icon = 'icons/obj/toy.dmi'
 	icon_state = "ianplushie"
-	anchored = 0
-	density = 1
+	anchored = FALSE
+	density = TRUE
 	var/phrase = "I don't want to exist anymore!"
 	var/searching = FALSE
 	var/opened = FALSE	// has this been slit open? this will allow you to store an object in a plushie.
@@ -760,9 +706,9 @@
 /obj/structure/plushie/examine(mob/user)
 	. = ..()
 	if(opened)
-		. += "<i>You notice an incision has been made on [src].</i>"
+		. += span_italics("You notice an incision has been made on [src].")
 		if(in_range(user, src) && stored_item)
-			. += "<i>You can see something in there...</i>"
+			. += span_italics("You can see something in there...")
 
 /obj/structure/plushie/attack_hand(mob/user)
 	user.setClickCooldown(DEFAULT_ATTACK_COOLDOWN)
@@ -770,7 +716,7 @@
 	if(stored_item && opened && !searching)
 		searching = TRUE
 		if(do_after(user, 10))
-			to_chat(user, "You find \icon[stored_item] [stored_item] in [src]!")
+			to_chat(user, "You find [icon2html(stored_item, user.client)] [stored_item] in [src]!")
 			stored_item.forceMove(get_turf(src))
 			stored_item = null
 			searching = FALSE
@@ -779,18 +725,18 @@
 			searching = FALSE
 
 	if(user.a_intent == I_HELP)
-		user.visible_message("<span class='notice'><b>\The [user]</b> hugs [src]!</span>","<span class='notice'>You hug [src]!</span>")
+		user.visible_message(span_notice(span_bold("\The [user]") + " hugs [src]!"),span_notice("You hug [src]!"))
 	else if (user.a_intent == I_HURT)
-		user.visible_message("<span class='warning'><b>\The [user]</b> punches [src]!</span>","<span class='warning'>You punch [src]!</span>")
+		user.visible_message(span_warning(span_bold("\The [user]") + " punches [src]!"),span_warning("You punch [src]!"))
 	else if (user.a_intent == I_GRAB)
-		user.visible_message("<span class='warning'><b>\The [user]</b> attempts to strangle [src]!</span>","<span class='warning'>You attempt to strangle [src]!</span>")
+		user.visible_message(span_warning(span_bold("\The [user]") + " attempts to strangle [src]!"),span_warning("You attempt to strangle [src]!"))
 	else
-		user.visible_message("<span class='notice'><b>\The [user]</b> pokes the [src].</span>","<span class='notice'>You poke the [src].</span>")
+		user.visible_message(span_notice(span_bold("\The [user]") + " pokes the [src]."),span_notice("You poke the [src]."))
 		visible_message("[src] says, \"[phrase]\"")
 
 
 /obj/structure/plushie/attackby(obj/item/I as obj, mob/user as mob)
-	if(istype(I, /obj/item/device/threadneedle) && opened)
+	if(istype(I, /obj/item/threadneedle) && opened)
 		to_chat(user, "You sew the hole in [src].")
 		opened = FALSE
 		return
@@ -859,15 +805,15 @@
 /obj/item/toy/plushie/examine(mob/user)
 	. = ..()
 	if(opened)
-		. += "<i>You notice an incision has been made on [src].</i>"
+		. += span_italics("You notice an incision has been made on [src].")
 		if(in_range(user, src) && stored_item)
-			. += "<i>You can see something in there...</i>"
+			. += span_italics("You can see something in there...")
 
 /obj/item/toy/plushie/attack_self(mob/user as mob)
 	if(stored_item && opened && !searching)
 		searching = TRUE
 		if(do_after(user, 10))
-			to_chat(user, "You find \icon[stored_item] [stored_item] in [src]!")
+			to_chat(user, "You find [icon2html(stored_item, user.client)] [stored_item] in [src]!")
 			stored_item.forceMove(get_turf(src))
 			stored_item = null
 			searching = FALSE
@@ -875,16 +821,16 @@
 		else
 			searching = FALSE
 
-	if(world.time - last_message <= 1 SECOND)
+	if(world.time - last_message <= 15 SECONDS)
 		return
 	if(user.a_intent == I_HELP)
-		user.visible_message("<span class='notice'><b>\The [user]</b> hugs [src]!</span>","<span class='notice'>You hug [src]!</span>")
+		user.visible_message(span_notice(span_bold("\The [user]") + " hugs [src]!"),span_notice("You hug [src]!"))
 	else if (user.a_intent == I_HURT)
-		user.visible_message("<span class='warning'><b>\The [user]</b> punches [src]!</span>","<span class='warning'>You punch [src]!</span>")
+		user.visible_message(span_warning(span_bold("\The [user]") + " punches [src]!"),span_warning("You punch [src]!"))
 	else if (user.a_intent == I_GRAB)
-		user.visible_message("<span class='warning'><b>\The [user]</b> attempts to strangle [src]!</span>","<span class='warning'>You attempt to strangle [src]!</span>")
+		user.visible_message(span_warning(span_bold("\The [user]") + " attempts to strangle [src]!"),span_warning("You attempt to strangle [src]!"))
 	else
-		user.visible_message("<span class='notice'><b>\The [user]</b> pokes [src].</span>","<span class='notice'>You poke [src].</span>")
+		user.visible_message(span_notice(span_bold("\The [user]") + " pokes [src]."),span_notice("You poke [src]."))
 		playsound(src, 'sound/items/drop/plushie.ogg', 25, 0)
 		visible_message("[src] says, \"[pokephrase]\"")
 	last_message = world.time
@@ -897,7 +843,7 @@
 	if(!M.mind)
 		return 0
 
-	var/input = sanitizeSafe(input("What do you want to name the plushie?", ,""), MAX_NAME_LEN)
+	var/input = sanitizeSafe(tgui_input_text(usr, "What do you want to name the plushie?", ,""), MAX_NAME_LEN)
 
 	if(src && input && !M.stat && in_range(M,src))
 		name = input
@@ -906,12 +852,12 @@
 
 /obj/item/toy/plushie/attackby(obj/item/I as obj, mob/user as mob)
 	if(istype(I, /obj/item/toy/plushie) || istype(I, /obj/item/organ/external/head))
-		user.visible_message("<span class='notice'>[user] makes \the [I] kiss \the [src]!.</span>", \
-		"<span class='notice'>You make \the [I] kiss \the [src]!.</span>")
+		user.visible_message(span_notice("[user] makes \the [I] kiss \the [src]!."), \
+		span_notice("You make \the [I] kiss \the [src]!."))
 		return
 
 
-	if(istype(I, /obj/item/device/threadneedle) && opened)
+	if(istype(I, /obj/item/threadneedle) && opened)
 		to_chat(user, "You sew the hole underneath [src].")
 		opened = FALSE
 		return
@@ -1181,6 +1127,11 @@
 	icon_state = "therapygreen"
 	item_state = "egg3" // It's the green egg in items_left/righthand
 
+/obj/item/toy/plushie/fumo
+	name = "Fumo"
+	desc = "A plushie of a....?"
+	icon_state = "fumoplushie"
+	pokephrase = "I just don't think about losing."
 
 //Toy cult sword
 /obj/item/toy/cultsword
@@ -1231,8 +1182,8 @@
 /obj/item/toy/eight_ball/attack_self(mob/user as mob)
 	if(!cooldown)
 		var/answer = pick(possible_answers)
-		user.visible_message("<span class='notice'>[user] focuses on their question and [use_action]...</span>")
-		user.visible_message("<span class='notice'>The [src] says \"[answer]\"</span>")
+		user.visible_message(span_notice("[user] focuses on their question and [use_action]..."))
+		user.visible_message(span_notice("The [src] says \"[answer]\""))
 		spawn(30)
 			cooldown = 0
 		return
@@ -1278,11 +1229,11 @@
 	name = "lich miniature"
 	desc = "Murderboner extraordinaire."
 	icon_state = "lichcharacter"
-/obj/item/weapon/storage/box/characters
+/obj/item/storage/box/characters
 	name = "box of miniatures"
 	desc = "The nerd's best friends."
 	icon_state = "box"
-/obj/item/weapon/storage/box/characters/starts_with = list(
+/obj/item/storage/box/characters/starts_with = list(
 //	/obj/item/toy/character/alien,
 	/obj/item/toy/character/cleric,
 	/obj/item/toy/character/warrior,
@@ -1303,9 +1254,9 @@
 /obj/item/toy/AI/attack_self(mob/user)
 	if(!cooldown) //for the sanity of everyone
 		var/message = generate_ion_law()
-		to_chat(user, "<span class='notice'>You press the button on [src].</span>")
+		to_chat(user, span_notice("You press the button on [src]."))
 		playsound(src, 'sound/machines/click.ogg', 20, 1)
-		visible_message("<span class='danger'>[message]</span>")
+		visible_message(span_danger("[message]"))
 		cooldown = 1
 		spawn(30) cooldown = 0
 		return
@@ -1322,9 +1273,9 @@
 /obj/item/toy/owl/attack_self(mob/user)
 	if(!cooldown) //for the sanity of everyone
 		var/message = pick("You won't get away this time, Griffin!", "Stop right there, criminal!", "Hoot! Hoot!", "I am the night!")
-		to_chat(user, "<span class='notice'>You pull the string on the [src].</span>")
+		to_chat(user, span_notice("You pull the string on the [src]."))
 		//playsound(src, 'sound/misc/hoot.ogg', 25, 1)
-		visible_message("<span class='danger'>[message]</span>")
+		visible_message(span_danger("[message]"))
 		cooldown = 1
 		spawn(30) cooldown = 0
 		return
@@ -1341,16 +1292,16 @@
 /obj/item/toy/griffin/attack_self(mob/user)
 	if(!cooldown) //for the sanity of everyone
 		var/message = pick("You can't stop me, Owl!", "My plan is flawless! The vault is mine!", "Caaaawwww!", "You will never catch me!")
-		to_chat(user, "<span class='notice'>You pull the string on the [src].</span>")
+		to_chat(user, span_notice("You pull the string on the [src]."))
 		//playsound(src, 'sound/misc/caw.ogg', 25, 1)
-		visible_message("<span class='danger'>[message]</span>")
+		visible_message(span_danger("[message]"))
 		cooldown = 1
 		spawn(30) cooldown = 0
 		return
 	..()
 
 /* NYET.
-/obj/item/weapon/toddler
+/obj/item/toddler
 	icon_state = "toddler"
 	name = "toddler"
 	desc = "This baby looks almost real. Wait, did it just burp?"
@@ -1361,11 +1312,11 @@
 
 //This should really be somewhere else but I don't know where. w/e
 
-/obj/item/weapon/inflatable_duck
+/obj/item/inflatable_duck
 	name = "inflatable duck"
 	desc = "No bother to sink or swim when you can just float!"
 	icon_state = "inflatable"
-	icon = 'icons/obj/clothing/belts.dmi'
+	icon = 'icons/inventory/belt/item.dmi'
 	slot_flags = SLOT_BELT
 	drop_sound = 'sound/items/drop/rubber.ogg'
 
@@ -1393,65 +1344,65 @@
 	drop_sound = 'sound/items/drop/glass.ogg'
 
 /obj/item/toy/chess/pawn_white
-	name = "blue pawn"
-	desc = "A large pawn piece for playing chess. It's made of a blue-colored glass."
+	name = "white pawn"
+	desc = "A white pawn chess piece. Get accused of cheating when executing a sick En Passant."
 	description_info = "Pawns can move forward one square, if that square is unoccupied. If the pawn has not yet moved, it has the option of moving two squares forward provided both squares in front of the pawn are unoccupied. A pawn cannot move backward. They can only capture an enemy piece on either of the two tiles diagonally in front of them, but not the tile directly in front of them."
-	icon_state = "w-pawn"
+	icon_state = "white_pawn"
 /obj/item/toy/chess/pawn_black
-	name = "purple pawn"
-	desc = "A large pawn piece for playing chess. It's made of a purple-colored glass."
+	name = "black pawn"
+	desc = "A black pawn chess piece. Get accused of cheating when executing a sick En Passant."
 	description_info = "Pawns can move forward one square, if that square is unoccupied. If the pawn has not yet moved, it has the option of moving two squares forward provided both squares in front of the pawn are unoccupied. A pawn cannot move backward. They can only capture an enemy piece on either of the two tiles diagonally in front of them, but not the tile directly in front of them."
-	icon_state = "b-pawn"
+	icon_state = "black_pawn"
 /obj/item/toy/chess/rook_white
-	name = "blue rook"
-	desc = "A large rook piece for playing chess. It's made of a blue-colored glass."
+	name = "white rook"
+	desc = "A white rook chess piece. Also known as a castle."
 	description_info = "The Rook can move any number of vacant squares vertically or horizontally."
-	icon_state = "w-rook"
+	icon_state = "white_rook"
 /obj/item/toy/chess/rook_black
-	name = "purple rook"
-	desc = "A large rook piece for playing chess. It's made of a purple-colored glass."
+	name = "black rook"
+	desc = "A black rook chess piece. Also known as a castle."
 	description_info = "The Rook can move any number of vacant squares vertically or horizontally."
-	icon_state = "b-rook"
+	icon_state = "black_rook"
 /obj/item/toy/chess/knight_white
-	name = "blue knight"
-	desc = "A large knight piece for playing chess. It's made of a blue-colored glass. Sadly, you can't ride it."
+	name = "white knight"
+	desc = "A white knight chess piece. Sadly, you can't ride it."
 	description_info = "The Knight can either move two squares horizontally and one square vertically or two squares vertically and one square horizontally. The knight's movement can also be viewed as an 'L' laid out at any horizontal or vertical angle."
-	icon_state = "w-knight"
+	icon_state = "white_knight"
 /obj/item/toy/chess/knight_black
-	name = "purple knight"
-	desc = "A large knight piece for playing chess. It's made of a purple-colored glass. 'Just a flesh wound.'"
+	name = "black knight"
+	desc = "A black knight chess piece. 'Just a flesh wound.'"
 	description_info = "The Knight can either move two squares horizontally and one square vertically or two squares vertically and one square horizontally. The knight's movement can also be viewed as an 'L' laid out at any horizontal or vertical angle."
-	icon_state = "b-knight"
+	icon_state = "black_knight"
 /obj/item/toy/chess/bishop_white
-	name = "blue bishop"
-	desc = "A large bishop piece for playing chess. It's made of a blue-colored glass."
+	name = "white bishop"
+	desc = "A white bishop chess piece."
 	description_info = "The Bishop can move any number of vacant squares in any diagonal direction."
-	icon_state = "w-bishop"
+	icon_state = "white_bishop"
 /obj/item/toy/chess/bishop_black
-	name = "purple bishop"
-	desc = "A large bishop piece for playing chess. It's made of a purple-colored glass."
+	name = "black bishop"
+	desc = "A black bishop chess piece."
 	description_info = "The Bishop can move any number of vacant squares in any diagonal direction."
-	icon_state = "b-bishop"
+	icon_state = "black_bishop"
 /obj/item/toy/chess/queen_white
-	name = "blue queen"
-	desc = "A large queen piece for playing chess. It's made of a blue-colored glass."
+	name = "white queen"
+	desc = "A white queen chess piece."
 	description_info = "The Queen can move any number of vacant squares diagonally, horizontally, or vertically."
-	icon_state = "w-queen"
+	icon_state = "white_queen"
 /obj/item/toy/chess/queen_black
-	name = "purple queen"
-	desc = "A large queen piece for playing chess. It's made of a purple-colored glass."
+	name = "black queen"
+	desc = "A black queen chess piece."
 	description_info = "The Queen can move any number of vacant squares diagonally, horizontally, or vertically."
-	icon_state = "b-queen"
+	icon_state = "black_queen"
 /obj/item/toy/chess/king_white
-	name = "blue king"
-	desc = "A large king piece for playing chess. It's made of a blue-colored glass."
+	name = "white king"
+	desc = "A white king chess piece."
 	description_info = "The King can move exactly one square horizontally, vertically, or diagonally. If your opponent captures this piece, you lose."
-	icon_state = "w-king"
+	icon_state = "white_king"
 /obj/item/toy/chess/king_black
-	name = "purple king"
-	desc = "A large king piece for playing chess. It's made of a purple-colored glass."
+	name = "black king"
+	desc = "A black king chess piece."
 	description_info = "The King can move exactly one square horizontally, vertically, or diagonally. If your opponent captures this piece, you lose."
-	icon_state = "b-king"
+	icon_state = "black_king"
 
 /// Balloon structures
 
@@ -1460,20 +1411,20 @@
 	desc = "A generic balloon. How boring."
 	icon = 'icons/obj/toy.dmi'
 	icon_state = "ghostballoon"
-	anchored = 0
-	density = 0
+	anchored = FALSE
+	density = FALSE
 
 /obj/structure/balloon/attack_hand(mob/user)
 	user.setClickCooldown(DEFAULT_ATTACK_COOLDOWN)
 
 	if(user.a_intent == I_HELP)
-		user.visible_message("<span class='notice'><b>\The [user]</b> pokes [src]!</span>","<span class='notice'>You poke [src]!</span>")
+		user.visible_message(span_notice(span_bold("\The [user]") + " pokes [src]!"),span_notice("You poke [src]!"))
 	else if (user.a_intent == I_HURT)
-		user.visible_message("<span class='warning'><b>\The [user]</b> punches [src]!</span>","<span class='warning'>You punch [src]!</span>")
+		user.visible_message(span_warning(span_bold("\The [user]") + " punches [src]!"),span_warning("You punch [src]!"))
 	else if (user.a_intent == I_GRAB)
-		user.visible_message("<span class='warning'><b>\The [user]</b> attempts to pop [src]!</span>","<span class='warning'>You attempt to pop [src]!</span>")
+		user.visible_message(span_warning(span_bold("\The [user]") + " attempts to pop [src]!"),span_warning("You attempt to pop [src]!"))
 	else
-		user.visible_message("<span class='notice'><b>\The [user]</b> lightly bats the [src].</span>","<span class='notice'>You lightly bat the [src].</span>")
+		user.visible_message(span_notice(span_bold("\The [user]") + " lightly bats the [src]."),span_notice("You lightly bat the [src]."))
 
 /obj/structure/balloon/bat
 	name = "giant bat balloon"

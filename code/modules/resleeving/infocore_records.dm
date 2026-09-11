@@ -15,6 +15,7 @@
 	var/dead_state = 0
 	var/last_update = 0
 	var/last_notification
+	var/do_notify = TRUE
 
 	//Backend
 	var/ckey = ""
@@ -23,7 +24,8 @@
 	var/cryo_at = 0
 	var/languages = list()
 	var/mind_oocnotes = ""
-
+	var/mind_ooclikes = ""
+	var/mind_oocdislikes = ""
 	var/nif_path
 	var/nif_durability
 	var/list/nif_software
@@ -77,6 +79,8 @@
 	var/speciesname
 	var/bodygender
 	var/body_oocnotes
+	var/body_ooclikes
+	var/body_oocdislikes
 	var/list/limb_data = list(BP_HEAD, BP_L_HAND, BP_R_HAND, BP_L_ARM, BP_R_ARM, BP_L_FOOT, BP_R_FOOT, BP_L_LEG, BP_R_LEG, BP_GROIN, BP_TORSO)
 	var/list/organ_data = list(O_HEART, O_EYES, O_LUNGS, O_BRAIN)
 	var/list/genetic_modifiers = list()
@@ -84,6 +88,7 @@
 	var/sizemult
 	var/weight
 	var/aflags
+	var/breath_type = "oxygen"
 
 /datum/transhuman/body_record/New(var/copyfrom, var/add_to_db = 0, var/ckeylock = 0)
 	..()
@@ -107,10 +112,11 @@
 	//Person OOCly doesn't want people impersonating them
 	locked = ckeylock
 
-	//Prevent people from printing restricted and whitelisted species
 	var/datum/species/S = GLOB.all_species["[M.dna.species]"]
 	if(S)
-		toocomplex = (S.spawn_flags & SPECIES_IS_WHITELISTED) || (S.spawn_flags & SPECIES_IS_RESTRICTED)
+		// Force ckey locking if species is whitelisted
+		if((S.spawn_flags & SPECIES_IS_WHITELISTED) || (S.spawn_flags & SPECIES_IS_RESTRICTED))
+			locked = TRUE
 
 	//General stuff about them
 	synthetic = M.isSynthetic()
@@ -120,6 +126,7 @@
 	sizemult = M.size_multiplier
 	weight = M.weight
 	aflags = M.appearance_flags
+	breath_type = M.species.breath_type
 
 	//Probably should
 	M.dna.check_integrity()
@@ -179,8 +186,7 @@
 		organ_data[org] = I.robotic
 
 	//Genetic modifiers
-	for(var/modifier in M.modifiers)
-		var/datum/modifier/mod = modifier
+	for(var/datum/modifier/mod as anything in M.modifiers)
 		if(mod.flags & MODIFIER_GENETIC)
 			genetic_modifiers.Add(mod.type)
 

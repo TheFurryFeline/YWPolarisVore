@@ -21,8 +21,8 @@
 		to_chat(usr, "This map is not appropriate for this verb.")
 		return
 
-	var/response = input(usr, "Are you sure?", "Engine setup") as null|anything in list("No", "Yes")
-	if(!response || response == "No")
+	var/response = tgui_alert(usr, "Are you sure?", "Engine setup", list("No", "Yes"))
+	if(response != "Yes")
 		return
 
 	var/errors = 0
@@ -32,7 +32,7 @@
 	log_and_message_admins("## FUSION CORE SETUP - Setup initiated by [usr].")
 
 	for(var/obj/machinery/fusion_fuel_injector/mapped/injector in machines)
-		injector.cur_assembly = new /obj/item/weapon/fuel_assembly/deuterium(injector)
+		injector.cur_assembly = new /obj/item/fuel_assembly/deuterium(injector)
 		injector.BeginInjecting()
 
 	var/obj/machinery/power/fusion_core/mapped/core = locate() in machines

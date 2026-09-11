@@ -7,7 +7,9 @@
 	path = "virgo_minitest"
 
 	lobby_icon = 'icons/misc/title_vr.dmi'
-	lobby_screens = list("tether2_night")
+	lobby_screens = list("logo2")
+
+	id_hud_icons = 'icons/mob/hud_jobs_vr.dmi'
 
 	accessible_z_levels = list("1" = 100)
 	base_turf_by_z = list("1" = /turf/space)
@@ -59,6 +61,10 @@
 							)
 
 	allowed_spawns = list("Arrivals Shuttle","Gateway","Cryogenic Storage","Cyborg Storage")
+
+/datum/map/virgo_minitest/New()
+	..()
+	SSticker.start_immediately = TRUE
 
 /datum/map_z_level/minitest/station
 	z = Z_LEVEL_MAIN_VIRGO_TESTING

@@ -8,7 +8,7 @@
 
 /mob/proc/movement_delay(oldloc, direct)
 	. = 0
-	if(locate(/obj/item/weapon/grab) in src)
+	if(locate(/obj/item/grab) in src)
 		. += 5
 
 	// Movespeed delay based on movement mode
@@ -16,9 +16,9 @@
 		if("run")
 			if(drowsyness > 0)
 				. += 6
-			. += config.run_speed
+			. += CONFIG_GET(number/run_speed)
 		if("walk")
-			. += config.walk_speed
+			. += CONFIG_GET(number/walk_speed)
 
 /client/proc/client_dir(input, direction=-1)
 	return turn(input, direction*dir2angle(dir))
@@ -45,7 +45,7 @@
 				var/mob/living/carbon/C = usr
 				C.toggle_throw_mode()
 			else
-				to_chat(usr, "<font color='red'>This mob type cannot throw items.</font>")
+				to_chat(usr, span_red("This mob type cannot throw items."))
 			return
 		if(NORTHWEST)
 			if(isliving(usr))
@@ -54,11 +54,11 @@
 					if(C.pulling)
 						C.stop_pulling()
 						return
-					to_chat(usr, "<font color='red'>You have nothing to drop in your hand.</font>")
+					to_chat(usr, span_red("You have nothing to drop in your hand."))
 					return
 				drop_item()
 			else
-				to_chat(usr, "<font color='red'>This mob type cannot drop items.</font>")
+				to_chat(usr, span_red("This mob type cannot drop items."))
 			return
 
 //This gets called when you press the delete button.
@@ -66,7 +66,7 @@
 	set hidden = 1
 
 	if(!usr.pulling)
-		to_chat(usr, "<font color='blue'>You are not pulling anything.</font>")
+		to_chat(usr, span_blue("You are not pulling anything."))
 		return
 	usr.stop_pulling()
 
@@ -140,25 +140,36 @@
 	// Used many times below, faster reference.
 	var/atom/loc = my_mob.loc
 
-	// We're controlling an object which is SOMEHOW DIFFERENT FROM AN EYE??
+	// We're controlling an object which is when admins possess an object.
 	if(my_mob.control_object)
 		Move_object(direct)
 
 	// Ghosty mob movement
 	if(my_mob.incorporeal_move && isobserver(my_mob))
 		Process_Incorpmove(direct)
+		DEBUG_INPUT("--------")
+		next_move_dir_add = 0	// This one I *think* exists so you can tap move and it will move even if delay isn't quite up.
+		next_move_dir_sub = 0 	// I'm not really sure why next_move_dir_sub even exists.
 		return
 
 	// We're in the middle of another move we've already decided to do
 	if(moving)
+		log_debug("Client [src] attempted to move while moving=[moving]")
 		return 0
 
 	// We're still cooling down from the last move
 	if(!my_mob.checkMoveCooldown())
+		DEBUG_INPUT("--------")
+		return
+	next_move_dir_add = 0	// This one I *think* exists so you can tap move and it will move even if delay isn't quite up.
+	next_move_dir_sub = 0 	// I'm not really sure why next_move_dir_sub even exists.
+
+	if(!n || !direct)
 		return
 
 	// If dead and we try to move in our mob, it leaves our body
 	if(my_mob.stat == DEAD && isliving(my_mob) && !my_mob.forbid_seeing_deadchat)
+		my_mob.setMoveCooldown(my_mob.movement_delay(n, direct))
 		my_mob.ghostize()
 		return
 
@@ -197,7 +208,7 @@
 			return result
 
 	// Can't control ourselves when drifting
-	if((isspace(loc) || my_mob.lastarea?.has_gravity == 0) && isturf(loc))
+	if((isspace(loc) || my_mob.lastarea?.get_gravity() == 0) && isturf(loc))
 		if(!my_mob.Process_Spacemove(0))
 			return 0
 
@@ -214,13 +225,13 @@
 		for(var/mob/M in range(my_mob, 1))
 			if(M.pulling == my_mob)
 				if(!M.restrained() && M.stat == 0 && M.canmove && my_mob.Adjacent(M))
-					to_chat(src, "<font color='blue'>You're restrained! You can't move!</font>")
+					to_chat(src, span_blue("You're restrained! You can't move!"))
 					return 0
 				else
 					M.stop_pulling()
 
 	if(my_mob.pinned.len)
-		to_chat(src, "<font color='blue'>You're pinned to a wall by [my_mob.pinned[1]]!</font>")
+		to_chat(src, span_blue("You're pinned to a wall by [my_mob.pinned[1]]!"))
 		return 0
 
 	if(istype(my_mob.buckled, /obj/vehicle) || ismob(my_mob.buckled))
@@ -287,6 +298,10 @@
 	else
 		. = my_mob.SelfMove(n, direct, total_delay)
 
+	// If we ended up moving diagonally, increase delay.
+	if((direct & (direct - 1)) && mob.loc == n)
+		my_mob.setMoveCooldown(total_delay * 2)
+
 	// If we have a grab
 	var/list/grablist = my_mob.ret_grab()
 	if(LAZYLEN(grablist))
@@ -313,11 +328,11 @@
 					my_mob.other_mobs = null
 
 	// Update all the grabs!
-	for (var/obj/item/weapon/grab/G in my_mob)
+	for (var/obj/item/grab/G in my_mob)
 		if (G.state == GRAB_NECK)
 			mob.set_dir(reverse_dir[direct])
 		G.adjust_position()
-	for (var/obj/item/weapon/grab/G in my_mob.grabbed_by)
+	for (var/obj/item/grab/G in my_mob.grabbed_by)
 		G.adjust_position()
 
 	// We're not in the middle of a move anymore
@@ -335,14 +350,27 @@
 	switch(mob.incorporeal_move)
 		if(1)
 			var/turf/T = get_step(mob, direct)
+			var/area/A = T.loc	//RS Port #658
 			if(!T)
 				return
 			if(mob.check_holy(T))
-				to_chat(mob, "<span class='warning'>You cannot get past holy grounds while you are in this plane of existence!</span>")
+				to_chat(mob, span_warning("You cannot get past holy grounds while you are in this plane of existence!"))
 				return
-			else
-				mob.forceMove(get_step(mob, direct))
-				mob.dir = direct
+			//RS Port #658 Start
+			if(!holder)
+				if(isliving(mob) && A.flag_check(AREA_BLOCK_PHASE_SHIFT))
+					to_chat(mob, span_warning("Something blocks you from entering this location while phased out."))
+					return
+				if(isobserver(mob) && A.flag_check(AREA_BLOCK_GHOSTS))
+					to_chat(mob, span_warning("Ghosts can't enter this location."))
+					var/area/our_area = mobloc.loc
+					if(our_area.flag_check(AREA_BLOCK_GHOSTS))
+						var/mob/observer/dead/D = mob
+						D.return_to_spawn()
+					return
+			mob.forceMove(get_step(mob, direct))
+			mob.dir = direct
+			//RS Port #658 End
 		if(2)
 			if(prob(50))
 				var/locx
@@ -413,7 +441,7 @@
 
 	//Check to see if we slipped
 	if(prob(Process_Spaceslipping(5)) && !buckled)
-		to_chat(src, "<span class='notice'><B>You slipped!</B></span>")
+		to_chat(src, span_boldnotice("You slipped!"))
 		inertia_dir = last_move
 		step(src, src.inertia_dir) // Not using Move for smooth glide here because this is a 'slip' so should be sudden.
 		return 0
@@ -432,7 +460,7 @@
 
 		if(istype(turf,/turf/simulated/floor)) // Floors don't count if they don't have gravity
 			var/area/A = turf.loc
-			if(istype(A) && A.has_gravity == 0)
+			if(istype(A) && A.get_gravity() == 0)
 				if(shoegrip == null)
 					shoegrip = Check_Shoegrip() //Shoegrip is only ever checked when a zero-gravity floor is encountered to reduce load
 				if(!shoegrip)
@@ -471,8 +499,8 @@
 	prob_slip = round(prob_slip)
 	return(prob_slip)
 
-/mob/proc/mob_has_gravity(turf/T)
-	return has_gravity(src, T)
+/mob/proc/mob_get_gravity(turf/T)
+	return get_gravity(src, T)
 
 /mob/proc/update_gravity()
 	return

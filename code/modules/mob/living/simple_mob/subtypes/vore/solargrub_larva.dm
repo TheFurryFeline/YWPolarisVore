@@ -11,15 +11,16 @@ var/global/list/grub_machine_overlays = list()
 
 	health = 5
 	maxHealth = 5
-	movement_cooldown = 3
+	movement_cooldown = 0
 
 	melee_damage_lower = 1	// This is a tiny worm. It will nibble and thats about it.
 	melee_damage_upper = 1
 
-	meat_amount = 2
-	meat_type = /obj/item/weapon/reagent_containers/food/snacks/meat/grubmeat
+	meat_amount = 1
+	meat_type = /obj/item/reagent_containers/food/snacks/meat/grubmeat
+	butchery_loot = list()		// No hides
 
-	faction = "grubs"
+	faction = FACTION_GRUBS
 
 	response_help = "pats"
 	response_disarm = "nudges"
@@ -30,7 +31,7 @@ var/global/list/grub_machine_overlays = list()
 	pass_flags = PASSTABLE
 	can_pull_size = ITEMSIZE_TINY
 	can_pull_mobs = MOB_PULL_NONE
-	density = 0
+	density = FALSE
 
 	//stop_when_pulled = 0
 
@@ -46,7 +47,11 @@ var/global/list/grub_machine_overlays = list()
 	var/obj/machinery/abstract_grub_machine/powermachine
 	var/power_drained = 0
 
+	var/tracked = FALSE
+
 	ai_holder_type = /datum/ai_holder/simple_mob/solargrub_larva
+
+	glow_override = TRUE
 
 /mob/living/simple_mob/animal/solargrub_larva/New()
 	..()
@@ -55,7 +60,7 @@ var/global/list/grub_machine_overlays = list()
 	sparks = new(src)
 	sparks.set_up()
 	sparks.attach(src)
-	verbs += /mob/living/proc/ventcrawl
+	add_verb(src, /mob/living/proc/ventcrawl)
 
 /mob/living/simple_mob/animal/solargrub_larva/death()
 	powermachine.draining = 0
@@ -83,7 +88,7 @@ var/global/list/grub_machine_overlays = list()
 		return
 
 	if(istype(loc, /obj/machinery))
-		if(machine_effect && air_master.current_cycle%30)
+		if(machine_effect && SSair.current_cycle%30)
 			for(var/mob/M in player_list)
 				M << machine_effect
 		if(prob(10))
@@ -117,7 +122,7 @@ var/global/list/grub_machine_overlays = list()
 	set_AI_busy(TRUE)
 	forceMove(M)
 	powermachine.draining = 2
-	visible_message("<span class='warning'>\The [src] finds an opening and crawls inside \the [M].</span>")
+	visible_message(span_warning("\The [src] finds an opening and crawls inside \the [M]."))
 	if(!(M.type in grub_machine_overlays))
 		generate_machine_effect(M)
 	machine_effect = image(grub_machine_overlays[M.type], M) //Can't do this the reasonable way with an overlay,
@@ -140,7 +145,7 @@ var/global/list/grub_machine_overlays = list()
 	sparks.start()
 	if(machine_effect)
 		QDEL_NULL(machine_effect)
-	ai_holder.target = null
+	ai_holder.remove_target()
 	powermachine.draining = 1
 	spawn(30)
 		set_AI_busy(FALSE)
@@ -171,8 +176,10 @@ var/global/list/grub_machine_overlays = list()
 
 /mob/living/simple_mob/animal/solargrub_larva/proc/expand_grub()
 	eject_from_machine()
-	visible_message("<span class='warning'>\The [src] suddenly balloons in size!</span>")
-	new /mob/living/simple_mob/vore/solargrub(get_turf(src))
+	visible_message(span_warning("\The [src] suddenly balloons in size!"))
+	log_game("A larva has matured into a grub in area [src.loc.name] ([src.x],[src.y],[src.z]")
+	var/mob/living/simple_mob/vore/solargrub/adult = new(get_turf(src))
+	adult.tracked = tracked
 //	grub.power_drained = power_drained //TODO
 	qdel(src)
 
@@ -181,6 +188,8 @@ var/global/list/grub_machine_overlays = list()
 	if(. == 0 && !is_dead())
 		set_light(1.5, 1, COLOR_YELLOW)
 		return 1
+	else if(is_dead())
+		glow_override = FALSE
 
 
 /obj/machinery/abstract_grub_machine
@@ -205,8 +214,7 @@ var/global/list/grub_machine_overlays = list()
 	var/static/potential_targets = typecacheof(list(/obj/machinery))
 	var/list/actual_targets = list()
 
-	for(var/AT in typecache_filter_list(range(vision_range, holder), potential_targets))
-		var/obj/machinery/M = AT
+	for(var/obj/machinery/M as anything in typecache_filter_list(range(vision_range, holder), potential_targets))
 		if(istype(M, /obj/machinery/atmospherics/unary/vent_pump))
 			var/obj/machinery/atmospherics/unary/vent_pump/V = M
 			if(!V.welded && prob(50))
@@ -283,12 +291,12 @@ var/global/list/grub_machine_overlays = list()
 	idle_power_usages = split_into_3(total_idle_power_usage)
 
 
-/obj/item/device/multitool/afterattack(obj/O, mob/user, proximity)
+/obj/item/multitool/afterattack(obj/O, mob/user, proximity)
 	if(proximity)
 		if(istype(O, /obj/machinery))
 			var/mob/living/simple_mob/animal/solargrub_larva/grub = locate() in O
 			if(grub)
 				grub.eject_from_machine(O)
-				to_chat(user, "<span class='warning'>You disturb a grub nesting in \the [O]!</span>")
+				to_chat(user, span_warning("You disturb a grub nesting in \the [O]!"))
 				return
 	return ..()

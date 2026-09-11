@@ -116,6 +116,10 @@
 	name = "\improper Lower Fore Primary Hallway"
 	icon_state = "hallF"
 
+/area/hallway/primary/southeast
+	name = "\improper South Central Storage Hallway"
+	icon_state = "hallC1"
+
 /area/vacant/vacant_office
 	name = "\improper Abandoned Office"
 	icon_state = "vacant_site"
@@ -168,6 +172,7 @@
 /area/security/perma
 	name = "\improper Prison"
 	icon_state = "security"
+	flags = PHASE_SHIELDED
 
 /area/security/perma/bathroom
 	name = "\improper Prison Bathroom"
@@ -187,7 +192,7 @@
 /area/security/outpost
 	name = "\improper Security outpost"
 	icon_state = "security"
-	flags = RAD_SHIELDED
+	flags = RAD_SHIELDED | PHASE_SHIELDED
 
 /area/security/labor
 	name = "Labor camp access"

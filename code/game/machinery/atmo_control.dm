@@ -4,7 +4,7 @@
 	name = "Gas Sensor"
 	desc = "Senses atmospheric conditions."
 
-	anchored = 1
+	anchored = TRUE
 	var/state = 0
 
 	var/id_tag
@@ -69,7 +69,7 @@
 	if(frequency)
 		set_frequency(frequency)
 
-obj/machinery/air_sensor/Destroy()
+/obj/machinery/air_sensor/Destroy()
 	if(radio_controller)
 		radio_controller.remove_object(src,frequency)
 	. = ..()
@@ -83,9 +83,9 @@ obj/machinery/air_sensor/Destroy()
 	var/list/sensors = list()
 	var/list/sensor_information = list()
 	var/datum/radio_frequency/radio_connection
-	circuit = /obj/item/weapon/circuitboard/air_management
+	circuit = /obj/item/circuitboard/air_management
 
-obj/machinery/computer/general_air_control/Destroy()
+/obj/machinery/computer/general_air_control/Destroy()
 	if(radio_controller)
 		radio_controller.remove_object(src, frequency)
 	..()
@@ -144,7 +144,7 @@ obj/machinery/computer/general_air_control/Destroy()
 	var/list/output_info
 	var/input_flow_setting = 200
 	var/pressure_setting = ONE_ATMOSPHERE * 45
-	circuit = /obj/item/weapon/circuitboard/air_management/tank_control
+	circuit = /obj/item/circuitboard/air_management/tank_control
 
 /obj/machinery/computer/general_air_control/large_tank_control/tgui_data(mob/user)
 	var/list/data = ..()
@@ -243,7 +243,7 @@ obj/machinery/computer/general_air_control/Destroy()
 	var/list/output_info
 	var/input_flow_setting = 700
 	var/pressure_setting = 100
-	circuit = /obj/item/weapon/circuitboard/air_management/supermatter_core
+	circuit = /obj/item/circuitboard/air_management/supermatter_core
 
 /obj/machinery/computer/general_air_control/supermatter_core/tgui_data(mob/user)
 	var/list/data = ..()
@@ -343,7 +343,7 @@ obj/machinery/computer/general_air_control/Destroy()
 	var/automation = 0
 	var/cutoff_temperature = 2000
 	var/on_temperature = 1200
-	circuit = /obj/item/weapon/circuitboard/air_management/injector_control
+	circuit = /obj/item/circuitboard/air_management/injector_control
 
 /obj/machinery/computer/general_air_control/fuel_injection/process()
 	if(automation)

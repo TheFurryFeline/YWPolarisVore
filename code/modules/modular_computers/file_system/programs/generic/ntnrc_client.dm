@@ -12,17 +12,21 @@
 	ui_header = "ntnrc_idle.gif"
 	available_on_ntnet = 1
 	tgui_id = "NtosNetChat"
-	var/last_message				// Used to generate the toolbar icon
+	/// Used to generate the toolbar icon
+	var/last_message
 	var/username
 	var/active_channel
 	var/list/channel_history = list()
-	var/operator_mode = FALSE		// Channel operator mode
-	var/netadmin_mode = FALSE		// Administrator mode (invisible to other users + bypasses passwords)
+	/// Channel operator mode
+	var/operator_mode = FALSE
+	/// Administrator mode (invisible to other users + bypasses passwords)
+	var/netadmin_mode = FALSE
+	usage_flags = PROGRAM_ALL
 
 /datum/computer_file/program/chatclient/New()
 	username = "DefaultUser[rand(100, 999)]"
 
-/datum/computer_file/program/chatclient/tgui_act(action, params)
+/datum/computer_file/program/chatclient/tgui_act(action, params, datum/tgui/ui)
 	if(..())
 		return
 
@@ -43,8 +47,7 @@
 					return TRUE
 
 			channel.add_message(message, username)
-			// var/mob/living/user = usr
-			// user.log_talk(message, LOG_CHAT, tag="as [username] to channel [channel.title]")
+			// ui.user.log_talk(message, LOG_CHAT, tag="as [username] to channel [channel.title]")
 			return TRUE
 		if("PRG_joinchannel")
 			var/new_target = text2num(params["id"])
@@ -81,10 +84,8 @@
 				if(channel)
 					channel.remove_client(src) // We shouldn't be in channel's user list, but just in case...
 				return TRUE
-			var/mob/living/user = usr
-			if(can_run(user, TRUE, access_network))
-				for(var/C in ntnet_global.chat_channels)
-					var/datum/ntnet_conversation/chan = C
+			if(isliving(ui.user) && can_run(ui.user, TRUE, access_network))
+				for(var/datum/ntnet_conversation/chan as anything in ntnet_global.chat_channels)
 					chan.remove_client(src)
 				netadmin_mode = TRUE
 				return TRUE
@@ -92,8 +93,7 @@
 			var/newname = sanitize(params["new_name"])
 			if(!newname)
 				return
-			for(var/C in ntnet_global.chat_channels)
-				var/datum/ntnet_conversation/chan = C
+			for(var/datum/ntnet_conversation/chan as anything in ntnet_global.chat_channels)
 				if(src in chan.clients)
 					chan.add_status_message("[username] is now known as [newname].")
 			username = newname
@@ -117,9 +117,9 @@
 					// This program shouldn't even be runnable without computer.
 					CRASH("Var computer is null!")
 				if(!computer.hard_drive)
-					computer.visible_message("<span class='warning'>\The [computer] shows an \"I/O Error - Hard drive connection error\" warning.</span>")
+					computer.visible_message(span_warning("\The [computer] shows an \"I/O Error - Hard drive connection error\" warning."))
 				else	// In 99.9% cases this will mean our HDD is full
-					computer.visible_message("<span class='warning'>\The [computer] shows an \"I/O Error - Hard drive may be full. Please free some space and try again. Required space: [logfile.size]GQ\" warning.</span>")
+					computer.visible_message(span_warning("\The [computer] shows an \"I/O Error - Hard drive may be full. Please free some space and try again. Required space: [logfile.size]GQ\" warning."))
 			return TRUE
 		if("PRG_renamechannel")
 			if(!authed)
@@ -163,8 +163,7 @@
 		ui_header = "ntnrc_idle.gif"
 
 /datum/computer_file/program/chatclient/kill_program(forced = FALSE)
-	for(var/C in ntnet_global.chat_channels)
-		var/datum/ntnet_conversation/channel = C
+	for(var/datum/ntnet_conversation/channel as anything in ntnet_global.chat_channels)
 		channel.remove_client(src)
 	..()
 
@@ -172,7 +171,7 @@
 	var/list/data = list()
 	data["can_admin"] = can_run(user, FALSE, access_network)
 	return data
-	
+
 /datum/computer_file/program/chatclient/tgui_data(mob/user)
 	if(!ntnet_global || !ntnet_global.chat_channels)
 		return list()
@@ -180,8 +179,7 @@
 	var/list/data = get_header_data()
 
 	var/list/all_channels = list()
-	for(var/C in ntnet_global.chat_channels)
-		var/datum/ntnet_conversation/conv = C
+	for(var/datum/ntnet_conversation/conv as anything in ntnet_global.chat_channels)
 		if(conv && conv.title)
 			all_channels.Add(list(list(
 				"chan" = conv.title,

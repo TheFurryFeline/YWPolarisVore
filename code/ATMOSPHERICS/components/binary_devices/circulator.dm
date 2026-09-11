@@ -1,14 +1,12 @@
 //node1, air1, network1 correspond to input
 //node2, air2, network2 correspond to output
-
-#define ADIABATIC_EXPONENT 0.667 //Actually adiabatic exponent - 1.
-
 /obj/machinery/atmospherics/binary/circulator
 	name = "circulator"
 	desc = "A gas circulator turbine and heat exchanger."
 	icon = 'icons/obj/power.dmi'
 	icon_state = "circ-unassembled"
-	anchored = 0
+	anchored = FALSE
+	unacidable = TRUE
 	pipe_flags = PIPING_DEFAULT_LAYER_ONLY|PIPING_ONE_PER_TURF
 
 	var/kinetic_efficiency = 0.04 //combined kinetic and kinetic-to-electric efficiency
@@ -24,10 +22,11 @@
 	var/stored_energy = 0
 	var/temperature_overlay
 
-	density = 1
+	density = TRUE
 
-/obj/machinery/atmospherics/binary/circulator/New()
-	..()
+/obj/machinery/atmospherics/binary/circulator/Initialize()
+	. = ..()
+
 	desc = initial(desc) + " Its outlet port is to the [dir2text(dir)]."
 	air1.volume = 400
 
@@ -93,8 +92,8 @@
 
 	return 1
 
-/obj/machinery/atmospherics/binary/circulator/attackby(obj/item/weapon/W as obj, mob/user as mob)
-	if(W.is_wrench())
+/obj/machinery/atmospherics/binary/circulator/attackby(obj/item/W as obj, mob/user as mob)
+	if(W.has_tool_quality(TOOL_WRENCH))
 		playsound(src, W.usesound, 75, 1)
 		anchored = !anchored
 		user.visible_message("[user.name] [anchored ? "secures" : "unsecures"] the bolts holding [src.name] to the floor.", \

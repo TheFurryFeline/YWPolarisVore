@@ -1,5 +1,5 @@
-proc/sql_poll_population()
-	if(!sqllogging)
+/proc/sql_poll_population()
+	if(!CONFIG_GET(flag/enable_stat_tracking))
 		return
 	var/admincount = GLOB.admins.len
 	var/playercount = 0
@@ -16,17 +16,17 @@ proc/sql_poll_population()
 			var/err = query.ErrorMsg()
 			log_game("SQL ERROR during population polling. Error : \[[err]\]\n")
 
-proc/sql_report_round_start()
+/proc/sql_report_round_start()
 	// TODO
-	if(!sqllogging)
+	if(!CONFIG_GET(flag/enable_stat_tracking))
 		return
-proc/sql_report_round_end()
+/proc/sql_report_round_end()
 	// TODO
-	if(!sqllogging)
+	if(!CONFIG_GET(flag/enable_stat_tracking))
 		return
 
-proc/sql_report_death(var/mob/living/carbon/human/H)
-	if(!sqllogging)
+/proc/sql_report_death(var/mob/living/carbon/human/H)
+	if(!CONFIG_GET(flag/enable_stat_tracking))
 		return
 	if(!H)
 		return
@@ -59,8 +59,8 @@ proc/sql_report_death(var/mob/living/carbon/human/H)
 			log_game("SQL ERROR during death reporting. Error : \[[err]\]\n")
 
 
-proc/sql_report_cyborg_death(var/mob/living/silicon/robot/H)
-	if(!sqllogging)
+/proc/sql_report_cyborg_death(var/mob/living/silicon/robot/H)
+	if(!CONFIG_GET(flag/enable_stat_tracking))
 		return
 	if(!H)
 		return
@@ -93,16 +93,16 @@ proc/sql_report_cyborg_death(var/mob/living/silicon/robot/H)
 			log_game("SQL ERROR during death reporting. Error : \[[err]\]\n")
 
 
-proc/statistic_cycle()
+/proc/statistic_cycle()
 	set waitfor = 0
-	if(!sqllogging)
+	if(!CONFIG_GET(flag/enable_stat_tracking))
 		return
 	while(1)
 		sql_poll_population()
 		sleep(6000)
 
 //This proc is used for feedback. It is executed at round end.
-proc/sql_commit_feedback()
+/proc/sql_commit_feedback()
 	if(!blackbox)
 		log_game("Round ended without a blackbox recorder. No feedback was sent to the database.")
 		return

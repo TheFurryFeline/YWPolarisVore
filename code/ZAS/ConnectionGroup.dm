@@ -2,7 +2,7 @@
 
 Overview:
 	These are what handle gas transfers between zones and into space.
-	They are found in a zone's edges list and in air_master.edges.
+	They are found in a zone's edges list and in SSair.edges.
 	Each edge updates every air tick due to their role in gas transfer.
 	They come in two flavors, /connection_edge/zone and /connection_edge/unsimulated.
 	As the type names might suggest, they handle inter-zone and spacelike connections respectively.
@@ -57,14 +57,12 @@ Class Procs:
 
 */
 
-
-/connection_edge/var/zone/A
-
-/connection_edge/var/list/connecting_turfs = list()
-/connection_edge/var/direct = 0
-/connection_edge/var/sleeping = 1
-
-/connection_edge/var/coefficient = 0
+/connection_edge
+	var/zone/A
+	var/list/connecting_turfs = list()
+	var/direct = 0
+	var/sleeping = 1
+	var/coefficient = 0
 
 /connection_edge/New()
 	CRASH("Cannot make connection edge without specifications.")
@@ -84,7 +82,7 @@ Class Procs:
 /connection_edge/proc/contains_zone(zone/Z)
 
 /connection_edge/proc/erase()
-	air_master.remove_edge(src)
+	SSair.remove_edge(src)
 	//to_world("[type] Erased.")
 
 /connection_edge/proc/tick()
@@ -119,7 +117,8 @@ Class Procs:
 
 
 
-/connection_edge/zone/var/zone/B
+/connection_edge/zone
+	var/zone/B
 
 /connection_edge/zone/New(zone/A, zone/B)
 
@@ -170,27 +169,30 @@ Class Procs:
 	if(equiv)
 		if(direct)
 			erase()
-			air_master.merge(A, B)
+			SSair.merge(A, B)
 			return
 		else
 			A.air.equalize(B.air)
-			air_master.mark_edge_sleeping(src)
+			SSair.mark_edge_sleeping(src)
 
-	air_master.mark_zone_update(A)
-	air_master.mark_zone_update(B)
+	SSair.mark_zone_update(A)
+	SSair.mark_zone_update(B)
 
 /connection_edge/zone/recheck()
 	// Edges with only one side being vacuum need processing no matter how close.
 	if(!A.air.compare(B.air, vacuum_exception = 1))
-		air_master.mark_edge_active(src)
+		SSair.mark_edge_active(src)
 
 //Helper proc to get connections for a zone.
 /connection_edge/zone/proc/get_connected_zone(zone/from)
 	if(A == from) return B
 	else return A
 
-/connection_edge/unsimulated/var/turf/B
-/connection_edge/unsimulated/var/datum/gas_mixture/air
+/connection_edge/unsimulated
+	var/turf/B
+
+/connection_edge/unsimulated
+	var/datum/gas_mixture/air
 
 /connection_edge/unsimulated/New(zone/A, turf/B)
 	src.A = A
@@ -231,18 +233,18 @@ Class Procs:
 
 	if(equiv)
 		A.air.copy_from(air)
-		air_master.mark_edge_sleeping(src)
+		SSair.mark_edge_sleeping(src)
 
-	air_master.mark_zone_update(A)
+	SSair.mark_zone_update(A)
 
 /connection_edge/unsimulated/recheck()
 	// Edges with only one side being vacuum need processing no matter how close.
 	// Note: This handles the glaring flaw of a room holding pressure while exposed to space, but
 	// does not specially handle the less common case of a simulated room exposed to an unsimulated pressurized turf.
 	if(!A.air.compare(air, vacuum_exception = 1))
-		air_master.mark_edge_active(src)
+		SSair.mark_edge_active(src)
 
-proc/ShareHeat(datum/gas_mixture/A, datum/gas_mixture/B, connecting_tiles)
+/proc/ShareHeat(datum/gas_mixture/A, datum/gas_mixture/B, connecting_tiles)
 	//This implements a simplistic version of the Stefan-Boltzmann law.
 	var/energy_delta = ((A.temperature - B.temperature) ** 4) * STEFAN_BOLTZMANN_CONSTANT * connecting_tiles * 2.5
 	var/maximum_energy_delta = max(0, min(A.temperature * A.heat_capacity() * A.group_multiplier, B.temperature * B.heat_capacity() * B.group_multiplier))

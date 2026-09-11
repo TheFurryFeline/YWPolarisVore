@@ -4,6 +4,7 @@
 // Clickable stat() button.
 /obj/effect/statclick
 	name = "Initializing..."
+	blocks_emissive = FALSE
 	var/target
 
 /obj/effect/statclick/New(loc, text, target) //Don't port this to Initialize it's too critical
@@ -37,7 +38,7 @@
 
 // Debug verbs.
 /client/proc/restart_controller(controller in list("Master", "Failsafe"))
-	set category = "Debug"
+	set category = "Debug.Dangerous"
 	set name = "Restart Controller"
 	set desc = "Restart one of the various periodic loop controllers for the game (be careful!)"
 
@@ -54,7 +55,7 @@
 	message_admins("Admin [key_name_admin(usr)] has restarted the [controller] controller.")
 
 /client/proc/debug_antagonist_template(antag_type in all_antag_types)
-	set category = "Debug"
+	set category = "Debug.Investigate"
 	set name = "Debug Antagonist"
 	set desc = "Debug an antagonist template."
 
@@ -64,7 +65,7 @@
 		message_admins("Admin [key_name_admin(usr)] is debugging the [antag.role_text] template.")
 
 /client/proc/debug_controller()
-	set category = "Debug"
+	set category = "Debug.Investigate"
 	set name = "Debug Controller"
 	set desc = "Debug the various subsystems/controllers for the game (be careful!)"
 
@@ -74,8 +75,7 @@
 	options["MC"] = Master
 	options["Failsafe"] = Failsafe
 	options["Configuration"] = config
-	for(var/i in Master.subsystems)
-		var/datum/controller/subsystem/S = i
+	for(var/datum/controller/subsystem/S as anything in Master.subsystems)
 		if(!istype(S))		//Eh, we're a debug verb, let's have typechecking.
 			continue
 		var/strtype = "SS[get_end_section_of_type(S.type)]"
@@ -89,7 +89,6 @@
 
 	//Goon PS stuff, and other yet-to-be-subsystem things.
 	options["LEGACY: master_controller"] = master_controller
-	options["LEGACY: air_master"] = air_master
 	options["LEGACY: job_master"] = job_master
 	options["LEGACY: radio_controller"] = radio_controller
 	options["LEGACY: emergency_shuttle"] = emergency_shuttle
@@ -98,7 +97,7 @@
 	options["LEGACY: transfer_controller"] = transfer_controller
 	options["LEGACY: gas_data"] = gas_data
 
-	var/pick = input(mob, "Choose a controller to debug/view variables of.", "VV controller:") as null|anything in options
+	var/pick = input(mob, "Choose a controller to debug/view variables of.", "VV controller:") as null|anything in options // Leaving as input() due to debug tool
 	if(!pick)
 		return
 	var/datum/D = options[pick]

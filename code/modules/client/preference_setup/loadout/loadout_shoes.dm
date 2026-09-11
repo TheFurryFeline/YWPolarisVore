@@ -5,6 +5,26 @@
 	slot = slot_shoes
 	sort_category = "Shoes and Footwear"
 
+/datum/gear/shoes/tourist_1
+	display_name = "tourist, black"
+	path = /obj/item/clothing/shoes/tourist_1
+
+/datum/gear/shoes/tourist_2
+	display_name = "tourist, green"
+	path = /obj/item/clothing/shoes/tourist_2
+
+/datum/gear/shoes/sneakerspurple
+	display_name = "sneakers, purple"
+	path = /obj/item/clothing/shoes/sneakerspurple
+
+/datum/gear/shoes/sneakersblue
+	display_name = "sneakers, blue"
+	path = /obj/item/clothing/shoes/sneakersblue
+
+/datum/gear/shoes/sneakersred
+	display_name = "sneakers, red"
+	path = /obj/item/clothing/shoes/sneakersred
+
 /datum/gear/shoes/jackboots
 	display_name = "jackboots"
 	path = /obj/item/clothing/shoes/boots/jackboots
@@ -14,8 +34,16 @@
 	path = /obj/item/clothing/shoes/boots/jackboots/knee
 
 /datum/gear/shoes/thighboots
-	display_name = "jackboots. thigh-length"
+	display_name = "jackboots, thigh-length"
 	path = /obj/item/clothing/shoes/boots/jackboots/thigh
+
+/datum/gear/shoes/colorboots
+	display_name = "jackboots, recolorable"
+	path = /obj/item/clothing/shoes/boots/jackboots/recolorable
+
+/datum/gear/shoes/colorboots/New()
+	..()
+	gear_tweaks += gear_tweak_free_color_choice
 
 /datum/gear/shoes/workboots
 	display_name = "workboots"
@@ -122,16 +150,24 @@
 	gear_tweaks += gear_tweak_free_color_choice
 
 /datum/gear/shoes/cowboy
-	display_name = "cowboy boots"
+	display_name = "cowboy boots selection"
+	description = "Pick from a (free) range of rootin' tootin' cowboy boot(in'). Yee-haw!"
 	path = /obj/item/clothing/shoes/boots/cowboy
 
-/datum/gear/shoes/cowboy/classic
-	display_name = "classic cowboy boots"
-	path = /obj/item/clothing/shoes/boots/cowboy/classic
-
-/datum/gear/shoes/cowboy/snakeskin
-	display_name = "snakeskin cowboy boots"
-	path = /obj/item/clothing/shoes/boots/cowboy/snakeskin
+/datum/gear/shoes/cowboy/New()
+	..()
+	var/list/selector_uniforms = list(
+		"cowboy boots"=/obj/item/clothing/shoes/boots/cowboy,
+		"cowboy boots, classic"=/obj/item/clothing/shoes/boots/cowboy/classic,
+		"cowboy boots, brown"=/obj/item/clothing/shoes/boots/cowboy/brown,
+		"cowboy boots, black"=/obj/item/clothing/shoes/boots/cowboy/black,
+		"cowboy boots, white"=/obj/item/clothing/shoes/boots/cowboy/white,
+		"cowboy boots, fancy"=/obj/item/clothing/shoes/boots/cowboy/fancy,
+		"cowboy boots, snakeskin"=/obj/item/clothing/shoes/boots/cowboy/snakeskin,
+		"cowboy boots, green"=/obj/item/clothing/shoes/boots/cowboy/green,
+		"cowboy boots, blue"=/obj/item/clothing/shoes/boots/cowboy/blue
+	)
+	gear_tweaks += new/datum/gear_tweak/path(sortAssoc(selector_uniforms))
 
 /datum/gear/shoes/jungle
 	display_name = "jungle boots"
@@ -170,7 +206,7 @@
 /datum/gear/shoes/boots/winter/security
 	display_name = "security winter boots"
 	path = /obj/item/clothing/shoes/boots/winter/security
-	allowed_roles = list("Security Officer", "Head of Security", "Warden", "Detective","Blueshield Guard","Security Pilot") //YW ADDITIONS
+	allowed_roles = list(JOB_SECURITY_OFFICER, JOB_HEAD_OF_SECURITY, JOB_WARDEN, JOB_DETECTIVE,"Blueshield Guard","Security Pilot") //YW ADDITIONS
 
 /datum/gear/shoes/boots/winter/science
 	display_name = "science winter boots"
@@ -179,7 +215,7 @@
 /datum/gear/shoes/boots/winter/command
 	display_name = "site manager's winter boots"
 	path = /obj/item/clothing/shoes/boots/winter/command
-	allowed_roles = list("Site Manager")
+	allowed_roles = list(JOB_SITE_MANAGER)
 
 /datum/gear/shoes/boots/winter/engineering
 	display_name = "engineering winter boots"
@@ -192,6 +228,7 @@
 /datum/gear/shoes/boots/winter/medical
 	display_name = "medical winter boots"
 	path = /obj/item/clothing/shoes/boots/winter/medical
+	allowed_roles = list(JOB_MEDICAL_DOCTOR,JOB_CHIEF_MEDICAL_OFFICER,JOB_CHEMIST,JOB_PARAMEDIC,JOB_GENETICIST, JOB_PSYCHIATRIST, "Field Medic") // YW EDIT Field medic
 
 /datum/gear/shoes/boots/winter/mining
 	display_name = "mining winter boots"
@@ -208,3 +245,23 @@
 /datum/gear/shoes/circuitry
 	display_name = "boots, circuitry (empty)"
 	path = /obj/item/clothing/shoes/circuitry
+
+/datum/gear/shoes/ballet
+	display_name = "pointe shoes"
+	path = /obj/item/clothing/shoes/ballet
+
+/datum/gear/shoes/ballet/New()
+	..()
+	gear_tweaks += gear_tweak_free_color_choice
+
+/datum/gear/shoes/halfmoon
+	display_name = "half moon boots"
+	path = /obj/item/clothing/shoes/boots/half_moon
+
+/datum/gear/shoes/sandals
+	display_name = "sandals, colorable"
+	path = /obj/item/clothing/shoes/sandals
+
+/datum/gear/shoes/sandals/New()
+	..()
+	gear_tweaks += gear_tweak_free_color_choice

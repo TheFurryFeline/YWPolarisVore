@@ -16,13 +16,11 @@
 	if(!changeling)
 		return 0
 
-
-
 	var/list/names = list()
 	for(var/datum/dna/DNA in changeling.absorbed_dna)
 		names += "[DNA.real_name]"
 
-	var/S = input("Select the target DNA: ", "Target DNA", null) as null|anything in names
+	var/S = tgui_input_list(src, "Select the target DNA:", "Target DNA", names)
 	if(!S)
 		return
 
@@ -34,10 +32,10 @@
 	if(!T)
 		return 0
 	if((HUSK in T.mutations) || (!ishuman(T) && !issmall(T)))
-		to_chat(src, "<span class='warning'>Our sting appears ineffective against its DNA.</span>")
+		to_chat(src, span_warning("Our sting appears ineffective against its DNA."))
 		return 0
 	add_attack_logs(src,T,"Transformation sting (changeling)")
-	T.visible_message("<span class='warning'>[T] transforms!</span>")
+	T.visible_message(span_warning("[T] transforms!"))
 	T.dna = chosen_dna.Clone()
 	T.real_name = chosen_dna.real_name
 	T.UpdateAppearance()

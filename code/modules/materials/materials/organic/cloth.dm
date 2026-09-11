@@ -10,11 +10,13 @@
 	integrity = 40
 	pass_stack_colors = TRUE
 	supply_conversion_value = 2
+	hardness = 5
 
-/datum/material/cloth/generate_recipes()
+
+/datum/material/cloth/generate_recipes() //Vorestation Add - adding some funny cool storage pouches to this so botany can do things other than food
 	recipes = list(
-		new /datum/stack_recipe("woven net", /obj/item/weapon/material/fishing_net, 10, time = 30 SECONDS, pass_stack_color = TRUE, supplied_material = "[name]"),
-		new /datum/stack_recipe("bedsheet", /obj/item/weapon/bedsheet, 10, time = 30 SECONDS, pass_stack_color = TRUE, recycle_material = "[name]"),
+		new /datum/stack_recipe("woven net", /obj/item/material/fishing_net, 10, time = 30 SECONDS, pass_stack_color = TRUE, supplied_material = "[name]"),
+		new /datum/stack_recipe("bedsheet", /obj/item/bedsheet, 10, time = 30 SECONDS, pass_stack_color = TRUE, recycle_material = "[name]"),
 		new /datum/stack_recipe("uniform", /obj/item/clothing/under/color/white, 8, time = 15 SECONDS, pass_stack_color = TRUE, recycle_material = "[name]"),
 		new /datum/stack_recipe("foot wraps", /obj/item/clothing/shoes/footwraps, 2, time = 5 SECONDS, pass_stack_color = TRUE, recycle_material = "[name]"),
 		new /datum/stack_recipe("gloves", /obj/item/clothing/gloves/white, 2, time = 5 SECONDS, pass_stack_color = TRUE, recycle_material = "[name]"),
@@ -26,9 +28,21 @@
 		new /datum/stack_recipe("kippa", /obj/item/clothing/head/kippa, 3, time = 6 SECONDS, pass_stack_color = TRUE, recycle_material = "[name]"),
 		new /datum/stack_recipe("scarf", /obj/item/clothing/accessory/scarf/white, 4, time = 5 SECONDS, pass_stack_color = TRUE, recycle_material = "[name]"),
 		new /datum/stack_recipe("baggy pants", /obj/item/clothing/under/pants/baggy/white, 8, time = 10 SECONDS, pass_stack_color = TRUE, recycle_material = "[name]"),
-		new /datum/stack_recipe("belt pouch", /obj/item/weapon/storage/belt/fannypack/white, 25, time = 1 MINUTE, pass_stack_color = TRUE, recycle_material = "[name]"),
+		new /datum/stack_recipe("belt pouch", /obj/item/storage/belt/fannypack/white, 25, time = 1 MINUTE, pass_stack_color = TRUE, recycle_material = "[name]"),
+		new /datum/stack_recipe("pouch, small", /obj/item/storage/pouch/small, 10, time = 20 SECONDS, pass_stack_color = FALSE, recycle_material = "[name]"), //vorestation Add
+		new /datum/stack_recipe("pouch, ammo", /obj/item/storage/pouch/ammo, 10, time = 20 SECONDS, pass_stack_color = FALSE, recycle_material = "[name]"), //vorestation Add
+		new /datum/stack_recipe("pouch, tools", /obj/item/storage/pouch/eng_tool, 10, time = 20 SECONDS, pass_stack_color = FALSE, recycle_material = "[name]"), //vorestation Add
+		new /datum/stack_recipe("pouch, parts", /obj/item/storage/pouch/eng_parts, 10, time = 20 SECONDS, pass_stack_color = FALSE, recycle_material = "[name]"), //vorestation Add
+		new /datum/stack_recipe("pouch, supplies", /obj/item/storage/pouch/eng_supply, 10, time = 20 SECONDS, pass_stack_color = FALSE, recycle_material = "[name]"), //vorestation Add
+		new /datum/stack_recipe("pouch, medical", /obj/item/storage/pouch/medical, 10, time = 20 SECONDS, pass_stack_color = FALSE, recycle_material = "[name]"), //vorestation Add
+		new /datum/stack_recipe("pouch, flare", /obj/item/storage/pouch/flares, 10, time = 20 SECONDS, pass_stack_color = FALSE, recycle_material = "[name]"), //vorestation Add
 		new /datum/stack_recipe("crude bandage", /obj/item/stack/medical/crude_pack, 1, time = 2 SECONDS, pass_stack_color = TRUE, recycle_material = "[name]"),
-		new /datum/stack_recipe("empty sandbag", /obj/item/stack/emptysandbag, 2, time = 2 SECONDS, pass_stack_color = TRUE, supplied_material = "[name]")
+		new /datum/stack_recipe("empty sandbag", /obj/item/stack/emptysandbag, 2, time = 2 SECONDS, pass_stack_color = TRUE, supplied_material = "[name]"),
+		new /datum/stack_recipe("painting canvas (11x11)", /obj/item/canvas, 2, time = 2 SECONDS, pass_stack_color = FALSE, supplied_material = "[name]"),
+		new /datum/stack_recipe("painting canvas (19x19)", /obj/item/canvas/nineteen_nineteen, 3, time = 2 SECONDS, pass_stack_color = FALSE, supplied_material = "[name]"),
+		new /datum/stack_recipe("painting canvas (23x19)", /obj/item/canvas/twentythree_nineteen, 4, time = 3 SECONDS, pass_stack_color = FALSE, supplied_material = "[name]"),
+		new /datum/stack_recipe("painting canvas (23x23), AI", /obj/item/canvas/twentythree_twentythree, 5, time = 3 SECONDS, pass_stack_color = FALSE, supplied_material = "[name]"),
+		new /datum/stack_recipe("painting canvas (24x24)", /obj/item/canvas/twentyfour_twentyfour, 6, time = 3 SECONDS, pass_stack_color = FALSE, supplied_material = "[name]")
 	)
 
 /datum/material/cloth/syncloth
@@ -40,6 +54,7 @@
 	protectiveness = 15 // 4%
 	pass_stack_colors = TRUE
 	supply_conversion_value = 3
+	hardness = 5
 
 /datum/material/cloth/teal
 	name = "teal"
@@ -102,20 +117,39 @@
 	display_name = "comfy"
 	use_name = "red upholstery"
 	icon_colour = "#DA020A"
-	flags = MATERIAL_PADDING
+	flags = MATERIAL_PADDING|MATERIAL_BRITTLE
 	ignition_point = T0C+232
 	melting_point = T0C+300
 	sheet_singular_name = "tile"
 	sheet_plural_name = "tiles"
 	protectiveness = 1 // 4%
 	conductive = 0
+	hardness = 5
+	integrity = 40
 
 /datum/material/cotton
 	name = "cotton"
 	display_name ="cotton"
 	icon_colour = "#FFFFFF"
-	flags = MATERIAL_PADDING
+	flags = MATERIAL_PADDING|MATERIAL_BRITTLE
 	ignition_point = T0C+232
 	melting_point = T0C+300
 	protectiveness = 1 // 4%
 	conductive = 0
+	hardness = 5
+	integrity = 10
+
+/datum/material/fibers
+	name = MAT_FIBERS
+	display_name = "plant"
+	sheet_singular_name = "fiber"
+	sheet_singular_name = "fibers"
+	icon_colour = "#006b0e"
+	flags = MATERIAL_PADDING|MATERIAL_BRITTLE
+	ignition_point = T0C+232
+	melting_point = T0C+300
+	protectiveness = 1 // 4%
+	conductive = 0
+	pass_stack_colors = TRUE
+	hardness = 5
+	integrity = 5

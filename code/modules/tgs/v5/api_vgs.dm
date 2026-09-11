@@ -8,9 +8,9 @@ GLOBAL_DATUM(vgs, /datum/tgs_api)
 	if(current_api)
 		TGS_ERROR_LOG("API datum already set (\ref[current_api] ([current_api]))! Was TgsNew() called more than once?")
 		return
-	
+
 	// If we don't have a configured access identifier we aren't meant to use VGS
-	if(!config.vgs_access_identifier)
+	if(!CONFIG_GET(string/vgs_access_identifier))
 		TGS_INFO_LOG("Skipping VGS: No access identifier configured")
 		return
 
@@ -60,11 +60,11 @@ GLOBAL_DATUM(vgs, /datum/tgs_api)
 
 // Override to prevent error messages from the lack of revision/test_merge information, and to use config isntead of params.
 /datum/tgs_api/v5/vgs1/OnWorldNew()
-	if(config.vgs_server_port)
-		server_port = config.vgs_server_port
-	access_identifier = config.vgs_access_identifier
+	if(CONFIG_GET(number/vgs_server_port))
+		server_port = CONFIG_GET(number/vgs_server_port)
+	access_identifier = CONFIG_GET(string/vgs_access_identifier)
 
-	var/list/bridge_response = Bridge(DMAPI5_BRIDGE_COMMAND_STARTUP, list(DMAPI5_BRIDGE_PARAMETER_CUSTOM_COMMANDS = ListCustomCommands()))
+	var/list/bridge_response = Bridge(DMAPI5_BRIDGE_COMMAND_STARTUP, list(DMAPI5_PARAMETER_CUSTOM_COMMANDS  = ListCustomCommands())) // YW Edit: dmapi update not sure if i need to update it or not but better safe then sorry
 	if(!istype(bridge_response))
 		TGS_ERROR_LOG("Failed initial bridge request!")
 		return FALSE

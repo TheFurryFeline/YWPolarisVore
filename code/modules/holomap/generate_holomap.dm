@@ -26,11 +26,10 @@
 /// Generates all the holo minimaps, initializing it all nicely, probably.
 /datum/controller/subsystem/holomaps/proc/generateHoloMinimaps()
 	var/start_time = world.timeofday
-	
+
 	// Starting over if we're running midround (it runs real fast, so that's possible)
 	holoMiniMaps.Cut()
 	extraMiniMaps.Cut()
-	station_holomaps.Cut()
 
 	// Build the base map for each z level
 	for (var/z = 1 to world.maxz)
@@ -46,7 +45,7 @@
 			smooshTetherHolomaps(smoosh_list)
 
 	holomaps_initialized = TRUE
-	admin_notice("<span class='notice'>Holomaps initialized in [round(0.1*(world.timeofday-start_time),0.1)] seconds.</span>", R_DEBUG)
+	admin_notice(span_notice("Holomaps initialized in [round(0.1*(world.timeofday-start_time),0.1)] seconds."), R_DEBUG)
 
 	// TODO - Check - They had a delayed init perhaps?
 	for (var/obj/machinery/station_map/S in station_holomaps)
@@ -57,9 +56,9 @@
 	// Sanity checks - Better to generate a helpful error message now than have DrawBox() runtime
 	var/icon/canvas = icon(HOLOMAP_ICON, "blank")
 	if(world.maxx > canvas.Width())
-		crash_with("Minimap for z=[zLevel] : world.maxx ([world.maxx]) must be <= [canvas.Width()]")
+		stack_trace("Minimap for z=[zLevel] : world.maxx ([world.maxx]) must be <= [canvas.Width()]")
 	if(world.maxy > canvas.Height())
-		crash_with("Minimap for z=[zLevel] : world.maxy ([world.maxy]) must be <= [canvas.Height()]")
+		stack_trace("Minimap for z=[zLevel] : world.maxy ([world.maxy]) must be <= [canvas.Height()]")
 
 	for(var/x = 1 to world.maxx)
 		for(var/y = 1 to world.maxy)
@@ -83,9 +82,9 @@
 	// Sanity checks - Better to generate a helpful error message now than have DrawBox() runtime
 	var/icon/canvas = icon(HOLOMAP_ICON, "blank")
 	if(world.maxx > canvas.Width())
-		crash_with("Minimap for z=[zLevel] : world.maxx ([world.maxx]) must be <= [canvas.Width()]")
+		stack_trace("Minimap for z=[zLevel] : world.maxx ([world.maxx]) must be <= [canvas.Width()]")
 	if(world.maxy > canvas.Height())
-		crash_with("Minimap for z=[zLevel] : world.maxy ([world.maxy]) must be <= [canvas.Height()]")
+		stack_trace("Minimap for z=[zLevel] : world.maxy ([world.maxy]) must be <= [canvas.Height()]")
 
 	for(var/x = 1 to world.maxx)
 		for(var/y = 1 to world.maxy)
@@ -134,7 +133,7 @@
 		z_terrain.Blend(HOLOMAP_HOLOFIER, ICON_MULTIPLY, offset_x, offset_y)
 		big_map.Blend(z_terrain, ICON_OVERLAY, offset_x, offset_y)
 		small_map.Blend(z_terrain, ICON_OVERLAY, offset_x, offset_y)
-		
+
 		var/icon/z_areas = extraMiniMaps["[HOLOMAP_EXTRA_STATIONMAPAREAS]_[zLevel]"]
 		big_map.Blend(z_areas, ICON_OVERLAY, offset_x, offset_y)
 		small_map.Blend(z_areas, ICON_OVERLAY, offset_x, offset_y)

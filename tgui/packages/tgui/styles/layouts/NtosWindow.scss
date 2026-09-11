@@ -1,3 +1,8 @@
+/**
+ * Copyright (c) 2020 Aleksej Komarov
+ * SPDX-License-Identifier: MIT
+ */
+
 @use '../base.scss';
 
 .NtosWindow__header {
@@ -11,11 +16,11 @@
   font-family: Consolas, monospace;
   font-size: base.em(14px);
   user-select: none;
-  -ms-user-select: none;
+  -ms-user-select: none; // TODO: Remove with 516
 }
 
-.NtosWindow__content > .Layout__content {
-  margin-top: 2em !important;
+.NtosWindow__content .Layout__content {
+  margin-top: 2em;
   font-family: Consolas, monospace;
   font-size: base.em(14px);
 }

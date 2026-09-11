@@ -1,16 +1,14 @@
-//This file was auto-corrected by findeclaration.exe on 25.5.2012 20:42:31
-#define DOOR_REPAIR_AMOUNT 50	//amount of health regained per stack amount used
-
 /obj/machinery/door
 	name = "Door"
 	desc = "It opens and closes."
 	icon = 'icons/obj/doors/Doorint.dmi'
 	icon_state = "door1"
-	anchored = 1
+	anchored = TRUE
 	opacity = 1
-	density = 1
+	density = TRUE
 	can_atmos_pass = ATMOS_PASS_PROC
 	layer = DOOR_OPEN_LAYER
+	blocks_emissive = EMISSIVE_BLOCK_UNIQUE
 	var/open_layer = DOOR_OPEN_LAYER
 	var/closed_layer = DOOR_CLOSED_LAYER
 
@@ -27,9 +25,12 @@
 	var/destroy_hits = 10 //How many strong hits it takes to destroy the door
 	var/min_force = 10 //minimum amount of force needed to damage the door with a melee weapon
 	var/hitsound = 'sound/weapons/smash.ogg' //sound door makes when hit with a weapon
-	var/repairing = 0
+	//var/repairing = 0 //VOREstation Edit: We're not using materials anymore
 	var/block_air_zones = 1 //If set, air zones cannot merge across the door even when it is opened.
 	var/close_door_at = 0 //When to automatically close the door, if possible
+
+	var/anim_length_before_density = 3
+	var/anim_length_before_finalize = 7
 
 	//Multi-tile doors
 	dir = EAST
@@ -42,11 +43,11 @@
 	if(isanimal(user))
 		var/mob/living/simple_mob/S = user
 		if(damage >= STRUCTURE_MIN_DAMAGE_THRESHOLD)
-			visible_message("<span class='danger'>\The [user] smashes into [src]!</span>")
+			visible_message(span_danger("\The [user] smashes into [src]!"))
 			playsound(src, S.attack_sound, 75, 1)
 			take_damage(damage)
 		else
-			visible_message("<span class='notice'>\The [user] bonks \the [src] harmlessly.</span>")
+			visible_message(span_infoplain(span_bold("\The [user]") + " bonks \the [src] harmlessly."))
 	user.do_attack_animation(src)
 
 /obj/machinery/door/New()
@@ -75,7 +76,7 @@
 	return
 
 /obj/machinery/door/Destroy()
-	density = 0
+	density = FALSE
 	update_nearby_tiles()
 	. = ..()
 
@@ -119,7 +120,7 @@
 			return																		//VOREStation Edit: unable to open doors
 		else
 			bumpopen(M)
-	if(istype(AM, /obj/item/device/uav))
+	if(istype(AM, /obj/item/uav))
 		if(check_access(null))
 			open()
 		else
@@ -156,7 +157,7 @@
 /obj/machinery/door/CanZASPass(turf/T, is_zone)
 	if(is_zone)
 		return !block_air_zones // Block merging unless block_air_zones = 0
-	return !density // Block airflow unless density = 0
+	return !density // Block airflow unless density = FALSE
 
 /obj/machinery/door/proc/bumpopen(mob/user as mob)
 	if(operating)	return
@@ -177,7 +178,7 @@
 	if (damage > 90)
 		destroy_hits--
 		if (destroy_hits <= 0)
-			visible_message("<span class='danger'>\The [src.name] disintegrates!</span>")
+			visible_message(span_danger("\The [src.name] disintegrates!"))
 			switch (Proj.damage_type)
 				if(BRUTE)
 					new /obj/item/stack/material/steel(src.loc, 2)
@@ -195,7 +196,7 @@
 /obj/machinery/door/hitby(AM as mob|obj, var/speed=5)
 
 	..()
-	visible_message("<span class='danger'>[src.name] was hit by [AM].</span>")
+	visible_message(span_danger("[src.name] was hit by [AM]."))
 	var/tforce = 0
 	if(ismob(AM))
 		tforce = 15 * (speed/5)
@@ -222,74 +223,31 @@
 	if(istype(I))
 		if(attackby_vr(I, user))	//VOREStation begin: Fireproofing
 			return					//VOREStation begin: Fireproofing
-		if(istype(I, /obj/item/stack/material) && I.get_material_name() == src.get_material_name())
-			if(stat & BROKEN)
-				to_chat(user, "<span class='notice'>It looks like \the [src] is pretty busted. It's going to need more than just patching up now.</span>")
-				return
-			if(health >= maxhealth)
-				to_chat(user, "<span class='notice'>Nothing to fix!</span>")
-				return
+		if(health < maxhealth && I.has_tool_quality(TOOL_WELDER))
 			if(!density)
-				to_chat(user, "<span class='warning'>\The [src] must be closed before you can repair it.</span>")
+				to_chat(user, span_warning("\The [src] must be closed before you can repair it."))
 				return
 
-			//figure out how much metal we need
-			var/amount_needed = (maxhealth - health) / DOOR_REPAIR_AMOUNT
-			amount_needed = (round(amount_needed) == amount_needed)? amount_needed : round(amount_needed) + 1 //Why does BYOND not have a ceiling proc?
-
-			var/obj/item/stack/stack = I
-			var/amount_given = amount_needed - repairing
-			var/mats_given = stack.get_amount()
-			if(repairing && amount_given <= 0)
-				to_chat(user, "<span class='warning'>You must weld or remove \the [get_material_name()] from \the [src] before you can add anything else.</span>")
-			else
-				if(mats_given >= amount_given)
-					if(stack.use(amount_given))
-						repairing += amount_given
-				else
-					if(stack.use(mats_given))
-						repairing += mats_given
-						amount_given = mats_given
-			if(amount_given)
-				to_chat(user, "<span class='notice'>You fit [amount_given] [stack.singular_name]\s to damaged and broken parts on \the [src].</span>")
-
-			return
-
-		if(repairing && istype(I, /obj/item/weapon/weldingtool))
-			if(!density)
-				to_chat(user, "<span class='warning'>\The [src] must be closed before you can repair it.</span>")
-				return
-
-			var/obj/item/weapon/weldingtool/welder = I
+			var/obj/item/weldingtool/welder = I.get_welder()
 			if(welder.remove_fuel(0,user))
-				to_chat(user, "<span class='notice'>You start to fix dents and weld \the [get_material_name()] into place.</span>")
+				to_chat(user, span_notice("You start to fix dents and repair \the [src]."))
 				playsound(src, welder.usesound, 50, 1)
-				if(do_after(user, (5 * repairing) * welder.toolspeed) && welder && welder.isOn())
-					to_chat(user, "<span class='notice'>You finish repairing the damage to \the [src].</span>")
-					health = between(health, health + repairing*DOOR_REPAIR_AMOUNT, maxhealth)
+				var/repairtime = maxhealth - health //Since we're not using materials anymore... We'll just calculate how much damage there is to repair.
+				if(do_after(user, repairtime * welder.toolspeed) && welder && welder.isOn())
+					to_chat(user, span_notice("You finish repairing the damage to \the [src]."))
+					health = maxhealth
 					update_icon()
-					repairing = 0
 			return
-
-		if(repairing && I.is_crowbar())
-			var/datum/material/mat = get_material()
-			var/obj/item/stack/material/repairing_sheet = mat.place_sheet(loc)
-			repairing_sheet.amount += repairing-1
-			repairing = 0
-			to_chat(user, "<span class='notice'>You remove \the [repairing_sheet].</span>")
-			playsound(src, I.usesound, 100, 1)
-			return
-
 		//psa to whoever coded this, there are plenty of objects that need to call attack() on doors without bludgeoning them.
-		if(src.density && istype(I, /obj/item/weapon) && user.a_intent == I_HURT && !istype(I, /obj/item/weapon/card))
-			var/obj/item/weapon/W = I
+		if(src.density && istype(I, /obj/item) && user.a_intent == I_HURT && !istype(I, /obj/item/card))
+			var/obj/item/W = I
 			user.setClickCooldown(user.get_attack_speed(W))
 			if(W.damtype == BRUTE || W.damtype == BURN)
 				user.do_attack_animation(src)
 				if(W.force < min_force)
-					user.visible_message("<span class='danger'>\The [user] hits \the [src] with \the [W] with no visible effect.</span>")
+					user.visible_message(span_danger("\The [user] hits \the [src] with \the [W] with no visible effect."))
 				else
-					user.visible_message("<span class='danger'>\The [user] forcefully strikes \the [src] with \the [W]!</span>")
+					user.visible_message(span_danger("\The [user] forcefully strikes \the [src] with \the [W]!"))
 					playsound(src, hitsound, 100, 1)
 					take_damage(W.force)
 			return
@@ -427,10 +385,10 @@
 	do_animate("opening")
 	icon_state = "door0"
 	set_opacity(0)
-	sleep(3)
-	src.density = 0
+	sleep(anim_length_before_density)
+	src.density = FALSE
 	update_nearby_tiles()
-	sleep(7)
+	sleep(anim_length_before_finalize)
 	src.layer = open_layer
 	explosion_resistance = 0
 	update_icon()
@@ -452,12 +410,12 @@
 
 	close_door_at = 0
 	do_animate("closing")
-	sleep(3)
-	src.density = 1
+	sleep(anim_length_before_density)
+	src.density = TRUE
 	explosion_resistance = initial(explosion_resistance)
 	src.layer = closed_layer
 	update_nearby_tiles()
-	sleep(7)
+	sleep(anim_length_before_finalize)
 	update_icon()
 	if(visible && !glass)
 		set_opacity(1)	//caaaaarn!
@@ -479,12 +437,12 @@
 	return ..(M)
 
 /obj/machinery/door/update_nearby_tiles(need_rebuild)
-	if(!air_master)
+	if(!SSair)
 		return 0
 
 	for(var/turf/simulated/turf in locs)
 		update_heat_protection(turf)
-		air_master.mark_for_update(turf)
+		SSair.mark_for_update(turf)
 
 	return 1
 

@@ -66,7 +66,7 @@
 
 /obj/effect/directional_shield/bullet_act(var/obj/item/projectile/P)
 	adjust_health(-P.get_structure_damage())
-	P.on_hit()
+	P.on_hit(src)
 	playsound(src, 'sound/effects/EMPulse.ogg', 75, 1)
 
 // All the shields tied to their projector are one 'unit', and don't have individualized health values like most other shields.
@@ -86,6 +86,7 @@
 	icon_state = "signmaker_sec"
 	light_range = 4
 	light_power = 4
+	light_on = TRUE
 	var/active = FALSE					// If it's on.
 	var/shield_health = 400				// How much damage the shield blocks before breaking.  This is a shared health pool for all shields attached to this projector.
 	var/max_shield_health = 400			// Ditto.  This is fairly high, but shields are really big, you can't miss them, and laser carbines pump out so much hurt.
@@ -99,15 +100,18 @@
 
 /obj/item/shield_projector/Initialize()
 	START_PROCESSING(SSobj, src)
+	AddComponent(/datum/component/recursive_move)
+	RegisterSignal(src, COMSIG_OBSERVER_MOVED, PROC_REF(moved_event))
 	if(always_on)
-		create_shields()
-	GLOB.moved_event.register(src, src, .proc/moved_event)
-	..()
+		spawn(0)
+			if(!QDELETED(src))
+				create_shields()
+	return ..()
 
 /obj/item/shield_projector/Destroy()
 	destroy_shields()
 	STOP_PROCESSING(SSobj, src)
-	GLOB.moved_event.unregister(src, src, .proc/moved_event)
+	UnregisterSignal(src, COMSIG_OBSERVER_MOVED)
 	return ..()
 
 /obj/item/shield_projector/proc/moved_event()
@@ -143,7 +147,7 @@
 		if(shield_health <= 0)
 			destroy_shields()
 			var/turf/T = get_turf(src)
-			T.visible_message("<span class='danger'>\The [src] overloads and the shield vanishes!</span>")
+			T.visible_message(span_danger("\The [src] overloads and the shield vanishes!"))
 			playsound(src, 'sound/machines/defib_failed.ogg', 75, 0)
 		else
 			if(shield_health < max_shield_health / 4) // Play a more urgent sounding beep if it's at 25% health.
@@ -183,13 +187,13 @@
 /obj/item/shield_projector/attack_self(var/mob/living/user)
 	if(active)
 		if(always_on)
-			to_chat(user, "<span class='warning'>You can't seem to deactivate \the [src].</span>")
+			to_chat(user, span_warning("You can't seem to deactivate \the [src]."))
 			return
 		set_on(FALSE)
 	else
 		set_dir(user.dir) // Needed for linear shields.
 		set_on(TRUE)
-	visible_message("<span class='notice'>\The [user] [!active ? "de":""]activates \the [src].</span>")
+	visible_message(span_notice("\The [user] [!active ? "de":""]activates \the [src]."))
 
 /obj/item/shield_projector/proc/set_on(var/on)
 	if(isnull(on))
@@ -362,20 +366,20 @@
 	if((my_tool && loc != my_tool) && (my_mecha && loc != my_mecha))
 		forceMove(my_tool)
 	if(active)
-		my_tool.set_ready_state(0)
+		my_tool.set_ready_state(FALSE)
 		if(my_mecha.has_charge(my_tool.energy_drain * 50)) //Stops at around 1000 charge.
 			my_mecha.use_power(my_tool.energy_drain)
 		else
 			destroy_shields()
-			my_tool.set_ready_state(1)
+			my_tool.set_ready_state(TRUE)
 			my_tool.log_message("Power lost.")
 	else
-		my_tool.set_ready_state(1)
+		my_tool.set_ready_state(TRUE)
 
 /obj/item/shield_projector/line/exosuit/attack_self(var/mob/living/user)
 	if(active)
 		if(always_on)
-			to_chat(user, "<span class='warning'>You can't seem to deactivate \the [src].</span>")
+			to_chat(user, span_warning("You can't seem to deactivate \the [src]."))
 			return
 
 		destroy_shields()
@@ -385,7 +389,7 @@
 		else
 			set_dir(user.dir)
 		create_shields()
-	visible_message("<span class='notice'>\The [user] [!active ? "de":""]activates \the [src].</span>")
+	visible_message(span_notice("\The [user] [!active ? "de":""]activates \the [src]."))
 
 /obj/item/shield_projector/line/exosuit/adjust_health(amount)
 	..()

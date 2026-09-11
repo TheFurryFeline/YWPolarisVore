@@ -5,7 +5,6 @@ SUBSYSTEM_DEF(mapping)
 	flags = SS_NO_FIRE
 
 	var/list/map_templates = list()
-	var/dmm_suite/maploader = null
 	var/obj/effect/landmark/engine_loader/engine_loader
 	var/list/shelter_templates = list()
 
@@ -17,13 +16,12 @@ SUBSYSTEM_DEF(mapping)
 	if(subsystem_initialized)
 		return
 	world.max_z_changed() // This is to set up the player z-level list, maxz hasn't actually changed (probably)
-	maploader = new()
 	load_map_templates()
 
-	if(config.generate_map)
+	if(CONFIG_GET(flag/generate_map))
 		// Map-gen is still very specific to the map, however putting it here should ensure it loads in the correct order.
 		using_map.perform_map_generation()
-	
+
 	loadEngine()
 	preloadShelterTemplates() // VOREStation EDIT: Re-enable Shelter Capsules
 	// Mining generation probably should be here too
@@ -34,11 +32,10 @@ SUBSYSTEM_DEF(mapping)
 	..()
 
 /datum/controller/subsystem/mapping/proc/load_map_templates()
-	for(var/T in subtypesof(/datum/map_template))
-		var/datum/map_template/template = T
+	for(var/datum/map_template/template as anything in subtypesof(/datum/map_template))
 		if(!(initial(template.mappath))) // If it's missing the actual path its probably a base type or being used for inheritence.
 			continue
-		template = new T()
+		template = new template()
 		map_templates[template.name] = template
 	return TRUE
 
@@ -53,8 +50,8 @@ SUBSYSTEM_DEF(mapping)
 
 	// Choose an engine type
 	var/datum/map_template/engine/chosen_type = null
-	if (LAZYLEN(config.engine_map))
-		var/chosen_name = pick(config.engine_map)
+	if (LAZYLEN(CONFIG_GET(str_list/engine_map)))
+		var/chosen_name = pick(CONFIG_GET(str_list/engine_map))
 		chosen_type = map_templates[chosen_name]
 		if(!istype(chosen_type))
 			error("Configured engine map [chosen_name] is not a valid engine map name!")
@@ -66,7 +63,7 @@ SUBSYSTEM_DEF(mapping)
 				engine_types += MT
 		chosen_type = pick(engine_types)
 	to_world_log("Chose Engine Map: [chosen_type.name]")
-	admin_notice("<span class='danger'>Chose Engine Map: [chosen_type.name]</span>", R_DEBUG)
+	admin_notice(span_danger("Chose Engine Map: [chosen_type.name]"), R_DEBUG)
 
 	// Annihilate movable atoms
 	engine_loader.annihilate_bounds()
@@ -77,7 +74,9 @@ SUBSYSTEM_DEF(mapping)
 // VOREStation Edit Start: Enable This
 /datum/controller/subsystem/mapping/proc/loadLateMaps()
 	var/list/deffo_load = using_map.lateload_z_levels
-	var/list/maybe_load = using_map.lateload_single_pick
+	var/list/maybe_load = using_map.lateload_gateway
+	var/list/also_load = using_map.lateload_overmap
+	var/list/redgate_load = using_map.lateload_redgate
 
 	for(var/list/maplist in deffo_load)
 		if(!islist(maplist))
@@ -88,6 +87,7 @@ SUBSYSTEM_DEF(mapping)
 			if(!istype(MT))
 				error("Lateload Z level \"[mapname]\" is not a valid map!")
 				continue
+			admin_notice("Lateload: [MT]", R_DEBUG)
 			MT.load_new_z(centered = FALSE)
 			CHECK_TICK
 
@@ -102,15 +102,64 @@ SUBSYSTEM_DEF(mapping)
 			return
 
 		for(var/map in picklist)
+			if(islist(map))
+				// TRIPLE NEST. In this situation we pick one at random from the choices in the list.
+				//This allows a sort of a1,a2,a3,b1,b2,b3,c1,c2,c3 setup where it picks one 'a', one 'b', one 'c'
+				map = pick(map)
 			var/datum/map_template/MT = map_templates[map]
 			if(!istype(MT))
 				error("Randompick Z level \"[map]\" is not a valid map!")
 			else
+				admin_notice("Gateway: [MT]", R_DEBUG)
 				MT.load_new_z(centered = FALSE)
 
+	if(LAZYLEN(also_load)) //Just copied from gateway picking, this is so we can have a kind of OM map version of the same concept.
+		var/picklist = pick(also_load)
+
+		if(!picklist) //No lateload maps at all
+			return
+
+		if(!islist(picklist)) //So you can have a 'chain' of z-levels that make up one away mission
+			error("Randompick Z level [picklist] is not a list! Must be in a list!")
+			return
+
+		for(var/map in picklist)
+			if(islist(map))
+				// TRIPLE NEST. In this situation we pick one at random from the choices in the list.
+				//This allows a sort of a1,a2,a3,b1,b2,b3,c1,c2,c3 setup where it picks one 'a', one 'b', one 'c'
+				map = pick(map)
+			var/datum/map_template/MT = map_templates[map]
+			if(!istype(MT))
+				error("Randompick Z level \"[map]\" is not a valid map!")
+			else
+				admin_notice("OM Adventure: [MT]", R_DEBUG)
+				MT.load_new_z(centered = FALSE)
+
+	if(LAZYLEN(redgate_load))
+		var/picklist = pick(redgate_load)
+
+		if(!picklist) //No lateload maps at all
+			return
+
+		if(!islist(picklist)) //So you can have a 'chain' of z-levels that make up one away mission
+			error("Randompick Z level [picklist] is not a list! Must be in a list!")
+			return
+
+		for(var/map in picklist)
+			if(islist(map))
+				// TRIPLE NEST. In this situation we pick one at random from the choices in the list.
+				//This allows a sort of a1,a2,a3,b1,b2,b3,c1,c2,c3 setup where it picks one 'a', one 'b', one 'c'
+				map = pick(map)
+			var/datum/map_template/MT = map_templates[map]
+			if(!istype(MT))
+				error("Randompick Z level \"[map]\" is not a valid map!")
+			else
+				admin_notice("Redgate: [MT]", R_DEBUG)
+				MT.load_new_z(centered = FALSE)
+
+
 /datum/controller/subsystem/mapping/proc/preloadShelterTemplates()
-	for(var/item in subtypesof(/datum/map_template/shelter))
-		var/datum/map_template/shelter/shelter_type = item
+	for(var/datum/map_template/shelter/shelter_type as anything in subtypesof(/datum/map_template/shelter))
 		if(!(initial(shelter_type.mappath)))
 			continue
 		var/datum/map_template/shelter/S = new shelter_type()
@@ -122,3 +171,10 @@ SUBSYSTEM_DEF(mapping)
 	if (!Debug2)
 		return // Only show up in stat panel if debugging is enabled.
 	. = ..()
+
+// VOREStation Edit: BAPI-dmm
+/datum/controller/subsystem/mapping/Shutdown()
+	// Force bapi to drop it's cached maps on server shutdown.
+	_bapidmm_clear_map_data()
+	fdel("data/baked_dmm_files/")
+// VOREStation Edit End

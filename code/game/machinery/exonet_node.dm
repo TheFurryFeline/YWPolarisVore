@@ -4,7 +4,7 @@
 	icon = 'icons/obj/stationobjs_vr.dmi' //VOREStation Edit
 	icon_state = "exonet" //VOREStation Edit
 	idle_power_usage = 2500
-	density = 1
+	density = TRUE
 	var/on = 1
 	var/toggle = 1
 
@@ -16,7 +16,7 @@
 
 	var/list/logs = list() // Gets written to by exonet's send_message() function.
 
-	circuit = /obj/item/weapon/circuitboard/telecomms/exonet_node
+	circuit = /obj/item/circuitboard/telecomms/exonet_node
 // Proc: New()
 // Parameters: None
 // Description: Adds components to the machine for deconstruction.
@@ -78,9 +78,9 @@
 // Parameters: 2 (I - the item being whacked against the machine, user - the person doing the whacking)
 // Description: Handles deconstruction.
 /obj/machinery/exonet_node/attackby(obj/item/I, mob/user)
-	if(I.is_screwdriver())
+	if(I.has_tool_quality(TOOL_SCREWDRIVER))
 		default_deconstruction_screwdriver(user, I)
-	else if(I.is_crowbar())
+	else if(I.has_tool_quality(TOOL_CROWBAR))
 		default_deconstruction_crowbar(user, I)
 	else
 		..()
@@ -124,7 +124,7 @@
 // Proc: tgui_act()
 // Parameters: 2 (standard tgui_act arguments)
 // Description: Responds to button presses on the TGUI interface.
-/obj/machinery/exonet_node/tgui_act(action, params)
+/obj/machinery/exonet_node/tgui_act(action, params, datum/tgui/ui)
 	if(..())
 		return TRUE
 
@@ -134,7 +134,7 @@
 			toggle = !toggle
 			update_power()
 			if(!toggle)
-				var/msg = "[usr.client.key] ([usr]) has turned [src] off, at [x],[y],[z]."
+				var/msg = "[ui.user.client.key] ([ui.user]) has turned [src] off, at [x],[y],[z]."
 				message_admins(msg)
 				log_game(msg)
 
@@ -146,7 +146,7 @@
 			. = TRUE
 			allow_external_communicators = !allow_external_communicators
 			if(!allow_external_communicators)
-				var/msg = "[usr.client.key] ([usr]) has turned [src]'s communicator port off, at [x],[y],[z]."
+				var/msg = "[ui.user.client.key] ([ui.user]) has turned [src]'s communicator port off, at [x],[y],[z]."
 				message_admins(msg)
 				log_game(msg)
 
@@ -154,12 +154,12 @@
 			. = TRUE
 			allow_external_newscasters = !allow_external_newscasters
 			if(!allow_external_newscasters)
-				var/msg = "[usr.client.key] ([usr]) has turned [src]'s newscaster port off, at [x],[y],[z]."
+				var/msg = "[ui.user.client.key] ([ui.user]) has turned [src]'s newscaster port off, at [x],[y],[z]."
 				message_admins(msg)
 				log_game(msg)
 
 	update_icon()
-	add_fingerprint(usr)
+	add_fingerprint(ui.user)
 
 // Proc: get_exonet_node()
 // Parameters: None

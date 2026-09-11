@@ -1,8 +1,8 @@
 #define XENOARCH_SPAWN_CHANCE 0.5
 #define DIGSITESIZE_LOWER 4
 #define DIGSITESIZE_UPPER 12
-#define ARTIFACTSPAWNNUM_LOWER 6
-#define ARTIFACTSPAWNNUM_UPPER 12
+#define ARTIFACTSPAWNNUM_LOWER 12
+#define ARTIFACTSPAWNNUM_UPPER 24
 
 //
 // Xenoarch subsystem handles initialization of Xenoarcheaology artifacts and digsites.
@@ -31,18 +31,17 @@ SUBSYSTEM_DEF(xenoarch)
 
 /datum/controller/subsystem/xenoarch/proc/SetupXenoarch()
 	for(var/turf/simulated/mineral/M in world)
-		if(!M.density || (M.z in using_map.xenoarch_exempt_levels))
+		if(!M.density)
 			continue
 
 		if(isnull(M.geologic_data))
 			M.geologic_data = new /datum/geosample(M)
 
-		if(!prob(XENOARCH_SPAWN_CHANCE))
+		if((M.z in using_map.xenoarch_exempt_levels) || !prob(XENOARCH_SPAWN_CHANCE))
 			continue
 
 		var/farEnough = 1
-		for(var/A in digsite_spawning_turfs)
-			var/turf/T = A
+		for(var/turf/T as anything in digsite_spawning_turfs)
 			if(T in range(5, M))
 				farEnough = 0
 				break

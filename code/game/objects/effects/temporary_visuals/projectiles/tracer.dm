@@ -23,8 +23,7 @@
 	if(light_range > 0 && light_intensity > 0)
 		var/list/turf/line = getline(starting.return_turf(), ending.return_turf())
 		tracing_line:
-			for(var/i in line)
-				var/turf/T = i
+			for(var/turf/T as anything in line)
 				for(var/obj/effect/projectile_lighting/PL in T)
 					if(PL.owner == instance_key)
 						continue tracing_line
@@ -84,6 +83,12 @@
 	light_power = 1
 	light_color = "#FF0D00"
 
+/obj/effect/projectile/tracer/laser_em
+	icon_state = "em_laser"
+	light_range = 3
+	light_power = 1
+	light_color = "#00C6FF"
+
 /obj/effect/projectile/tracer/darkmatter
 	icon_state = "darkb"
 	light_range = 2
@@ -130,3 +135,9 @@
 //VOREStation edit ends
 /obj/effect/projectile/tracer/pointdefense
 	icon_state = "beam_pointdef"
+
+/obj/effect/projectile/tracer/rainbow
+	icon_state = "rainbow"
+	light_range = 3
+	light_power = 1
+	light_color = "#ffffff"

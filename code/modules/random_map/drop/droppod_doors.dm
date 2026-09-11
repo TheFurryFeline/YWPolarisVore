@@ -3,8 +3,8 @@
 	desc = "A drop pod door. Opens rapidly using explosive bolts."
 	icon = 'icons/obj/structures.dmi'
 	icon_state = "droppod_door_closed"
-	anchored = 1
-	density = 1
+	anchored = TRUE
+	density = TRUE
 	opacity = 1
 	layer = TURF_LAYER + 0.1
 	var/deploying
@@ -13,7 +13,7 @@
 /obj/structure/droppod_door/Initialize(var/mapload, var/autoopen)
 	. = ..()
 	if(autoopen)
-		addtimer(CALLBACK(src, .proc/deploy), 10 SECONDS)
+		addtimer(CALLBACK(src, PROC_REF(deploy)), 10 SECONDS)
 
 /obj/structure/droppod_door/attack_ai(var/mob/user)
 	if(!user.Adjacent(src))
@@ -25,7 +25,7 @@
 
 /obj/structure/droppod_door/attack_hand(var/mob/user)
 	if(deploying) return
-	to_chat(user, "<span class='danger'>You prime the explosive bolts. Better get clear!</span>")
+	to_chat(user, span_danger("You prime the explosive bolts. Better get clear!"))
 	sleep(30)
 	deploy()
 
@@ -34,7 +34,7 @@
 		return
 
 	deployed = 1
-	visible_message("<span class='danger'>The explosive bolts on \the [src] detonate, throwing it open!</span>")
+	visible_message(span_danger("The explosive bolts on \the [src] detonate, throwing it open!"))
 	playsound(src, 'sound/effects/bang.ogg', 50, 1, 5)
 
 	// This is shit but it will do for the sake of testing.
@@ -68,12 +68,12 @@
 		M.throw_at(get_edge_target_turf(origin,src.dir),rand(0,3),50)
 
 	// Create a decorative ramp bottom and flatten out our current ramp.
-	density = 0
+	density = FALSE
 	set_opacity(0)
 	icon_state = "ramptop"
 	var/obj/structure/droppod_door/door_bottom = new(T)
 	door_bottom.deployed = 1
-	door_bottom.density = 0
+	door_bottom.density = FALSE
 	door_bottom.set_opacity(0)
 	door_bottom.dir = src.dir
 	door_bottom.icon_state = "rampbottom"

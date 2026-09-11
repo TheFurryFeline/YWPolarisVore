@@ -4,7 +4,7 @@
 	icon = 'icons/obj/storage_vr.dmi'	//VOREStation Edit
 	icon_state = "deliverycloset"
 	var/obj/wrapped = null
-	density = 1
+	density = TRUE
 	var/sortTag = null
 	flags = NOBLUDGEON
 	mouse_drag_pointer = MOUSE_ACTIVE_POINTER
@@ -23,11 +23,11 @@
 	qdel(src)
 
 /obj/structure/bigDelivery/attackby(obj/item/W as obj, mob/user as mob)
-	if(istype(W, /obj/item/device/destTagger))
-		var/obj/item/device/destTagger/O = W
+	if(istype(W, /obj/item/destTagger))
+		var/obj/item/destTagger/O = W
 		if(O.currTag)
 			if(src.sortTag != O.currTag)
-				to_chat(user, "<span class='notice'>You have labeled the destination as [O.currTag].</span>")
+				to_chat(user, span_notice("You have labeled the destination as [O.currTag]."))
 				if(!src.sortTag)
 					src.sortTag = O.currTag
 					update_icon()
@@ -35,19 +35,19 @@
 					src.sortTag = O.currTag
 				playsound(src, 'sound/machines/twobeep.ogg', 50, 1)
 			else
-				to_chat(user, "<span class='warning'>The package is already labeled for [O.currTag].</span>")
+				to_chat(user, span_warning("The package is already labeled for [O.currTag]."))
 		else
-			to_chat(user, "<span class='warning'>You need to set a destination first!</span>")
+			to_chat(user, span_warning("You need to set a destination first!"))
 
-	else if(istype(W, /obj/item/weapon/pen))
-		switch(alert("What would you like to alter?",,"Title","Description", "Cancel"))
+	else if(istype(W, /obj/item/pen))
+		switch(tgui_alert(user, "What would you like to alter?","Select Alteration",list("Title","Description","Cancel")))
 			if("Title")
-				var/str = sanitizeSafe(input(usr,"Label text?","Set label",""), MAX_NAME_LEN)
+				var/str = sanitizeSafe(tgui_input_text(user,"Label text?","Set label","", MAX_NAME_LEN), MAX_NAME_LEN)
 				if(!str || !length(str))
-					to_chat(user, "<span class='warning'> Invalid text.</span>")
+					to_chat(user, span_warning(" Invalid text."))
 					return
 				user.visible_message("\The [user] titles \the [src] with \a [W], marking down: \"[str]\"",\
-				"<span class='notice'>You title \the [src]: \"[str]\"</span>",\
+				span_notice("You title \the [src]: \"[str]\""),\
 				"You hear someone scribbling a note.")
 				playsound(src, pick('sound/bureaucracy/pen1.ogg','sound/bureaucracy/pen2.ogg'), 20)
 				name = "[name] ([str])"
@@ -57,9 +57,9 @@
 				else
 					nameset = 1
 			if("Description")
-				var/str = sanitize(input(usr,"Label text?","Set label",""))
+				var/str = sanitize(tgui_input_text(user,"Label text?","Set label",""))
 				if(!str || !length(str))
-					to_chat(user, "<font color='red'>Invalid text.</font>")
+					to_chat(user, span_red("Invalid text."))
 					return
 				if(!examtext && !nameset)
 					examtext = str
@@ -67,13 +67,13 @@
 				else
 					examtext = str
 				user.visible_message("\The [user] labels \the [src] with \a [W], scribbling down: \"[examtext]\"",\
-				"<span class='notice'>You label \the [src]: \"[examtext]\"</span>",\
+				span_notice("You label \the [src]: \"[examtext]\""),\
 				"You hear someone scribbling a note.")
 				playsound(src, pick('sound/bureaucracy/pen1.ogg','sound/bureaucracy/pen2.ogg'), 20)
 	return
 
 /obj/structure/bigDelivery/update_icon()
-	overlays = new()
+	cut_overlays()
 	if(nameset || examtext)
 		var/image/I = new/image('icons/obj/storage.dmi',"delivery_label")
 		if(icon_state == "deliverycloset")
@@ -86,7 +86,7 @@
 				label_x = rand(-8, 6)
 			I.pixel_x = label_x
 			I.pixel_y = -3
-		overlays += I
+		add_overlay(I)
 	if(src.sortTag)
 		var/image/I = new/image('icons/obj/storage.dmi',"delivery_tag")
 		if(icon_state == "deliverycloset")
@@ -99,15 +99,15 @@
 				tag_x = rand(-8, 6)
 			I.pixel_x = tag_x
 			I.pixel_y = -3
-		overlays += I
+		add_overlay(I)
 
 /obj/structure/bigDelivery/examine(mob/user)
 	. = ..()
 	if(get_dist(user, src) <= 4)
 		if(sortTag)
-			. += "<span class='notice'>It is labeled \"[sortTag]\"</span>"
+			. += span_notice("It is labeled \"[sortTag]\"")
 		if(examtext)
-			. += "<span class='notice'>It has a note attached which reads, \"[examtext]\"</span>"
+			. += span_notice("It has a note attached which reads, \"[examtext]\"")
 
 /obj/item/smallDelivery
 	desc = "A small wrapped package."
@@ -134,11 +134,11 @@
 	return
 
 /obj/item/smallDelivery/attackby(obj/item/W as obj, mob/user as mob)
-	if(istype(W, /obj/item/device/destTagger))
-		var/obj/item/device/destTagger/O = W
+	if(istype(W, /obj/item/destTagger))
+		var/obj/item/destTagger/O = W
 		if(O.currTag)
 			if(src.sortTag != O.currTag)
-				to_chat(user, "<span class='notice'>You have labeled the destination as [O.currTag].</span>")
+				to_chat(user, span_notice("You have labeled the destination as [O.currTag]."))
 				if(!src.sortTag)
 					src.sortTag = O.currTag
 					update_icon()
@@ -146,19 +146,19 @@
 					src.sortTag = O.currTag
 				playsound(src, 'sound/machines/twobeep.ogg', 50, 1)
 			else
-				to_chat(user, "<span class='warning'>The package is already labeled for [O.currTag].</span>")
+				to_chat(user, span_warning("The package is already labeled for [O.currTag]."))
 		else
-			to_chat(user, "<span class='warning'>You need to set a destination first!</span>")
+			to_chat(user, span_warning("You need to set a destination first!"))
 
-	else if(istype(W, /obj/item/weapon/pen))
-		switch(alert("What would you like to alter?",,"Title","Description", "Cancel"))
+	else if(istype(W, /obj/item/pen))
+		switch(tgui_alert(user, "What would you like to alter?","Select Alteration",list("Title","Description","Cancel")))
 			if("Title")
-				var/str = sanitizeSafe(input(usr,"Label text?","Set label",""), MAX_NAME_LEN)
+				var/str = sanitizeSafe(tgui_input_text(user,"Label text?","Set label","", MAX_NAME_LEN), MAX_NAME_LEN)
 				if(!str || !length(str))
-					to_chat(user, "<span class='warning'> Invalid text.</span>")
+					to_chat(user, span_warning(" Invalid text."))
 					return
 				user.visible_message("\The [user] titles \the [src] with \a [W], marking down: \"[str]\"",\
-				"<span class='notice'>You title \the [src]: \"[str]\"</span>",\
+				span_notice("You title \the [src]: \"[str]\""),\
 				"You hear someone scribbling a note.")
 				playsound(src, pick('sound/bureaucracy/pen1.ogg','sound/bureaucracy/pen2.ogg'), 20)
 				name = "[name] ([str])"
@@ -169,9 +169,9 @@
 					nameset = 1
 
 			if("Description")
-				var/str = sanitize(input(usr,"Label text?","Set label",""))
+				var/str = sanitize(tgui_input_text(user,"Label text?","Set label",""))
 				if(!str || !length(str))
-					to_chat(user, "<font color='red'>Invalid text.</font>")
+					to_chat(user, span_red("Invalid text."))
 					return
 				if(!examtext && !nameset)
 					examtext = str
@@ -179,18 +179,18 @@
 				else
 					examtext = str
 				user.visible_message("\The [user] labels \the [src] with \a [W], scribbling down: \"[examtext]\"",\
-				"<span class='notice'>You label \the [src]: \"[examtext]\"</span>",\
+				span_notice("You label \the [src]: \"[examtext]\""),\
 				"You hear someone scribbling a note.")
 				playsound(src, pick('sound/bureaucracy/pen1.ogg','sound/bureaucracy/pen2.ogg'), 20)
 	return
 
 /obj/item/smallDelivery/update_icon()
-	overlays = new()
+	cut_overlays()
 	if((nameset || examtext) && icon_state != "deliverycrate1")
 		var/image/I = new/image('icons/obj/storage.dmi',"delivery_label")
 		if(icon_state == "deliverycrate5")
 			I.pixel_y = -1
-		overlays += I
+		add_overlay(I)
 	if(src.sortTag)
 		var/image/I = new/image('icons/obj/storage.dmi',"delivery_tag")
 		switch(icon_state)
@@ -207,17 +207,17 @@
 				I.pixel_y = 3
 			if("deliverycrate5")
 				I.pixel_y = -3
-		overlays += I
+		add_overlay(I)
 
 /obj/item/smallDelivery/examine(mob/user)
 	. = ..()
 	if(get_dist(user, src) <= 4)
 		if(sortTag)
-			. += "<span class='notice'>It is labeled \"[sortTag]\"</span>"
+			. += span_notice("It is labeled \"[sortTag]\"")
 		if(examtext)
-			. += "<span class='notice'>It has a note attached which reads, \"[examtext]\"</span>"
+			. += span_notice("It has a note attached which reads, \"[examtext]\"")
 
-/obj/item/weapon/packageWrap
+/obj/item/packageWrap
 	name = "package wrapper"
 	desc = "Like wrapping paper, but less festive."
 	icon = 'icons/obj/items.dmi'
@@ -227,24 +227,24 @@
 	drop_sound = 'sound/items/drop/wrapper.ogg'
 
 
-/obj/item/weapon/packageWrap/afterattack(var/obj/target as obj, mob/user as mob, proximity)
+/obj/item/packageWrap/afterattack(var/obj/target as obj, mob/user as mob, proximity)
 	if(!proximity) return
 	if(!istype(target))	//this really shouldn't be necessary (but it is).	-Pete
 		return
 	if(istype(target, /obj/item/smallDelivery) || istype(target,/obj/structure/bigDelivery) \
-	|| istype(target, /obj/item/weapon/gift) || istype(target, /obj/item/weapon/evidencebag))
+	|| istype(target, /obj/item/gift) || istype(target, /obj/item/evidencebag))
 		return
 	if(target.anchored)
 		return
-	if(target in user)
+	if(!isturf(target.loc)) //no wrapping things inside other things, just breaks things, put it on the ground first.
 		return
 	if(user in target) //no wrapping closets that you are inside - it's not physically possible
 		return
 
-	user.attack_log += text("\[[time_stamp()]\] <font color='blue'>Has used [src.name] on \ref[target]</font>")
+	user.attack_log += text("\[[time_stamp()]\] [span_blue("Has used [src.name] on \ref[target]")]")
 
 
-	if (istype(target, /obj/item) && !(istype(target, /obj/item/weapon/storage) && !istype(target,/obj/item/weapon/storage/box)))
+	if (istype(target, /obj/item) && !(istype(target, /obj/item/storage) && !istype(target,/obj/item/storage/box)))
 		var/obj/item/O = target
 		if (src.amount > 1)
 			var/obj/item/smallDelivery/P = new /obj/item/smallDelivery(get_turf(O.loc))	//Aaannd wrap it up!
@@ -268,12 +268,12 @@
 			if(i > 5)
 				P.icon_state = "deliverycrate5"
 				P.name = "huge parcel"
-			P.add_fingerprint(usr)
-			O.add_fingerprint(usr)
-			src.add_fingerprint(usr)
+			P.add_fingerprint(user)
+			O.add_fingerprint(user)
+			src.add_fingerprint(user)
 			src.amount -= 1
 			user.visible_message("\The [user] wraps \a [target] with \a [src].",\
-			"<span class='notice'>You wrap \the [target], leaving [amount] units of paper on \the [src].</span>",\
+			span_notice("You wrap \the [target], leaving [amount] units of paper on \the [src]."),\
 			"You hear someone taping paper around a small object.")
 			playsound(src, 'sound/items/package_wrap.ogg', 50, 1)
 	else if (istype(target, /obj/structure/closet/crate))
@@ -285,11 +285,11 @@
 			O.loc = P
 			src.amount -= 3
 			user.visible_message("\The [user] wraps \a [target] with \a [src].",\
-			"<span class='notice'>You wrap \the [target], leaving [amount] units of paper on \the [src].</span>",\
+			span_notice("You wrap \the [target], leaving [amount] units of paper on \the [src]."),\
 			"You hear someone taping paper around a large object.")
 			playsound(src, 'sound/items/package_wrap.ogg', 50, 1)
 		else if(src.amount < 3)
-			to_chat(user, "<span class='warning'>You need more paper.</span>")
+			to_chat(user, span_warning("You need more paper."))
 	else if (istype (target, /obj/structure/closet))
 		var/obj/structure/closet/O = target
 		if (src.amount > 3 && !O.opened)
@@ -299,23 +299,23 @@
 			O.loc = P
 			src.amount -= 3
 			user.visible_message("\The [user] wraps \a [target] with \a [src].",\
-			"<span class='notice'>You wrap \the [target], leaving [amount] units of paper on \the [src].</span>",\
+			span_notice("You wrap \the [target], leaving [amount] units of paper on \the [src]."),\
 			"You hear someone taping paper around a large object.")
 			playsound(src, 'sound/items/package_wrap.ogg', 50, 1)
 		else if(src.amount < 3)
-			to_chat(user, "<span class='warning'>You need more paper.</span>")
+			to_chat(user, span_warning("You need more paper."))
 	else
-		to_chat(user, "<font color='blue'>The object you are trying to wrap is unsuitable for the sorting machinery!</font>")
+		to_chat(user, span_blue("The object you are trying to wrap is unsuitable for the sorting machinery!"))
 	if (src.amount <= 0)
-		new /obj/item/weapon/c_tube( src.loc )
+		new /obj/item/c_tube( src.loc )
 		qdel(src)
 		return
 	return
 
-/obj/item/weapon/packageWrap/examine(mob/user)
+/obj/item/packageWrap/examine(mob/user)
 	. = ..()
 	if(get_dist(user, src) <= 0)
-		. += "<font color='blue'>There are [amount] units of package wrap left!</font>"
+		. += span_blue("There are [amount] units of package wrap left!")
 
 /obj/structure/bigDelivery/Destroy()
 	if(wrapped) //sometimes items can disappear. For example, bombs. --rastaf0
@@ -329,44 +329,59 @@
 		AM.forceMove(T)
 	return ..()
 
-/obj/item/device/destTagger
+/obj/item/destTagger
 	name = "destination tagger"
 	desc = "Used to set the destination of properly wrapped packages."
+	icon = 'icons/obj/device.dmi'
 	icon_state = "dest_tagger"
 	var/currTag = 0
 
 	w_class = ITEMSIZE_SMALL
 	item_state = "electronic"
 	slot_flags = SLOT_BELT
+	pickup_sound = 'sound/items/pickup/device.ogg'
+	drop_sound = 'sound/items/drop/device.ogg'
 
-/obj/item/device/destTagger/tgui_state(mob/user)
+/obj/item/destTagger/tgui_state(mob/user)
 	return GLOB.tgui_inventory_state
 
-/obj/item/device/destTagger/tgui_interact(mob/user, datum/tgui/ui)
+/obj/item/destTagger/tgui_interact(mob/user, datum/tgui/ui)
 	ui = SStgui.try_update_ui(user, src, ui)
 	if(!ui)
 		ui = new(user, src, "DestinationTagger", name)
 		ui.open()
 
-/obj/item/device/destTagger/tgui_data(mob/user, datum/tgui/ui)
+/obj/item/destTagger/tgui_static_data(mob/user)
 	var/list/data = ..()
-
-	data["currTag"] = currTag
-	data["taggerLocs"] = GLOB.tagger_locations
+	var/list/taggers = list()
+	var/list/tagger_levels = list()
+	for(var/tag in GLOB.tagger_locations)
+		var/z_level = GLOB.tagger_locations[tag]
+		taggers += list(list("tag" = tag, "level" = z_level))
+		tagger_levels += list(list("z" = z_level, "location" = using_map.get_zlevel_name(z_level)))
+	data["taggerLevels"] = tagger_levels
+	data["taggerLocs"] = taggers
 
 	return data
 
-/obj/item/device/destTagger/attack_self(mob/user as mob)
+/obj/item/destTagger/tgui_data(mob/user, datum/tgui/ui)
+	var/list/data = ..()
+
+	data["currTag"] = currTag
+
+	return data
+
+/obj/item/destTagger/attack_self(mob/user as mob)
 	tgui_interact(user)
 
-/obj/item/device/destTagger/tgui_act(action, params)
+/obj/item/destTagger/tgui_act(action, params, datum/tgui/ui)
 	if(..())
 		return TRUE
-	add_fingerprint(usr)
+	add_fingerprint(ui.user)
 	switch(action)
 		if("set_tag")
 			var/new_tag = params["tag"]
-			if(!(new_tag in GLOB.tagger_locations))	
+			if(!(new_tag in GLOB.tagger_locations))
 				return FALSE
 			currTag = new_tag
 			. = TRUE
@@ -374,17 +389,16 @@
 /obj/machinery/disposal/deliveryChute
 	name = "Delivery chute"
 	desc = "A chute for big and small packages alike!"
-	density = 1
+	density = TRUE
 	icon_state = "intake"
 
 	var/c_mode = 0
 
-/obj/machinery/disposal/deliveryChute/New()
-	..()
-	spawn(5)
-		trunk = locate() in src.loc
-		if(trunk)
-			trunk.linked = src	// link the pipe trunk to self
+/obj/machinery/disposal/deliveryChute/Initialize()
+	. = ..()
+	trunk = locate() in src.loc
+	if(trunk)
+		trunk.linked = src	// link the pipe trunk to self
 
 /obj/machinery/disposal/deliveryChute/interact()
 	return
@@ -438,35 +452,28 @@
 	if(!I || !user)
 		return
 
-	if(I.is_screwdriver())
-		if(c_mode==0)
-			c_mode=1
-			playsound(src, I.usesound, 50, 1)
-			to_chat(user, "You remove the screws around the power connection.")
-			return
-		else if(c_mode==1)
-			c_mode=0
-			playsound(src, I.usesound, 50, 1)
-			to_chat(user, "You attach the screws around the power connection.")
-			return
-	else if(istype(I, /obj/item/weapon/weldingtool) && c_mode==1)
-		var/obj/item/weapon/weldingtool/W = I
-		if(W.remove_fuel(0,user))
-			playsound(src, W.usesound, 50, 1)
-			to_chat(user, "You start slicing the floorweld off the delivery chute.")
-			if(do_after(user,20 * W.toolspeed))
-				if(!src || !W.isOn()) return
-				to_chat(user, "You sliced the floorweld off the delivery chute.")
-				var/obj/structure/disposalconstruct/C = new (src.loc)
-				C.ptype = 8 // 8 =  Delivery chute
-				C.update()
-				C.anchored = 1
-				C.density = 1
-				qdel(src)
-			return
-		else
+	if(I.has_tool_quality(TOOL_SCREWDRIVER))
+		c_mode = !c_mode
+		playsound(src, I.usesound, 50, 1)
+		to_chat(user, "You [c_mode ? "remove" : "attach"] the screws around the power connection.")
+		return
+	if(I.has_tool_quality(TOOL_WELDER) && c_mode==1)
+		var/obj/item/weldingtool/W = I.get_welder()
+		if(!W.remove_fuel(0,user))
 			to_chat(user, "You need more welding fuel to complete this task.")
 			return
+		playsound(src, W.usesound, 50, 1)
+		to_chat(user, "You start slicing the floorweld off the delivery chute.")
+		if(do_after(user,20 * W.toolspeed))
+			if(!src || !W.isOn()) return
+			to_chat(user, "You sliced the floorweld off the delivery chute.")
+			var/obj/structure/disposalconstruct/C = new (src.loc)
+			C.ptype = 8 // 8 =  Delivery chute
+			C.update()
+			C.anchored = TRUE
+			C.density = TRUE
+			qdel(src)
+		return
 
 /obj/machinery/disposal/deliveryChute/Destroy()
 	if(trunk)

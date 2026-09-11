@@ -10,14 +10,15 @@
  */
 
 /obj/item/clothing/suit/fire
-	name = "firesuit"
+	name = "emergency firesuit"
 	desc = "A suit that protects against fire and heat."
-	icon_state = "fire"
+	icon_state = "firesuit"
+	item_state_slots = list(slot_r_hand_str = "black_suit", slot_l_hand_str = "black_suit")
 	w_class = ITEMSIZE_LARGE//bulky item
 	gas_transfer_coefficient = 0.90
 	permeability_coefficient = 0.50
 	body_parts_covered = UPPER_TORSO|LOWER_TORSO|LEGS|FEET|ARMS|HANDS
-	allowed = list(/obj/item/device/flashlight,/obj/item/weapon/tank/emergency/oxygen,/obj/item/weapon/extinguisher)
+	allowed = list(/obj/item/flashlight,/obj/item/tank/emergency/oxygen,/obj/item/extinguisher)
 	slowdown = 1.0
 	flags_inv = HIDEGLOVES|HIDESHOES|HIDEJUMPSUIT|HIDETAIL|HIDETIE|HIDEHOLSTER
 	item_flags = 0
@@ -27,16 +28,16 @@
 	min_pressure_protection = 0.2 * ONE_ATMOSPHERE
 	max_pressure_protection = 20  * ONE_ATMOSPHERE
 
-
 /obj/item/clothing/suit/fire/firefighter
-	icon_state = "firesuit"
-
-/obj/item/clothing/suit/fire/heavy //Is this even used?? -S2-
 	name = "firesuit"
+	icon_state = "firesuit2"
+	max_heat_protection_temperature = FIRESUIT_MAX_HEAT_PROTECTION_TEMPERATURE+5000
+
+/obj/item/clothing/suit/fire/heavy
+	name = "atmospheric firesuit"
 	desc = "A suit that protects against extreme fire and heat."
-	//icon_state = "thermal"
-	item_state_slots = list(slot_r_hand_str = "black_suit", slot_l_hand_str = "black_suit")
-	w_class = ITEMSIZE_LARGE//bulky item
+	icon_state = "atmos_firesuit"
+	max_heat_protection_temperature = FIRESUIT_MAX_HEAT_PROTECTION_TEMPERATURE+10000
 	slowdown = 1.5
 
 /*
@@ -71,7 +72,7 @@
 
 /obj/item/clothing/suit/bomb_suit/security
 	icon_state = "bombsuitsec"
-	allowed = list(/obj/item/weapon/gun/energy,/obj/item/weapon/melee/baton,/obj/item/weapon/handcuffs)
+	allowed = list(/obj/item/gun/energy,/obj/item/melee/baton,/obj/item/handcuffs)
 	body_parts_covered = UPPER_TORSO|LOWER_TORSO|LEGS|FEET|ARMS|HANDS
 
 /*
@@ -94,7 +95,7 @@
 	gas_transfer_coefficient = 0.90
 	permeability_coefficient = 0.50
 	body_parts_covered = UPPER_TORSO|LOWER_TORSO|LEGS|ARMS|HANDS|FEET
-	allowed = list(/obj/item/device/flashlight,/obj/item/weapon/tank/emergency/oxygen,/obj/item/clothing/head/radiation,/obj/item/clothing/mask/gas)
+	allowed = list(/obj/item/flashlight,/obj/item/tank/emergency/oxygen,/obj/item/clothing/head/radiation,/obj/item/clothing/mask/gas)
 	slowdown = 1.5
 	armor = list(melee = 0, bullet = 0, laser = 0,energy = 0, bomb = 0, bio = 60, rad = 100)
 	flags_inv = HIDEJUMPSUIT|HIDETAIL|HIDETIE|HIDEHOLSTER
@@ -103,15 +104,15 @@
 /obj/item/clothing/suit/radiation/teshari
 	name = "Small radiation suit"
 	desc = "A specialist suit that protects against radiation, designed specifically for use by Teshari. Made to order by Aether."
-	icon = 'icons/obj/clothing/species/teshari/suits.dmi'
-	icon_override = 'icons/mob/species/teshari/suit.dmi'
+	icon = 'icons/inventory/suit/item_teshari.dmi'
+	icon_override = 'icons/inventory/suit/mob_teshari.dmi'
 	icon_state = "rad_fitted"
 	species_restricted = list(SPECIES_TESHARI)
 
 /obj/item/clothing/head/radiation/teshari
 	name = "Small radiation hood"
 	desc = "A specialist hood with radiation protective properties, designed specifically for use by Teshari. Made to order by Aether."
-	icon = 'icons/obj/clothing/species/teshari/hats.dmi'
-	icon_override = 'icons/mob/species/teshari/head.dmi'
+	icon = 'icons/inventory/suit/item_teshari.dmi'
+	icon_override = 'icons/inventory/head/mob_teshari.dmi'
 	icon_state = "rad_fitted"
 	species_restricted = list(SPECIES_TESHARI)

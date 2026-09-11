@@ -10,8 +10,8 @@
 	ready_sound = 'sound/effects/spray.ogg'
 	required_type = list(/obj/mecha/working/ripley)
 
-	tooltype = /obj/item/weapon/inflatable_dispenser/robot
-	var/obj/item/weapon/inflatable_dispenser/my_deployer = null
+	tooltype = /obj/item/inflatable_dispenser/robot
+	var/obj/item/inflatable_dispenser/my_deployer = null
 
 /obj/item/mecha_parts/mecha_equipment/tool/powertool/inflatables/Initialize()
 	. = ..()
@@ -26,9 +26,9 @@
 
 /obj/item/mecha_parts/mecha_equipment/tool/powertool/inflatables/get_equip_info()
 	if(!chassis) return
-	var/data_return = "<span style=\"color:[equip_ready?"#0f0":"#f00"];\">*</span>&nbsp;[chassis.selected==src?"<b>":"<a href='?src=\ref[chassis];select_equip=\ref[src]'>"][src.name][chassis.selected==src?"</b>":"</a>"] - <a href='?src=\ref[src];toggle_deployable_mode=1'>Deploy [my_deployer.mode?"Door":"Wall"]</a><br>\
-	&nbsp; - Doors left: <span style=\"color:#ff0;\">[my_deployer.stored_doors]</span>/[my_deployer.max_doors]<br>\
-	&nbsp; - Walls left: <span style=\"color:#ff0;\">[my_deployer.stored_walls]</span>/[my_deployer.max_walls]"
+	var/data_return = (equip_ready ? span_green("*") : span_red("*")) + "&nbsp;[chassis.selected==src?"<b>":"<a href='?src=\ref[chassis];select_equip=\ref[src]'>"][src.name][chassis.selected==src?"</b>":"</a>"] - <a href='?src=\ref[src];toggle_deployable_mode=1'>Deploy [my_deployer.mode?"Door":"Wall"]</a><br>\
+	&nbsp; - Doors left: " + span_yellow("[my_deployer.stored_doors]") + "/[my_deployer.max_doors]<br>\
+	&nbsp; - Walls left: " + span_yellow("[my_deployer.stored_walls]") + "/[my_deployer.max_walls]"
 
 	return data_return
 
@@ -41,7 +41,7 @@
 	if(istype(target, /obj/item/inflatable) || istype(target, /obj/structure/inflatable))
 		my_deployer.pick_up(target, chassis.occupant)
 
-	set_ready_state(0)
+	set_ready_state(FALSE)
 	chassis.use_power(energy_drain)
 	do_after_cooldown()
 	return

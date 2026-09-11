@@ -28,9 +28,9 @@
 	var/datum/effect/effect/system/ion_trail_follow/ion
 	var/kickstand = 1
 
-/obj/vehicle/bike/New()
-	..()
-	cell = new /obj/item/weapon/cell/high(src)
+/obj/vehicle/bike/Initialize()
+	. = ..()
+	cell = new /obj/item/cell/high(src)
 	ion = new /datum/effect/effect/system/ion_trail_follow()
 	ion.set_up(src)
 	turn_off()
@@ -46,9 +46,9 @@
 	paint_color = rgb(rand(1,255),rand(1,255),rand(1,255))
 	..()
 
-/obj/vehicle/bike/attackby(obj/item/weapon/W as obj, mob/user as mob)
-	if(istype(W, /obj/item/device/multitool) && open)
-		var/new_paint = input("Please select paint color.", "Paint Color", paint_color) as color|null
+/obj/vehicle/bike/attackby(obj/item/W as obj, mob/user as mob)
+	if(istype(W, /obj/item/multitool) && open)
+		var/new_paint = input(usr, "Please select paint color.", "Paint Color", paint_color) as color|null
 		if(new_paint)
 			paint_color = new_paint
 			update_icon()
@@ -98,7 +98,7 @@
 		visible_message("[user] puts up \the [src]'s kickstand.")
 	else
 		if(istype(src.loc,/turf/space) || istype(src.loc, /turf/simulated/floor/water))
-			to_chat(usr, "<span class='warning'> You don't think kickstands work here...</span>")
+			to_chat(usr, span_warning(" You don't think kickstands work here..."))
 			return
 		visible_message("[user] puts down \the [src]'s kickstand.")
 		if(pulledby)
@@ -116,7 +116,7 @@
 
 /obj/vehicle/bike/MouseDrop_T(var/atom/movable/C, var/mob/user as mob)
 	if(!load(C, user))
-		to_chat(user, "<span class='warning'> You were unable to load \the [C] onto \the [src].</span>")
+		to_chat(user, span_warning(" You were unable to load \the [C] onto \the [src]."))
 		return
 
 /obj/vehicle/bike/attack_hand(var/mob/user as mob)
@@ -138,7 +138,7 @@
 
 	if(on && (!cell || cell.charge < charge_use))
 		turn_off()
-		visible_message("<span class='warning'>\The [src] whines, before its engines wind down.</span>")
+		visible_message(span_warning("\The [src] whines, before its engines wind down."))
 		return 0
 
 	//these things like space, not turf. Dragging shouldn't weigh you down.
@@ -157,7 +157,7 @@
 
 /obj/vehicle/bike/turn_on()
 	ion.start()
-	anchored = 1
+	anchored = TRUE
 
 	update_icon()
 
@@ -181,21 +181,21 @@
 	..()
 
 /obj/vehicle/bike/update_icon()
-	overlays.Cut()
+	cut_overlays()
 
 	if(custom_icon)
 		if(on)
 			var/image/bodypaint = image('icons/obj/custom_items_vehicle.dmi', "[bike_icon]_on_a", src.layer)
 			bodypaint.color = paint_color
-			overlays += bodypaint
+			add_overlay(bodypaint)
 
 			var/image/overmob = image('icons/obj/custom_items_vehicle.dmi', "[bike_icon]_on_overlay", MOB_LAYER + 1)
 			var/image/overmob_color = image('icons/obj/custom_items_vehicle.dmi', "[bike_icon]_on_overlay_a", MOB_LAYER + 1)
 			overmob.plane = MOB_PLANE
 			overmob_color.plane = MOB_PLANE
 			overmob_color.color = paint_color
-			overlays += overmob
-			overlays += overmob_color
+			add_overlay(overmob)
+			add_overlay(overmob_color)
 			if(open)
 				icon_state = "[bike_icon]_on-open"
 			else
@@ -203,15 +203,15 @@
 		else
 			var/image/bodypaint = image('icons/obj/custom_items_vehicle.dmi', "[bike_icon]_off_a", src.layer)
 			bodypaint.color = paint_color
-			overlays += bodypaint
+			add_overlay(bodypaint)
 
 			var/image/overmob = image('icons/obj/custom_items_vehicle.dmi', "[bike_icon]_off_overlay", MOB_LAYER + 1)
 			var/image/overmob_color = image('icons/obj/custom_items_vehicle.dmi', "[bike_icon]_off_overlay_a", MOB_LAYER + 1)
 			overmob.plane = MOB_PLANE
 			overmob_color.plane = MOB_PLANE
 			overmob_color.color = paint_color
-			overlays += overmob
-			overlays += overmob_color
+			add_overlay(overmob)
+			add_overlay(overmob_color)
 			if(open)
 				icon_state = "[bike_icon]_off-open"
 			else
@@ -222,15 +222,15 @@
 	if(on)
 		var/image/bodypaint = image('icons/obj/bike.dmi', "[bike_icon]_on_a", src.layer)
 		bodypaint.color = paint_color
-		overlays += bodypaint
+		add_overlay(bodypaint)
 
 		var/image/overmob = image('icons/obj/bike.dmi', "[bike_icon]_on_overlay", MOB_LAYER + 1)
 		var/image/overmob_color = image('icons/obj/bike.dmi', "[bike_icon]_on_overlay_a", MOB_LAYER + 1)
 		overmob.plane = MOB_PLANE
 		overmob_color.plane = MOB_PLANE
 		overmob_color.color = paint_color
-		overlays += overmob
-		overlays += overmob_color
+		add_overlay(overmob)
+		add_overlay(overmob_color)
 		if(open)
 			icon_state = "[bike_icon]_on-open"
 		else
@@ -238,15 +238,15 @@
 	else
 		var/image/bodypaint = image('icons/obj/bike.dmi', "[bike_icon]_off_a", src.layer)
 		bodypaint.color = paint_color
-		overlays += bodypaint
+		add_overlay(bodypaint)
 
 		var/image/overmob = image('icons/obj/bike.dmi', "[bike_icon]_off_overlay", MOB_LAYER + 1)
 		var/image/overmob_color = image('icons/obj/bike.dmi', "[bike_icon]_off_overlay_a", MOB_LAYER + 1)
 		overmob.plane = MOB_PLANE
 		overmob_color.plane = MOB_PLANE
 		overmob_color.color = paint_color
-		overlays += overmob
-		overlays += overmob_color
+		add_overlay(overmob)
+		add_overlay(overmob_color)
 		if(open)
 			icon_state = "[bike_icon]_off-open"
 		else

@@ -1,23 +1,10 @@
-#define SECOND *10
-#define SECONDS *10
-
-#define MINUTE *600
-#define MINUTES *600
-
-#define HOUR *36000
-#define HOURS *36000
-
-#define DAY *864000
-#define DAYS *864000
+//Returns the world time in english
+/proc/worldtime2text()
+	return gameTimestamp("hh:mm:ss", world.time)
 
 #define TimeOfGame (get_game_time())
 #define TimeOfTick (TICK_USAGE*0.01*world.tick_lag)
 
-#define TICK *world.tick_lag
-#define TICKS *world.tick_lag
-
-#define DS2TICKS(DS) ((DS)/world.tick_lag)	// Convert deciseconds to ticks
-#define TICKS2DS(T) ((T) TICKS) 				// Convert ticks to deciseconds
 #define DS2NEARESTTICK(DS) TICKS2DS(-round(-(DS2TICKS(DS))))
 
 var/world_startup_time
@@ -43,12 +30,16 @@ var/station_date = ""
 var/next_station_date_change = 1 DAY
 
 #define duration2stationtime(time) time2text(station_time_in_ds + time, "hh:mm")
-#define worldtime2stationtime(time) time2text(GLOB.roundstart_hour HOURS + time, "hh:mm")
-#define round_duration_in_ds (GLOB.round_start_time ? world.time - GLOB.round_start_time : 0)
+#define roundstart_delay_time (world.time - round_duration_in_ds)
+#define world_time_in_ds(time) (GLOB.roundstart_hour HOURS + time - roundstart_delay_time)
+#define round_duration_in_ds (GLOB.round_start_time ? REALTIMEOFDAY - GLOB.round_start_time : 0)
 #define station_time_in_ds (GLOB.roundstart_hour HOURS + round_duration_in_ds)
 
 /proc/stationtime2text()
 	return time2text(station_time_in_ds + GLOB.timezoneOffset, "hh:mm")
+
+/proc/worldtime2stationtime(time)
+	return time2text(world_time_in_ds(time) + GLOB.timezoneOffset, "hh:mm")
 
 /proc/stationdate2text()
 	var/update_time = FALSE
@@ -56,9 +47,7 @@ var/next_station_date_change = 1 DAY
 		next_station_date_change += 1 DAY
 		update_time = TRUE
 	if(!station_date || update_time)
-		var/extra_days = round(station_time_in_ds / (1 DAY)) DAYS
-		var/timeofday = world.timeofday + extra_days
-		station_date = num2text((text2num(time2text(timeofday, "YYYY"))+544)) + "-" + time2text(timeofday, "MM-DD") //YW EDIT
+		station_date = num2text((text2num(time2text(REALTIMEOFDAY, "YYYY"))+544)) + "-" + time2text(REALTIMEOFDAY, "MM-DD") //YW EDIT
 	return station_date
 
 //ISO 8601
@@ -80,7 +69,7 @@ var/next_station_date_change = 1 DAY
 	return time2text(wtime - GLOB.timezoneOffset, format)
 
 /* Returns 1 if it is the selected month and day */
-proc/isDay(var/month, var/day)
+/proc/isDay(var/month, var/day)
 	if(isnum(month) && isnum(day))
 		var/MM = text2num(time2text(world.timeofday, "MM")) // get the current month
 		var/DD = text2num(time2text(world.timeofday, "DD")) // get the current day
@@ -96,7 +85,7 @@ var/last_round_duration = 0
 GLOBAL_VAR_INIT(round_start_time, 0)
 
 /hook/roundstart/proc/start_timer()
-	GLOB.round_start_time = world.time
+	GLOB.round_start_time = REALTIMEOFDAY
 	return 1
 
 /proc/roundduration2text()
@@ -119,9 +108,17 @@ GLOBAL_VAR_INIT(round_start_time, 0)
 
 /var/midnight_rollovers = 0
 /var/rollovercheck_last_timeofday = 0
+/var/rollover_safety_date = 0 // set in world/New to the server startup day-of-month
 /proc/update_midnight_rollover()
-	if (world.timeofday < rollovercheck_last_timeofday) //TIME IS GOING BACKWARDS!
-		return midnight_rollovers++
+	// Day has wrapped (world.timeofday drops to 0 at the start of each real day)
+	if (world.timeofday < rollovercheck_last_timeofday)
+		// If the day started/last wrap was < 12 hours ago, this is spurious
+		if(rollover_safety_date < world.realtime - (12 HOURS))
+			midnight_rollovers++
+			rollover_safety_date = world.realtime
+		else
+			warning("Time rollover error: world.timeofday decreased from previous check, but the day or last rollover is less than 12 hours old. System clock?")
+	rollovercheck_last_timeofday = world.timeofday
 	return midnight_rollovers
 
 //Increases delay as the server gets more overloaded,
@@ -174,3 +171,12 @@ GLOBAL_VAR_INIT(round_start_time, 0)
 	if(hour)
 		hourT = " and [hour] hour[(hour != 1)? "s":""]"
 	return "[day] day[(day != 1)? "s":""][hourT][minuteT][secondT]"
+
+//YW ADDITIONS START
+//Takes seconds, returns in hh:mm:ss
+/proc/SecondsToTimestamp(seconds)
+	var/second = seconds%60
+	var/minute = FLOOR((seconds/60), 1)%60
+	var/hours = FLOOR((seconds/3600), 1)
+	return "[hours]:[minute]:[second]"
+//YW ADDITIONS END

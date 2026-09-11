@@ -12,7 +12,7 @@
 		emote_message_radio_synthetic = emote_message_synthetic_3p
 
 /decl/emote/audible/deathgasp_alien
-	key = "deathgasp"
+	key = "adeathgasp"
 	emote_message_3p = "lets out a waning guttural screech, green blood bubbling from its maw."
 
 /decl/emote/audible/whimper
@@ -29,7 +29,7 @@
 	emote_message_3p = "scretches."
 
 /decl/emote/audible/choke
-	key ="choke"
+	key = "choke"
 	emote_message_3p = "chokes."
 	conscious = FALSE
 
@@ -63,7 +63,7 @@
 	emote_message_3p = "boops."
 
 /decl/emote/audible/beep
-	key = "beep"
+	key = "bbeep"
 	emote_message_3p = "You beep."
 	emote_message_3p = "beeps."
 	emote_sound = 'sound/machines/twobeep.ogg'
@@ -133,18 +133,18 @@
 	emote_message_3p = "grunts."
 
 /decl/emote/audible/bug_hiss
-	key ="hiss"
+	key = "bhiss"
 	emote_message_3p_target = "hisses at TARGET."
 	emote_message_3p = "hisses."
 	emote_sound = 'sound/voice/BugHiss.ogg'
 
 /decl/emote/audible/bug_buzz
-	key ="buzz"
-	emote_message_3p = "buzzes its wings."
+	key = "bbuzz"
+	emote_message_3p = "buzzes USER_THEIR wings."
 	emote_sound = 'sound/voice/BugBuzz.ogg'
 
 /decl/emote/audible/bug_chitter
-	key ="chitter"
+	key = "chitter"
 	emote_message_3p = "chitters."
 	emote_sound = 'sound/voice/Bug.ogg'
 
@@ -183,11 +183,27 @@
 	key = "squish"
 	emote_sound = 'sound/effects/slime_squish.ogg' //Credit to DrMinky (freesound.org) for the sound.
 	emote_message_3p = "squishes."
+	sound_vary = FALSE
 
 /decl/emote/audible/warble
 	key = "warble"
 	emote_sound = 'sound/effects/warble.ogg' // Copyright CC BY 3.0 alienistcog (freesound.org) for the sound.
 	emote_message_3p = "warbles."
+
+/decl/emote/audible/croon
+	key = "croon"
+	emote_message_3p = "croons..."
+	emote_sound = list('sound/voice/croon1.ogg', 'sound/voice/croon2.ogg')
+
+/decl/emote/audible/lwarble
+	key = "lwarble"
+	emote_message_3p = "lets out a low, throaty warble!"
+	emote_sound = 'sound/voice/lwarble.ogg'
+
+/decl/emote/audible/croak_skrell
+	key = "scroak"
+	emote_message_3p = "croaks!"
+	emote_sound = 'sound/voice/croak_skrell.ogg'
 
 /decl/emote/audible/vox_shriek
 	key = "shriek"
@@ -204,6 +220,14 @@
 	emote_message_3p = "purrs."
 	emote_sound = 'sound/voice/cat_purr_long.ogg'
 
+/decl/emote/audible/fennecscream
+	key = "fennecscream"
+	emote_message_3p = "screeches!"
+
+/decl/emote/audible/zoom
+	key = "zoom"
+	emote_message_3p = "zooms."
+
 /decl/emote/audible/teshsqueak
 	key = "surprised"
 	emote_message_1p = "You chirp in surprise!"
@@ -211,9 +235,10 @@
 	emote_message_1p_target = "You chirp in surprise at TARGET!"
 	emote_message_3p_target = "chirps in surprise at TARGET!"
 	emote_sound = 'sound/voice/teshsqueak.ogg' // Copyright CC BY 3.0 InspectorJ (freesound.org) for the source audio.
+	sound_vary = FALSE
 
 /decl/emote/audible/teshchirp
-	key = "tchirp" // VOREStation Edit
+	key = "tchirp"
 	emote_message_1p = "You chirp!"
 	emote_message_3p = "chirps!"
 	emote_message_1p_target = "You chirp at TARGET!"
@@ -227,3 +252,17 @@
 	emote_message_1p_target = "You trill at TARGET."
 	emote_message_3p_target = "trills at TARGET."
 	emote_sound = 'sound/voice/teshtrill.ogg' // Copyright CC BY-NC 3.0 Arnaud Coutancier (freesound.org) for the source audio.
+
+/decl/emote/audible/teshscream
+	key = "teshscream"
+	emote_message_1p = "You scream!"
+	emote_message_3p = "screams!"
+	emote_sound = 'sound/voice/teshscream.ogg'
+
+/decl/emote/audible/prbt
+	key = "prbt"
+	emote_message_1p = "You prbt."
+	emote_message_3p = "prbts."
+	emote_message_1p_target = "You prbt at TARGET."
+	emote_message_3p_target = "prbts at TARGET."
+	emote_sound = 'sound/voice/prbt.ogg'

@@ -9,20 +9,12 @@
 	equip_cooldown = 30
 	mech_flags = EXOSUIT_MODULE_MEDICAL
 	var/mob/living/carbon/human/occupant = null
-	var/datum/global_iterator/pr_mech_sleeper
 	var/inject_amount = 5
 	required_type = list(/obj/mecha/medical)
 	salvageable = 0
 	allow_duplicate = TRUE
 
-/obj/item/mecha_parts/mecha_equipment/tool/sleeper/New()
-	..()
-	pr_mech_sleeper = new /datum/global_iterator/mech_sleeper(list(src),0)
-	pr_mech_sleeper.set_delay(equip_cooldown)
-	return
-
 /obj/item/mecha_parts/mecha_equipment/tool/sleeper/Destroy()
-	qdel(pr_mech_sleeper)
 	for(var/atom/movable/AM in src)
 		AM.forceMove(get_turf(src))
 	return ..()
@@ -36,23 +28,23 @@
 	if(!istype(target))
 		return
 	if(target.buckled)
-		occupant_message("[target] will not fit into the sleeper because they are buckled to [target.buckled].")
+		occupant_message(span_infoplain("[target] will not fit into the sleeper because they are buckled to [target.buckled]."))
 		return
 	if(occupant)
-		occupant_message("The sleeper is already occupied")
+		occupant_message(span_warning("The sleeper is already occupied"))
 		return
 	if(target.has_buckled_mobs())
-		occupant_message(span("warning", "\The [target] has other entities attached to it. Remove them first."))
+		occupant_message(span_warning("\The [target] has other entities attached to it. Remove them first."))
 		return
-	occupant_message("You start putting [target] into [src].")
-	chassis.visible_message("[chassis] starts putting [target] into the [src].")
+	occupant_message(span_infoplain("You start putting [target] into [src]."))
+	chassis.visible_message(span_infoplain("[chassis] starts putting [target] into the [src]."))
 	var/C = chassis.loc
 	var/T = target.loc
 	if(do_after_cooldown(target))
 		if(chassis.loc!=C || target.loc!=T)
 			return
 		if(occupant)
-			occupant_message("<font color=\"red\"><B>The sleeper is already occupied!</B></font>")
+			occupant_message(span_boldwarning("The sleeper is already occupied!"))
 			return
 		target.forceMove(src)
 		occupant = target
@@ -63,10 +55,10 @@
 			target.client.perspective = EYE_PERSPECTIVE
 			target.client.eye = chassis
 		*/
-		set_ready_state(0)
-		pr_mech_sleeper.start()
-		occupant_message("<font color='blue'>[target] successfully loaded into [src]. Life support functions engaged.</font>")
-		chassis.visible_message("[chassis] loads [target] into [src].")
+		set_ready_state(FALSE)
+		START_PROCESSING(SSprocessing, src)
+		occupant_message(span_notice("[target] successfully loaded into [src]. Life support functions engaged."))
+		chassis.visible_message(span_infoplain("[chassis] loads [target] into [src]."))
 		log_message("[target] loaded. Life support functions engaged.")
 	return
 
@@ -74,7 +66,7 @@
 	if(!occupant)
 		return
 	occupant.forceMove(get_turf(src))
-	occupant_message("[occupant] ejected. Life support functions disabled.")
+	occupant_message(span_infoplain("[occupant] ejected. Life support functions disabled."))
 	log_message("[occupant] ejected. Life support functions disabled.")
 	occupant.reset_view()
 	/*
@@ -84,15 +76,15 @@
 	*/
 	occupant.Stasis(0)
 	occupant = null
-	pr_mech_sleeper.stop()
-	set_ready_state(1)
+	STOP_PROCESSING(SSprocessing, src)
+	set_ready_state(TRUE)
 	return
 
 /obj/item/mecha_parts/mecha_equipment/tool/sleeper/detach()
 	if(occupant)
-		occupant_message("Unable to detach [src] - equipment occupied.")
+		occupant_message(span_infoplain("Unable to detach [src] - equipment occupied."))
 		return
-	pr_mech_sleeper.stop()
+	STOP_PROCESSING(SSprocessing, src)
 	return ..()
 
 /obj/item/mecha_parts/mecha_equipment/tool/sleeper/get_equip_info()
@@ -187,9 +179,9 @@
 		return 0
 	var/to_inject = min(R.volume, inject_amount)
 	if(to_inject && occupant.reagents.get_reagent_amount(R.id) + to_inject > inject_amount*4)
-		occupant_message("Sleeper safeties prohibit you from injecting more than [inject_amount*4] units of [R.name].")
+		occupant_message(span_warning("Sleeper safeties prohibit you from injecting more than [inject_amount*4] units of [R.name]."))
 	else
-		occupant_message("Injecting [occupant] with [to_inject] units of [R.name].")
+		occupant_message(span_notice("Injecting [occupant] with [to_inject] units of [R.name]."))
 		log_message("Injecting [occupant] with [to_inject] units of [R.name].")
 		//SG.reagents.trans_id_to(occupant,R.id,to_inject)
 		SG.reagents.remove_reagent(R.id,to_inject)
@@ -205,6 +197,10 @@
 		return 1
 	return
 
+/obj/item/mecha_parts/mecha_equipment/tool/sleeper/container_resist(var/mob/living)
+	if(occupant == living)
+		eject()
+
 /obj/item/mecha_parts/mecha_equipment/tool/sleeper/verb/eject()
 	set name = "Sleeper Eject"
 	set category = "Exosuit Interface"
@@ -212,24 +208,23 @@
 	set popup_menu = 0
 	if(usr!=src.occupant || usr.stat == 2)
 		return
-	to_chat(usr,"<span class='notice'>Release sequence activated. This will take one minute.</span>")
+	to_chat(usr,span_notice("Release sequence activated. This will take one minute."))
 	sleep(600)
 	if(!src || !usr || !occupant || (occupant != usr)) //Check if someone's released/replaced/bombed him already
 		return
 	go_out()//and release him from the eternal prison.
 
-/datum/global_iterator/mech_sleeper
-
-/datum/global_iterator/mech_sleeper/process(var/obj/item/mecha_parts/mecha_equipment/tool/sleeper/S)
-	if(!S.chassis)
-		S.set_ready_state(1)
-		return stop()
-	if(!S.chassis.has_charge(S.energy_drain))
-		S.set_ready_state(1)
-		S.log_message("Deactivated.")
-		S.occupant_message("[src] deactivated - no power.")
-		return stop()
-	var/mob/living/carbon/M = S.occupant
+/obj/item/mecha_parts/mecha_equipment/tool/sleeper/process()
+	..()
+	if(!chassis)
+		set_ready_state(TRUE)
+		return PROCESS_KILL
+	if(!chassis.has_charge(energy_drain))
+		set_ready_state(TRUE)
+		log_message("Deactivated.")
+		occupant_message(span_infoplain("[src] deactivated - no power."))
+		return PROCESS_KILL
+	var/mob/living/carbon/M = occupant
 	if(!M)
 		return
 	if(M.health > 0)
@@ -243,6 +238,6 @@
 	M.Stun(2)
 	if(M.reagents.get_reagent_amount("inaprovaline") < 5)
 		M.reagents.add_reagent("inaprovaline", 5)
-	S.chassis.use_power(S.energy_drain)
-	S.update_equip_info()
+	chassis.use_power(energy_drain)
+	update_equip_info()
 	return

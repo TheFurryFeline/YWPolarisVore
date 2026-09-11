@@ -17,11 +17,12 @@ var/warrant_uid = 0
 	program_icon_state = "warrant"
 	program_key_state = "security_key"
 	program_menu_icon = "star"
-	requires_ntnet = 1
-	available_on_ntnet = 1
+	requires_ntnet = TRUE
+	available_on_ntnet = TRUE
 	required_access = access_security
 	usage_flags = PROGRAM_ALL
 	tgui_id = "NtosDigitalWarrant"
+	category = PROG_SEC
 
 	var/datum/data/record/warrant/activewarrant
 
@@ -71,23 +72,25 @@ var/warrant_uid = 0
 	// The following actions will only be possible if the user has an ID with security access equipped. This is in line with modular computer framework's authentication methods,
 	// which also use RFID scanning to allow or disallow access to some functions. Anyone can view warrants, editing requires ID. This also prevents situations where you show a tablet
 	// to someone who is to be arrested, which allows them to change the stuff there.
-	var/obj/item/weapon/card/id/I = usr.GetIdCard()
-	if(!istype(I) || !I.registered_name || !(access_security in I.access))
-		to_chat(usr, "Authentication error: Unable to locate ID with appropriate access to allow this operation.")
+	var/obj/item/card/id/I = ui.user.GetIdCard()
+	if(!istype(I) || !I.registered_name || !(access_security in I.GetAccess()))
+		to_chat(ui.user, "Authentication error: Unable to locate ID with appropriate access to allow this operation.")
 		return
 
 	switch(action)
 		if("addwarrant")
 			. = TRUE
 			var/datum/data/record/warrant/W = new()
-			var/temp = sanitize(input(usr, "Do you want to create a search-, or an arrest warrant?") as null|anything in list("search","arrest"))
-			if(tgui_status(usr, state) == STATUS_INTERACTIVE)
-				if(temp == "arrest")
+			var/temp = tgui_alert(ui.user, "Do you want to create a search-, or an arrest warrant?", "Warrant Type", list("Search","Arrest","Cancel"))
+			if(!temp)
+				return
+			if(tgui_status(ui.user, state) == STATUS_INTERACTIVE)
+				if(temp == "Arrest")
 					W.fields["namewarrant"] = "Unknown"
 					W.fields["charges"] = "No charges present"
 					W.fields["auth"] = "Unauthorized"
 					W.fields["arrestsearch"] = "arrest"
-				if(temp == "search")
+				if(temp == "Search")
 					W.fields["namewarrant"] = "No suspect/location given" // VOREStation edit
 					W.fields["charges"] = "No reason given"
 					W.fields["auth"] = "Unauthorized"
@@ -109,31 +112,31 @@ var/warrant_uid = 0
 			var/namelist = list()
 			for(var/datum/data/record/t in data_core.general)
 				namelist += t.fields["name"]
-			var/new_name = sanitize(input(usr, "Please input name") as null|anything in namelist)
-			if(tgui_status(usr, state) == STATUS_INTERACTIVE)
+			var/new_name = sanitize(tgui_input_list(ui.user, "Please input name:", "Name Choice", namelist))
+			if(tgui_status(ui.user, state) == STATUS_INTERACTIVE)
 				if (!new_name)
 					return
 				activewarrant.fields["namewarrant"] = new_name
 
 		if("editwarrantnamecustom")
 			. = TRUE
-			var/new_name = sanitize(input("Please input name") as null|text)
-			if(tgui_status(usr, state) == STATUS_INTERACTIVE)
+			var/new_name = sanitize(tgui_input_text(ui.user, "Please input name"))
+			if(tgui_status(ui.user, state) == STATUS_INTERACTIVE)
 				if (!new_name)
 					return
 				activewarrant.fields["namewarrant"] = new_name
 
 		if("editwarrantcharges")
 			. = TRUE
-			var/new_charges = sanitize(input("Please input charges", "Charges", activewarrant.fields["charges"]) as null|text)
-			if(tgui_status(usr, state) == STATUS_INTERACTIVE)
+			var/new_charges = sanitize(tgui_input_text(ui.user, "Please input charges", "Charges", activewarrant.fields["charges"]))
+			if(tgui_status(ui.user, state) == STATUS_INTERACTIVE)
 				if (!new_charges)
 					return
 				activewarrant.fields["charges"] = new_charges
 
 		if("editwarrantauth")
 			. = TRUE
-			if(!(access_hos in I.access)) // VOREStation edit begin
-				to_chat(usr, "<span class='warning'>You don't have the access to do this!</span>")
+			if(!(access_hos in I.GetAccess())) // VOREStation edit begin
+				to_chat(ui.user, span_warning("You don't have the access to do this!"))
 				return // VOREStation edit end
 			activewarrant.fields["auth"] = "[I.registered_name] - [I.assignment ? I.assignment : "(Unknown)"]"

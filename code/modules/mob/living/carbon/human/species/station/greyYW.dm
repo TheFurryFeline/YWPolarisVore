@@ -12,14 +12,14 @@
 	another galaxy, greys have chosen mauna-b to act as their home planet due to high amount of grey\
 	residing in there."
 
-	wikilink = "https://yawn.izac.live/index.php?title=Grey"
+	wikilink = "https://yawn.izac.live/Grey"
 	catalogue_data = list(/datum/category_item/catalogue/fauna/grey)
 
 	num_alternate_languages = 3
 	species_language = LANGUAGE_PSIONIC
 	secondary_langs = list(LANGUAGE_PSIONIC)
 	name_language = null // Use the first-name last-name generator rather than a language scrambler
-	assisted_langs = list(LANGUAGE_EAL, LANGUAGE_SKRELLIAN, LANGUAGE_SKRELLIANFAR, LANGUAGE_ROOTLOCAL, LANGUAGE_ROOTGLOBAL, LANGUAGE_VOX)
+	assisted_langs = list(LANGUAGE_EAL, LANGUAGE_SKRELLIAN, LANGUAGE_ROOTLOCAL, LANGUAGE_ROOTGLOBAL, LANGUAGE_VOX)
 	flesh_color = "#a598ad"
 	blood_color = "#A200FF"
 	brute_mod = 1.25

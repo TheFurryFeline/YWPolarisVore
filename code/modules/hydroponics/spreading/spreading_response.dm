@@ -49,8 +49,7 @@
 
 /obj/effect/plant/proc/unbuckle()
 	if(has_buckled_mobs())
-		for(var/A in buckled_mobs)
-			var/mob/living/L = A
+		for(var/mob/living/L as anything in buckled_mobs)
 			if(L.buckled == src)
 				L.buckled = null
 				L.anchored = initial(L.anchored)
@@ -64,27 +63,26 @@
 		if(seed)
 			chance = round(100/(20*seed.get_trait(TRAIT_POTENCY)/100))
 		if(prob(chance))
-			for(var/A in buckled_mobs)
-				var/mob/living/L = A
+			for(var/mob/living/L as anything in buckled_mobs)
 				if(!(user in buckled_mobs))
 					L.visible_message(\
-					"<span class='notice'>\The [user] frees \the [L] from \the [src].</span>",\
-					"<span class='notice'>\The [user] frees you from \the [src].</span>",\
-					"<span class='warning'>You hear shredding and ripping.</span>")
+					span_infoplain(span_bold("\The [user]") + " frees \the [L] from \the [src]."),\
+					span_infoplain(span_bold("\The [user]") + " frees you from \the [src]."),\
+					span_warning("You hear shredding and ripping."))
 				else
 					L.visible_message(\
-					"<span class='notice'>\The [L] struggles free of \the [src].</span>",\
-					"<span class='notice'>You untangle \the [src] from around yourself.</span>",\
-					"<span class='warning'>You hear shredding and ripping.</span>")
+					span_infoplain(span_bold("\The [L]") + " struggles free of \the [src]."),\
+					span_notice("You untangle \the [src] from around yourself."),\
+					span_warning("You hear shredding and ripping."))
 				unbuckle()
 		else
 			user.setClickCooldown(user.get_attack_speed())
 			health -= rand(1,5)
 			var/text = pick("rip","tear","pull", "bite", "tug")
 			user.visible_message(\
-			"<span class='warning'>\The [user] [text]s at \the [src].</span>",\
-			"<span class='warning'>You [text] at \the [src].</span>",\
-			"<span class='warning'>You hear shredding and ripping.</span>")
+			span_warning("\The [user] [text]s at \the [src]."),\
+			span_warning("You [text] at \the [src]."),\
+			span_warning("You hear shredding and ripping."))
 			check_health()
 			return
 
@@ -104,10 +102,10 @@
 			if(istype(H.shoes, /obj/item/clothing/shoes/magboots) && (H.shoes.item_flags & NOSLIP))
 				can_grab = 0
 		if(can_grab)
-			src.visible_message("<span class='danger'>Tendrils lash out from \the [src] and drag \the [victim] in!</span>")
+			src.visible_message(span_danger("Tendrils lash out from \the [src] and drag \the [victim] in!"))
 			victim.forceMove(src.loc)
 			buckle_mob(victim)
 			victim.set_dir(pick(cardinal))
-			to_chat(victim, "<span class='danger'>Tendrils [pick("wind", "tangle", "tighten")] around you!</span>")
+			to_chat(victim, span_danger("Tendrils [pick("wind", "tangle", "tighten")] around you!"))
 			victim.Weaken(0.5)
 			seed.do_thorns(victim,src)

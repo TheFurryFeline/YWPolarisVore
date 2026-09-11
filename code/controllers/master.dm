@@ -1,26 +1,23 @@
- /**
-  * StonedMC
-  *
-  * Designed to properly split up a given tick among subsystems
-  * Note: if you read parts of this code and think "why is it doing it that way"
-  * Odds are, there is a reason
-  *
+/**
+ * StonedMC
+ *
+ * Designed to properly split up a given tick among subsystems
+ * Note: if you read parts of this code and think "why is it doing it that way"
+ * Odds are, there is a reason
+ *
  **/
 
-//This is the ABSOLUTE ONLY THING that should init globally like this
+// See initialization order in /code/game/world.dm
 GLOBAL_REAL(Master, /datum/controller/master) = new
-
-//THIS IS THE INIT ORDER
-//Master -> SSPreInit -> GLOB -> world -> config -> SSInit -> Failsafe
-//GOT IT MEMORIZED?
-
 /datum/controller/master
 	name = "Master"
 
-	// Are we processing (higher values increase the processing delay by n ticks)
+	/// Are we processing (higher values increase the processing delay by n ticks)
 	var/processing = TRUE
-	// How many times have we ran
+	/// How many times have we ran
 	var/iteration = 0
+	/// Stack end detector to detect stack overflows that kill the mc's main loop
+	var/datum/stack_end_detector/stack_end_detector
 
 	// world.time of last fire, for tracking lag outside of the mc
 	var/last_run
@@ -68,7 +65,7 @@ GLOBAL_REAL(Master, /datum/controller/master) = new
 			qdel(Master)
 		else
 			var/list/subsytem_types = subtypesof(/datum/controller/subsystem)
-			sortTim(subsytem_types, /proc/cmp_subsystem_init)
+			sortTim(subsytem_types, GLOBAL_PROC_REF(cmp_subsystem_init))
 			for(var/I in subsytem_types)
 				_subsystems += new I
 		Master = src
@@ -83,7 +80,7 @@ GLOBAL_REAL(Master, /datum/controller/master) = new
 
 /datum/controller/master/Shutdown()
 	processing = FALSE
-	sortTim(subsystems, /proc/cmp_subsystem_init)
+	sortTim(subsystems, GLOBAL_PROC_REF(cmp_subsystem_init))
 	reverseRange(subsystems)
 	for(var/datum/controller/subsystem/ss in subsystems)
 		log_world("Shutting down [ss.name] subsystem...")
@@ -132,16 +129,16 @@ GLOBAL_REAL(Master, /datum/controller/master) = new
 		LAZYINITLIST(BadBoy.failure_strikes)
 		switch(++BadBoy.failure_strikes[BadBoy.type])
 			if(2)
-				msg = "The [BadBoy.name] subsystem was the last to fire for 2 controller restarts. It will be recovered now and disabled if it happens again."
+				msg = "MC Notice: The [BadBoy.name] subsystem was the last to fire for 2 controller restarts. It will be recovered now and disabled if it happens again."
 				FireHim = TRUE
 				BadBoy.fail()
 			if(3)
-				msg = "The [BadBoy.name] subsystem seems to be destabilizing the MC and will be offlined."
+				msg = "MC Notice: The [BadBoy.name] subsystem seems to be destabilizing the MC and will be offlined."
 				BadBoy.flags |= SS_NO_FIRE
 				BadBoy.critfail()
 		if(msg)
 			log_game(msg)
-			message_admins("<span class='boldannounce'>[msg]</span>")
+			message_admins(span_boldannounce("[msg]"))
 			log_world(msg)
 
 	if (istype(Master.subsystems))
@@ -152,7 +149,7 @@ GLOBAL_REAL(Master, /datum/controller/master) = new
 		current_runlevel = Master.current_runlevel
 		StartProcessing(10)
 	else
-		to_chat(world, "<span class='boldannounce'>The Master Controller is having some issues, we will need to re-initialize EVERYTHING</span>")
+		to_world(span_boldannounce("The Master Controller is having some issues, we will need to re-initialize EVERYTHING"))
 		Initialize(20, TRUE)
 
 
@@ -170,14 +167,14 @@ GLOBAL_REAL(Master, /datum/controller/master) = new
 	if(init_sss)
 		init_subtypes(/datum/controller/subsystem, subsystems)
 
-	to_chat(world, "<span class='boldannounce'>Initializing subsystems...</span>")
+	to_chat(world, span_boldannounce("MC: Initializing subsystems..."))
 
 	// Sort subsystems by init_order, so they initialize in the correct order.
-	sortTim(subsystems, /proc/cmp_subsystem_init)
+	sortTim(subsystems, GLOBAL_PROC_REF(cmp_subsystem_init))
 
 	var/start_timeofday = REALTIMEOFDAY
 	// Initialize subsystems.
-	current_ticklimit = config.tick_limit_mc_init
+	current_ticklimit = CONFIG_GET(number/tick_limit_mc_init)
 	for (var/datum/controller/subsystem/SS in subsystems)
 		if (SS.flags & SS_NO_INIT)
 			continue
@@ -186,8 +183,8 @@ GLOBAL_REAL(Master, /datum/controller/master) = new
 	current_ticklimit = TICK_LIMIT_RUNNING
 	var/time = (REALTIMEOFDAY - start_timeofday) / 10
 
-	var/msg = "Initializations complete within [time] second[time == 1 ? "" : "s"]!"
-	to_chat(world, "<span class='boldannounce'>[msg]</span>")
+	var/msg = "MC: Initializations complete within [time] second[time == 1 ? "" : "s"]!"
+	to_chat(world, span_boldannounce("[msg]"))
 	log_world(msg)
 
 
@@ -196,17 +193,17 @@ GLOBAL_REAL(Master, /datum/controller/master) = new
 	if (!current_runlevel)
 		SetRunLevel(RUNLEVEL_LOBBY)
 
-	GLOB.revdata = new // It can load revdata now, from tgs or .git or whatever
+	// GLOB.revdata = new // It can load revdata now, from tgs or .git or whatever
 
 	// Sort subsystems by display setting for easy access.
-	sortTim(subsystems, /proc/cmp_subsystem_display)
+	sortTim(subsystems, GLOBAL_PROC_REF(cmp_subsystem_display))
 	// Set world options.
 	#ifdef UNIT_TEST
 	world.sleep_offline = 0
 	#else
 	world.sleep_offline = 1
 	#endif
-	world.change_fps(config.fps)
+	world.change_fps(CONFIG_GET(number/fps))
 	var/initialized_tod = REALTIMEOFDAY
 	sleep(1)
 	initializations_finished_with_no_players_logged_in = initialized_tod < REALTIMEOFDAY - 10
@@ -229,15 +226,17 @@ GLOBAL_REAL(Master, /datum/controller/master) = new
 	if (rtn > 0 || processing < 0)
 		return //this was suppose to happen.
 	//loop ended, restart the mc
-	log_game("MC crashed or runtimed, restarting")
-	message_admins("MC crashed or runtimed, restarting")
-	log_world("MC crashed or runtimed, restarting")
+	log_and_message_admins("MC Notice: MC crashed or runtimed, self-restarting (\ref[src])")
 	var/rtn2 = Recreate_MC()
-	if (rtn2 <= 0)
-		log_game("Failed to recreate MC (Error code: [rtn2]), it's up to the failsafe now")
-		message_admins("Failed to recreate MC (Error code: [rtn2]), it's up to the failsafe now")
-		log_world("Failed to recreate MC (Error code: [rtn2]), it's up to the failsafe now")
-		Failsafe.defcon = 2
+	switch(rtn2)
+		if(-1)
+			log_and_message_admins("MC Warning: Failed to self-recreate MC (Return code: [rtn2]), it's up to the failsafe now (\ref[src])")
+			Failsafe.defcon = 2
+		if(0)
+			log_and_message_admins("MC Warning: Too soon for MC self-restart (Return code: [rtn2]), going to let failsafe handle it (\ref[src])")
+			Failsafe.defcon = 2
+		if(1)
+			log_and_message_admins("MC Notice: MC self-recreated, old MC departing (Return code: [rtn2]) (\ref[src])")
 
 // Main loop.
 /datum/controller/master/proc/Loop()
@@ -249,8 +248,7 @@ GLOBAL_REAL(Master, /datum/controller/master) = new
 	var/list/tickersubsystems = list()
 	var/list/runlevel_sorted_subsystems = list(list())	//ensure we always have at least one runlevel
 	var/timer = world.time
-	for (var/thing in subsystems)
-		var/datum/controller/subsystem/SS = thing
+	for (var/datum/controller/subsystem/SS as anything in subsystems)
 		if (SS.flags & SS_NO_FIRE)
 			continue
 		SS.queued_time = 0
@@ -259,7 +257,7 @@ GLOBAL_REAL(Master, /datum/controller/master) = new
 		SS.state = SS_IDLE
 		if (SS.flags & SS_TICKER)
 			tickersubsystems += SS
-			timer += world.tick_lag * rand(1, 5)
+			timer += world.tick_lag * rand(0,1)
 			SS.next_fire = timer
 			continue
 
@@ -278,9 +276,9 @@ GLOBAL_REAL(Master, /datum/controller/master) = new
 	queue_tail = null
 	//these sort by lower priorities first to reduce the number of loops needed to add subsequent SS's to the queue
 	//(higher subsystems will be sooner in the queue, adding them later in the loop means we don't have to loop thru them next queue add)
-	sortTim(tickersubsystems, /proc/cmp_subsystem_priority)
+	sortTim(tickersubsystems, GLOBAL_PROC_REF(cmp_subsystem_priority))
 	for(var/I in runlevel_sorted_subsystems)
-		sortTim(runlevel_sorted_subsystems, /proc/cmp_subsystem_priority)
+		sortTim(I, GLOBAL_PROC_REF(cmp_subsystem_priority))
 		I += tickersubsystems
 
 	var/cached_runlevel = current_runlevel
@@ -293,8 +291,12 @@ GLOBAL_REAL(Master, /datum/controller/master) = new
 	var/error_level = 0
 	var/sleep_delta = 1
 	var/list/subsystems_to_check
-	//the actual loop.
 
+	//setup the stack overflow detector
+	stack_end_detector = new()
+	var/datum/stack_canary/canary = stack_end_detector.prime_canary()
+	canary.use_variable()
+	//the actual loop.
 	while (1)
 		tickdrift = max(0, MC_AVERAGE_FAST(tickdrift, (((REALTIMEOFDAY - init_timeofday) - (world.time - init_time)) / world.tick_lag)))
 		var/starting_tick_usage = TICK_USAGE
@@ -334,14 +336,16 @@ GLOBAL_REAL(Master, /datum/controller/master) = new
 			var/checking_runlevel = current_runlevel
 			if(cached_runlevel != checking_runlevel)
 				//resechedule subsystems
+				var/list/old_subsystems = current_runlevel_subsystems
 				cached_runlevel = checking_runlevel
 				current_runlevel_subsystems = runlevel_sorted_subsystems[cached_runlevel]
-				var/stagger = world.time
-				for(var/I in current_runlevel_subsystems)
-					var/datum/controller/subsystem/SS = I
-					if(SS.next_fire <= world.time)
-						stagger += world.tick_lag * rand(1, 5)
-						SS.next_fire = stagger
+
+				//now we'll go through all the subsystems we want to offset and give them a next_fire
+				for(var/datum/controller/subsystem/SS as anything in current_runlevel_subsystems)
+					//we only want to offset it if it's new and also behind
+					if(SS.next_fire > world.time || (SS in old_subsystems))
+						continue
+					SS.next_fire = world.time + world.tick_lag * rand(0, DS2TICKS(min(SS.wait, 2 SECONDS)))
 
 			subsystems_to_check = current_runlevel_subsystems
 		else
@@ -551,8 +555,7 @@ GLOBAL_REAL(Master, /datum/controller/master) = new
 	for(var/I in runlevel_SS)
 		subsystemstocheck |= I
 
-	for (var/thing in subsystemstocheck)
-		var/datum/controller/subsystem/SS = thing
+	for (var/datum/controller/subsystem/SS as anything in subsystemstocheck)
 		if (!SS || !istype(SS))
 			//list(SS) is so if a list makes it in the subsystem list, we remove the list, not the contents
 			subsystems -= list(SS)
@@ -583,32 +586,37 @@ GLOBAL_REAL(Master, /datum/controller/master) = new
 
 
 
-/datum/controller/master/stat_entry()
+/datum/controller/master/stat_entry(msg)
 	if(!statclick)
 		statclick = new/obj/effect/statclick/debug(null, "Initializing...", src)
 
-	stat("Byond:", "(FPS:[world.fps]) (TickCount:[world.time/world.tick_lag]) (TickDrift:[round(Master.tickdrift,1)]([round((Master.tickdrift/(world.time/world.tick_lag))*100,0.1)]%))")
-	stat("Master Controller:", statclick.update("(TickRate:[Master.processing]) (Iteration:[Master.iteration])"))
+	msg = "Byond: (FPS:[world.fps]) (TickCount:[world.time/world.tick_lag]) (TickDrift:[round(Master.tickdrift,1)]([round((Master.tickdrift/(world.time/world.tick_lag))*100,0.1)]%))"
+	msg += "Master Controller: [statclick.update("(TickRate:[Master.processing]) (Iteration:[Master.iteration])")]"
+
+	return msg
 
 /datum/controller/master/StartLoadingMap(var/quiet = TRUE)
 	if(map_loading)
-		admin_notice("<span class='danger'>Another map is attempting to be loaded before first map released lock.  Delaying.</span>", R_DEBUG)
+		admin_notice(span_danger("Another map is attempting to be loaded before first map released lock.  Delaying."), R_DEBUG)
 	else if(!quiet)
-		admin_notice("<span class='danger'>Map is now being built.  Locking.</span>", R_DEBUG)
+		admin_notice(span_danger("Map is now being built.  Locking."), R_DEBUG)
 
 	//disallow more than one map to load at once, multithreading it will just cause race conditions
 	while(map_loading)
 		stoplag()
-	for(var/S in subsystems)
-		var/datum/controller/subsystem/SS = S
+	for(var/datum/controller/subsystem/SS as anything in subsystems)
 		SS.StartLoadingMap()
 
 	map_loading = TRUE
 
 /datum/controller/master/StopLoadingMap(var/quiet = TRUE)
 	if(!quiet)
-		admin_notice("<span class='danger'>Map is finished.  Unlocking.</span>", R_DEBUG)
+		admin_notice(span_danger("Map is finished.  Unlocking."), R_DEBUG)
 	map_loading = FALSE
-	for(var/S in subsystems)
-		var/datum/controller/subsystem/SS = S
+	for(var/datum/controller/subsystem/SS as anything in subsystems)
 		SS.StopLoadingMap()
+
+/datum/controller/master/proc/OnConfigLoad()
+	for (var/thing in subsystems)
+		var/datum/controller/subsystem/SS = thing
+		SS.OnConfigLoad()

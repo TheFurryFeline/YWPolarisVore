@@ -6,8 +6,8 @@
  *		Pumpkin head
  *		Kitty ears
  *		Holiday hats
- 		Crown of Wrath
- 		Warning cone
+ *		Crown of Wrath
+ *		Warning cone
  */
 
 /*
@@ -18,12 +18,12 @@
 	desc = "A head-mounted face cover designed to protect the wearer completely from space-arc eye."
 	icon_state = "welding"
 	item_state_slots = list(slot_r_hand_str = "welding", slot_l_hand_str = "welding")
-	matter = list(DEFAULT_WALL_MATERIAL = 3000, "glass" = 1000)
+	matter = list(MAT_STEEL = 3000, MAT_GLASS = 1000)
 	var/up = 0
 	armor = list(melee = 10, bullet = 0, laser = 0,energy = 0, bomb = 0, bio = 0, rad = 0)
 	flags_inv = (HIDEMASK|HIDEEARS|HIDEEYES|HIDEFACE)
 	body_parts_covered = HEAD|FACE|EYES
-	action_button_name = "Flip Welding Mask"
+	actions_types = list(/datum/action/item_action/flip_welding_mask)
 	siemens_coefficient = 0.9
 	w_class = ITEMSIZE_NORMAL
 	var/base_state
@@ -65,7 +65,7 @@
 		if (ismob(src.loc)) //should allow masks to update when it is opened/closed
 			var/mob/M = src.loc
 			M.update_inv_wear_mask()
-		usr.update_action_buttons()
+		usr.update_mob_action_buttons()
 
 /obj/item/clothing/head/welding/demon
 	name = "demonic welding helmet"
@@ -102,6 +102,22 @@
 		slot_l_hand_str = "engiewelding",
 		slot_r_hand_str = "engiewelding",
 		)
+
+//Replikant Welding mask
+
+/obj/item/clothing/head/welding/arar
+	name = "replikant welding helmet"
+	desc = "A protective welding mask designed for repair-technician biosynthetic crew, the visor slits are particularly difficult to see out of."
+	icon = 'icons/inventory/head/item_vr.dmi'
+	icon_override = 'icons/inventory/head/mob_vr.dmi'
+	icon_state = "ararwelding"
+	item_state_slots = list(
+		SLOT_ID_LEFT_HAND = "ararwelding",
+		SLOT_ID_RIGHT_HAND = "ararwelding",
+		)
+
+
+
 
 /*
  * Cakehat
@@ -146,7 +162,7 @@
  */
 /obj/item/clothing/head/ushanka
 	name = "ushanka"
-	desc = "Perfect for winter in Siberia, da?"
+	desc = "Perfect for those cold winter nights."
 	icon_state = "ushankadown"
 	flags_inv = HIDEEARS
 
@@ -158,6 +174,19 @@
 		src.icon_state = initial(icon_state)
 		to_chat(user, "You lower the ear flaps on the ushanka.")
 
+/obj/item/clothing/head/ushanka/black
+	icon_state = "blkushankadown"
+
+/obj/item/clothing/head/ushanka/soviet
+	name = "soviet ushanka"
+	desc = "Perfect for winter in Siberia, da?"
+	icon_state = "sovushankadown"
+
+/obj/item/clothing/head/ushanka/hedberg
+	name = "\improper Hedberg-Hammarstrom fur hat"
+	desc = "An Hedberg-Hammarstrom private security ushanka."
+	icon_state = "hedbergushankadown"
+
 /*
  * Pumpkin head
  */
@@ -167,7 +196,7 @@
 	icon_state = "hardhat0_pumpkin"//Could stand to be renamed
 	flags_inv = HIDEMASK|HIDEEARS|HIDEEYES|HIDEFACE|BLOCKHAIR
 	body_parts_covered = HEAD|FACE|EYES
-	brightness_on = 2
+	light_range = 2
 	light_overlay = "jackolantern"
 	w_class = ITEMSIZE_NORMAL
 	drop_sound = 'sound/items/drop/herb.ogg'
@@ -182,15 +211,15 @@
 	icon_state = "kitty"
 	body_parts_covered = 0
 	siemens_coefficient = 1.5
-	item_icons = list()
+	item_icons = null
 
-	update_icon(var/mob/living/carbon/human/user)
-		if(!istype(user)) return
-		var/icon/ears = new/icon("icon" = 'icons/mob/head.dmi', "icon_state" = "kitty")
-		ears.Blend(rgb(user.r_hair, user.g_hair, user.b_hair), ICON_ADD)
+/obj/item/clothing/head/kitty/update_icon(var/mob/living/carbon/human/user)
+	if(!istype(user)) return
+	var/icon/ears = new/icon("icon" = 'icons/inventory/head/mob.dmi', "icon_state" = "kitty")
+	ears.Blend(rgb(user.r_hair, user.g_hair, user.b_hair), ICON_ADD)
 
-		var/icon/earbit = new/icon("icon" = 'icons/mob/head.dmi', "icon_state" = "kittyinner")
-		ears.Blend(earbit, ICON_OVERLAY)
+	var/icon/earbit = new/icon("icon" = 'icons/inventory/head/mob.dmi', "icon_state" = "kittyinner")
+	ears.Blend(earbit, ICON_OVERLAY)
 
 /obj/item/clothing/head/richard
 	name = "chicken mask"
@@ -235,7 +264,7 @@
 /obj/item/clothing/head/psy_crown/proc/activate_ability(var/mob/living/wearer)
 	cooldown = world.time + cooldown_duration
 	to_chat(wearer, flavor_activate)
-	to_chat(wearer, "<span class='danger'>The inside of your head hurts...</span>")
+	to_chat(wearer, span_danger("The inside of your head hurts..."))
 	wearer.adjustBrainLoss(brainloss_cost)
 
 /obj/item/clothing/head/psy_crown/equipped(var/mob/living/carbon/human/H)
@@ -269,10 +298,10 @@
 	desc = "A crown-of-thorns set with a red gemstone that seems to glow unnaturally. It feels rather disturbing to touch."
 	description_info = "This has a chance to cause the wearer to become extremely angry when in extreme danger."
 	icon_state = "wrathcrown"
-	flavor_equip = "<span class='warning'>You feel a bit angrier after putting on this crown.</span>"
-	flavor_unequip = "<span class='notice'>You feel calmer after removing the crown.</span>"
-	flavor_drop = "<span class='notice'>You feel much calmer after letting go of the crown.</span>"
-	flavor_activate = "<span class='danger'>An otherworldly feeling seems to enter your mind, and it ignites your mind in fury!</span>"
+	flavor_equip = span_warning("You feel a bit angrier after putting on this crown.")
+	flavor_unequip = span_notice("You feel calmer after removing the crown.")
+	flavor_drop = span_notice("You feel much calmer after letting go of the crown.")
+	flavor_activate = span_danger("An otherworldly feeling seems to enter your mind, and it ignites your mind in fury!")
 
 /obj/item/clothing/head/psy_crown/wrath/activate_ability(var/mob/living/wearer)
 	..()
@@ -283,10 +312,10 @@
 	desc = "A crown-of-thorns set with a green gemstone that seems to glow unnaturally. It feels rather disturbing to touch."
 	description_info = "This has a chance to cause the wearer to become extremely durable, but hungry when in extreme danger."
 	icon_state = "gluttonycrown"
-	flavor_equip = "<span class='warning'>You feel a bit hungrier after putting on this crown.</span>"
-	flavor_unequip = "<span class='notice'>You feel sated after removing the crown.</span>"
-	flavor_drop = "<span class='notice'>You feel much more sated after letting go of the crown.</span>"
-	flavor_activate = "<span class='danger'>An otherworldly feeling seems to enter your mind, and it drives your mind into gluttony!</span>"
+	flavor_equip = span_warning("You feel a bit hungrier after putting on this crown.")
+	flavor_unequip = span_notice("You feel sated after removing the crown.")
+	flavor_drop = span_notice("You feel much more sated after letting go of the crown.")
+	flavor_activate = span_danger("An otherworldly feeling seems to enter your mind, and it drives your mind into gluttony!")
 
 /obj/item/clothing/head/psy_crown/gluttony/activate_ability(var/mob/living/wearer)
 	..()

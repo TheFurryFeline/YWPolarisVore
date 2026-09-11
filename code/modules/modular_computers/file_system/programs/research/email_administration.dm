@@ -6,10 +6,11 @@
 	program_key_state = "generic_key"
 	program_menu_icon = "mail-open"
 	size = 12
-	requires_ntnet = 1
-	available_on_ntnet = 1
+	requires_ntnet = TRUE
+	available_on_ntnet = TRUE
 	tgui_id = "NtosEmailAdministration"
 	required_access = access_network
+	category = PROG_ADMIN
 
 	var/datum/computer_file/data/email_account/current_account = null
 	var/datum/computer_file/data/email_message/current_message = null
@@ -65,8 +66,8 @@
 		return TRUE
 
 	// High security - can only be operated when the user has an ID with access on them.
-	var/obj/item/weapon/card/id/I = usr.GetIdCard()
-	if(!istype(I) || !(access_network in I.access))
+	var/obj/item/card/id/I = ui.user.GetIdCard()
+	if(!istype(I) || !(access_network in I.GetAccess()))
 		return TRUE
 
 	switch(action)
@@ -92,7 +93,7 @@
 			if(!current_account)
 				return TRUE
 
-			var/newpass = sanitize(input(usr,"Enter new password for account [current_account.login]", "Password"), 100)
+			var/newpass = sanitize(tgui_input_text(ui.user,"Enter new password for account [current_account.login]", "Password", null, 100), 100)
 			if(!newpass)
 				return TRUE
 			current_account.password = newpass
@@ -117,10 +118,10 @@
 			return TRUE
 
 		if("newaccount")
-			var/newdomain = sanitize(input(usr,"Pick domain:", "Domain name") as null|anything in using_map.usable_email_tlds)
+			var/newdomain = sanitize(tgui_input_list(ui.user,"Pick domain:", "Domain name", using_map.usable_email_tlds))
 			if(!newdomain)
 				return TRUE
-			var/newlogin = sanitize(input(usr,"Pick account name (@[newdomain]):", "Account name"), 100)
+			var/newlogin = sanitize(tgui_input_text(ui.user,"Pick account name (@[newdomain]):", "Account name", null, 100), 100)
 			if(!newlogin)
 				return TRUE
 

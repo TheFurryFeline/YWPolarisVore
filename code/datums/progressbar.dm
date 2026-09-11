@@ -41,7 +41,7 @@
 
 	progress = CLAMP(progress, 0, goal)
 	bar.icon_state = "prog_bar_[round(((progress / goal) * 100), 5)]"
-	if(!shown && user.is_preference_enabled(/datum/client_preference/show_progress_bar))
+	if(!shown && user.client?.prefs?.read_preference(/datum/preference/toggle/show_progress_bar))
 		user.client.images += bar
 		shown = 1
 
@@ -51,8 +51,7 @@
 	animate(bar, pixel_y = shiftheight, time = 5, easing = SINE_EASING)
 
 /datum/progressbar/Destroy()
-	for(var/I in user.progressbars[bar.loc])
-		var/datum/progressbar/P = I
+	for(var/datum/progressbar/P as anything in user.progressbars[bar.loc])
 		if(P != src && P.listindex > listindex)
 			P.shiftDown()
 

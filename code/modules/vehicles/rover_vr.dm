@@ -25,17 +25,16 @@
 
 	var/car_limit = 0	//how many cars an engine can pull before performance degrades. This should be 0 to prevent trailers from unhitching.
 	active_engines = 1
-	var/obj/item/weapon/key/rover/key
+	var/obj/item/key/rover/key
 	var/siren = 0 //This is for eventually getting the siren sprite to work.
 
-	dunebuggy
-		name = "Research Dune Buggy"
-		desc = "A Dune Buggy developed for asteroid exploration and transportation. It has a sticker that says to wear EVA suits if used in space."
-		icon = 'icons/vore/rover_vr.dmi'
-		icon_state = "dunebug"
+/obj/vehicle/train/rover/engine/dunebuggy
+	name = "Research Dune Buggy"
+	desc = "A Dune Buggy developed for asteroid exploration and transportation. It has a sticker that says to wear EVA suits if used in space."
+	icon = 'icons/vore/rover_vr.dmi'
+	icon_state = "dunebug"
 
-
-/obj/item/weapon/key/rover
+/obj/item/key/rover
 	name = "The Rover key"
 	desc = "The Rover key used to start it."
 	icon = 'icons/obj/vehicles_vr.dmi'
@@ -47,7 +46,7 @@
 	desc = "A trolley designed to transport security equipment to a scene."
 	icon = 'icons/obj/vehicles_vr.dmi'
 	icon_state = "secitemcarrierbot"
-	anchored = 0
+	anchored = FALSE
 	passenger_allowed = 0
 	locked = 0
 
@@ -61,7 +60,7 @@
 //-------------------------------------------
 /obj/vehicle/train/rover/engine/New()
 	..()
-	cell = new /obj/item/weapon/cell/high(src)
+	cell = new /obj/item/cell/high(src)
 	key = new(src)
 	turn_off()	//so engine verbs are correctly set
 
@@ -81,15 +80,15 @@
 
 	return ..()
 
-/obj/vehicle/train/rover/trolley/attackby(obj/item/weapon/W as obj, mob/user as mob)
-	if(open && istype(W, /obj/item/weapon/tool/wirecutters))
+/obj/vehicle/train/rover/trolley/attackby(obj/item/W as obj, mob/user as mob)
+	if(open && istype(W, /obj/item/tool/wirecutters))
 		passenger_allowed = !passenger_allowed
-		user.visible_message("<span class='notice'>[user] [passenger_allowed ? "cuts" : "mends"] a cable in [src].</span>","<span class='notice'>You [passenger_allowed ? "cut" : "mend"] the load limiter cable.</span>")
+		user.visible_message(span_notice("[user] [passenger_allowed ? "cuts" : "mends"] a cable in [src]."),span_notice("You [passenger_allowed ? "cut" : "mend"] the load limiter cable."))
 	else
 		..()
 
-/obj/vehicle/train/rover/engine/attackby(obj/item/weapon/W as obj, mob/user as mob)
-	if(istype(W, /obj/item/weapon/key/rover))
+/obj/vehicle/train/rover/engine/attackby(obj/item/W as obj, mob/user as mob)
+	if(istype(W, /obj/item/key/rover))
 		if(!key)
 			user.drop_item()
 			W.forceMove(src)
@@ -100,8 +99,9 @@
 
 //cargo trains are open topped, so there is a chance the projectile will hit the mob ridding the train instead
 /obj/vehicle/train/rover/bullet_act(var/obj/item/projectile/Proj)
-	if(buckled_mob && prob(70))
-		buckled_mob.bullet_act(Proj)
+	if(has_buckled_mobs() && prob(70))
+		var/mob/living/L = pick(buckled_mobs)
+		L.bullet_act(Proj)
 		return
 	..()
 
@@ -111,10 +111,10 @@
 	else
 		icon_state = initial(icon_state)
 
-/obj/vehicle/train/rover/trolley/insert_cell(var/obj/item/weapon/cell/C, var/mob/living/carbon/human/H)
+/obj/vehicle/train/rover/trolley/insert_cell(var/obj/item/cell/C, var/mob/living/carbon/human/H)
 	return
 
-/obj/vehicle/train/rover/engine/insert_cell(var/obj/item/weapon/cell/C, var/mob/living/carbon/human/H)
+/obj/vehicle/train/rover/engine/insert_cell(var/obj/item/cell/C, var/mob/living/carbon/human/H)
 	..()
 	update_stats()
 
@@ -173,19 +173,19 @@
 
 /obj/vehicle/train/rover/trolley/RunOver(var/mob/living/M)
 	..()
-	attack_log += text("\[[time_stamp()]\] <font color='red'>ran over [M.name] ([M.ckey])</font>")
+	attack_log += text("\[[time_stamp()]\] [span_red("ran over [M.name] ([M.ckey])")]")
 
 /obj/vehicle/train/rover/engine/RunOver(var/mob/living/M)
 	..()
 
 	if(is_train_head() && istype(load, /mob/living/carbon/human))
 		var/mob/living/carbon/human/D = load
-		to_chat(D, "<span class='danger'>You ran over \the [M]!</span>")
-		visible_message("<span class='danger'>\The [src] ran over \the [M]!</span>")
+		to_chat(D, span_danger("You ran over \the [M]!"))
+		visible_message(span_danger("\The [src] ran over \the [M]!"))
 		add_attack_logs(D,M,"Ran over with [src.name]")
-		attack_log += text("\[[time_stamp()]\] <font color='red'>ran over [M.name] ([M.ckey]), driven by [D.name] ([D.ckey])</font>")
+		attack_log += text("\[[time_stamp()]\] [span_red("ran over [M.name] ([M.ckey]), driven by [D.name] ([D.ckey])")]")
 	else
-		attack_log += text("\[[time_stamp()]\] <font color='red'>ran over [M.name] ([M.ckey])</font>")
+		attack_log += text("\[[time_stamp()]\] [span_red("ran over [M.name] ([M.ckey])")]")
 
 
 //-------------------------------------------
@@ -292,11 +292,14 @@
 	if(!istype(C, /mob/living/carbon/human))
 		return 0
 
+	. = ..(C)
+
+	if(!.)
+		return
+
 	if(ismob(C))
 		buckle_mob(C)
 		C.alpha = 0
-
-	return ..()
 
 /obj/vehicle/train/rover/engine/unload(var/mob/user, var/direction)
 	var/mob/living/carbon/human/C = load
@@ -332,7 +335,7 @@
 		C.pixel_y += load_offset_y
 		C.layer = layer
 
-		overlays += C
+		add_overlay(C)
 
 		//we can set these back now since we have already cloned the icon into the overlay
 		C.pixel_x = initial(C.pixel_x)
@@ -345,7 +348,7 @@
 		load = dummy_load.actual_load
 		dummy_load.actual_load = null
 		qdel(dummy_load)
-		overlays.Cut()
+		cut_overlays()
 	..()
 
 //-------------------------------------------
@@ -389,7 +392,7 @@
 	else
 		move_delay = max(0, (-car_limit * active_engines) + train_length - active_engines)	//limits base overweight so you cant overspeed trains
 		move_delay *= (1 / max(1, active_engines)) * 2 										//overweight penalty (scaled by the number of engines)
-		move_delay += config.run_speed 														//base reference speed
+		move_delay += CONFIG_GET(number/run_speed) 											//base reference speed
 		move_delay *= 1.1																	//makes cargo trains 10% slower than running when not overweight
 
 /obj/vehicle/train/rover/trolley/update_car(var/train_length, var/active_engines)
@@ -397,6 +400,6 @@
 	src.active_engines = active_engines
 
 	if(!lead && !tow)
-		anchored = 0
+		anchored = FALSE
 	else
-		anchored = 1
+		anchored = TRUE

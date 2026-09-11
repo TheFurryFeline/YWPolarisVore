@@ -15,8 +15,6 @@ List of things solar grubs should be able to do:
 	Therefore, if you see the grubs, kill them while they're small, or things might escalate." // TODO: PORT SOLAR MOTHS - Rykka
 	value = CATALOGUER_REWARD_EASY
 
-#define SINK_POWER 1
-
 /mob/living/simple_mob/vore/solargrub
 	name = "juvenile solargrub"
 	desc = "A young sparkling solargrub"
@@ -26,16 +24,17 @@ List of things solar grubs should be able to do:
 	icon_living = "solargrub"
 	icon_dead = "solargrub-dead"
 
-	faction = "grubs"
+	faction = FACTION_GRUBS
 	maxHealth = 50 //grubs can take a lot of harm
 	health = 50
 
 	melee_damage_lower = 1
 	melee_damage_upper = 3	//low damage, but poison and stuns are strong
 
-	movement_cooldown = 8
+	movement_cooldown = 3
 
-	meat_type = /obj/item/weapon/reagent_containers/food/snacks/meat/grubmeat
+	meat_type = /obj/item/reagent_containers/food/snacks/meat/grubmeat
+	meat_amount = 6
 
 	response_help = "pokes"
 	response_disarm = "pushes"
@@ -50,6 +49,10 @@ List of things solar grubs should be able to do:
 	var/datum/powernet/PN            // Our powernet
 	var/obj/structure/cable/attached        // the attached cable
 	var/shock_chance = 10 // Beware
+	var/tracked = FALSE
+
+	allow_mind_transfer = TRUE
+	glow_override = TRUE
 
 /datum/say_list/solargrub
 	emote_see = list("squelches", "squishes")
@@ -69,12 +72,12 @@ List of things solar grubs should be able to do:
 		if(attached)
 			set_AI_busy(TRUE)
 			if(prob(2))
-				src.visible_message("<span class='notice'>\The [src] begins to sink power from the net.</span>")
+				src.visible_message(span_infoplain(span_bold("\The [src]") + " begins to sink power from the net."))
 			if(prob(5))
 				var/datum/effect/effect/system/spark_spread/sparks = new /datum/effect/effect/system/spark_spread()
 				sparks.set_up(5, 0, get_turf(src))
 				sparks.start()
-			anchored = 1
+			anchored = TRUE
 			PN = attached.powernet
 			PN.draw_power(100000) // previous value 150000
 			var/apc_drain_rate = 750 //Going to see if grubs are better as a minimal bother. previous value : 4000
@@ -86,7 +89,7 @@ List of things solar grubs should be able to do:
 						var/drain_val = min(apc_drain_rate, cur_charge)
 						A.cell.use(drain_val * CELLRATE)
 		else if(!attached && anchored)
-			anchored = 0
+			anchored = FALSE
 			PN = null
 
 /mob/living/simple_mob/vore/solargrub //active noms
@@ -109,7 +112,7 @@ List of things solar grubs should be able to do:
 			var/datum/effect/effect/system/spark_spread/s = new /datum/effect/effect/system/spark_spread
 			s.set_up(5, 1, L)
 			s.start()
-			visible_message("<span class='danger'>The grub releases a powerful shock!</span>")
+			visible_message(span_danger("The grub releases a powerful shock!"))
 		else
 			if(L.reagents)
 				var/target_zone = pick(BP_TORSO,BP_TORSO,BP_TORSO,BP_L_LEG,BP_R_LEG,BP_L_ARM,BP_R_ARM,BP_HEAD)
@@ -119,11 +122,11 @@ List of things solar grubs should be able to do:
 // Does actual poison injection, after all checks passed.
 /mob/living/simple_mob/vore/solargrub/proc/inject_poison(mob/living/L, target_zone)
 	if(prob(poison_chance))
-		to_chat(L, "<span class='warning'>You feel a small shock rushing through your veins.</span>")
+		to_chat(L, span_warning("You feel a small shock rushing through your veins."))
 		L.reagents.add_reagent(poison_type, poison_per_bite)
 
 /mob/living/simple_mob/vore/solargrub/death()
-	src.anchored = 0
+	src.anchored = FALSE
 	set_light(0)
 	..()
 
@@ -136,6 +139,8 @@ List of things solar grubs should be able to do:
 	if(. == 0 && !is_dead())
 		set_light(2.5, 1, COLOR_YELLOW)
 		return 1
+	else if(is_dead())
+		glow_override = FALSE
 
 /mob/living/simple_mob/vore/solargrub/init_vore()
 	..()
@@ -159,7 +164,7 @@ List of things solar grubs should be able to do:
 		"The solargrub chitters in irritation at your continued solidity, followed by a string of crushingly tight stomach clenches that grind its caustic stomach ooze into your body!",
 		"The deceptively severe heat trapped within the solargrub works in tandem with its inner muscles and your tingling, prickling stomach juice bath to weaken you!")
 
-/datum/ai_holder/simple_mob/retaliate/solargrub/react_to_attack(atom/movable/attacker)
-	holder.anchored = 0
+/datum/ai_holder/simple_mob/retaliate/solargrub/react_to_attack(atom/movable/attacker, ignore_timers = FALSE)
+	holder.anchored = FALSE
 	holder.set_AI_busy(FALSE)
 	..()

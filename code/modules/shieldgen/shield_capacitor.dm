@@ -8,7 +8,7 @@
 	icon = 'icons/obj/machines/shielding.dmi'
 	icon_state = "capacitor"
 	var/active = 0
-	density = 1
+	density = TRUE
 	var/stored_charge = 0	//not to be confused with power cell charge, this is in Joules
 	var/last_stored_charge = 0
 	var/time_since_fail = 100
@@ -38,18 +38,18 @@
 
 /obj/machinery/shield_capacitor/attackby(obj/item/W, mob/user)
 
-	if(istype(W, /obj/item/weapon/card/id))
-		var/obj/item/weapon/card/id/C = W
-		if((access_captain in C.access) || (access_security in C.access) || (access_engine in C.access))
+	if(istype(W, /obj/item/card/id))
+		var/obj/item/card/id/C = W
+		if((access_captain in C.GetAccess()) || (access_security in C.GetAccess()) || (access_engine in C.GetAccess()))
 			src.locked = !src.locked
 			to_chat(user, "Controls are now [src.locked ? "locked." : "unlocked."]")
 			updateDialog()
 		else
-			to_chat(user, "<font color='red'>Access denied.</font>")
-	else if(W.is_wrench())
+			to_chat(user, span_red("Access denied."))
+	else if(W.has_tool_quality(TOOL_WRENCH))
 		src.anchored = !src.anchored
 		playsound(src, W.usesound, 75, 1)
-		src.visible_message("<font color='blue'>[bicon(src)] [src] has been [anchored ? "bolted to the floor" : "unbolted from the floor"] by [user].</font>")
+		src.visible_message(span_blue("[icon2html(src,viewers(src))] [src] has been [anchored ? "bolted to the floor" : "unbolted from the floor"] by [user]."))
 
 		if(anchored)
 			spawn(0)
@@ -114,14 +114,14 @@
 		time_since_fail = 0 //losing charge faster than we can draw from PN
 	last_stored_charge = stored_charge
 
-/obj/machinery/shield_capacitor/tgui_act(action, params)
+/obj/machinery/shield_capacitor/tgui_act(action, params, datum/tgui/ui)
 	if(..())
 		return TRUE
 
 	switch(action)
 		if("toggle")
 			if(!active && !anchored)
-				to_chat(usr, "<font color='red'>The [src] needs to be firmly secured to the floor first.</font>")
+				to_chat(ui.user, span_red("The [src] needs to be firmly secured to the floor first."))
 				return
 			active = !active
 			. = TRUE
@@ -145,4 +145,17 @@
 		return
 
 	src.set_dir(turn(src.dir, 270))
+	return
+
+//VOREstation edit: counter-clockwise rotation
+/obj/machinery/shield_capacitor/verb/rotate_counterclockwise()
+	set name = "Rotate Capacitor Counter-Clockwise"
+	set category = "Object"
+	set src in oview(1)
+
+	if (src.anchored)
+		to_chat(usr, "It is fastened to the floor!")
+		return
+
+	src.set_dir(turn(src.dir, 90))
 	return

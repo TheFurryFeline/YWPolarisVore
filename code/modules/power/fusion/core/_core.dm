@@ -12,13 +12,13 @@ GLOBAL_LIST_EMPTY(fusion_cores)
 	desc = "An enormous solenoid for generating extremely high power electromagnetic fields. It includes a kinetic energy harvester."
 	icon = 'icons/obj/machines/power/fusion.dmi'
 	icon_state = "core0"
-	density = 1
+	density = TRUE
 	use_power = USE_POWER_IDLE
 	idle_power_usage = 50
 	active_power_usage = 500 //multiplied by field strength
-	anchored = 0
+	anchored = FALSE
 
-	circuit = /obj/item/weapon/circuitboard/fusion_core
+	circuit = /obj/item/circuitboard/fusion_core
 
 	var/obj/item/hose_connector/output/Output
 
@@ -30,7 +30,7 @@ GLOBAL_LIST_EMPTY(fusion_cores)
 	var/reactant_dump = FALSE	// Does the tokomak actively try to syphon materials?
 
 /obj/machinery/power/fusion_core/mapped
-	anchored = 1
+	anchored = TRUE
 
 /obj/machinery/power/fusion_core/Initialize()
 	. = ..()
@@ -67,7 +67,7 @@ GLOBAL_LIST_EMPTY(fusion_cores)
 	if(Output.get_pairing())
 		reagents.trans_to_holder(Output.reagents, Output.reagents.maximum_volume)
 		if(prob(5))
-			visible_message("<span class='notice'>\The [src] gurgles as it exports fluid.</span>")
+			visible_message(span_infoplain(span_bold("\The [src]") + " gurgles as it exports fluid."))
 
 	if(owned_field)
 
@@ -131,14 +131,14 @@ GLOBAL_LIST_EMPTY(fusion_cores)
 /obj/machinery/power/fusion_core/attack_hand(var/mob/user)
 	if(!Adjacent(user)) // As funny as it was for the AI to hug-kill the tokamak field from a distance...
 		return
-	visible_message("<span class='notice'>\The [user] hugs \the [src] to make it feel better!</span>")
+	visible_message(span_infoplain(span_bold("\The [user]") + " hugs \the [src] to make it feel better!"))
 	if(owned_field)
 		Shutdown()
 
 /obj/machinery/power/fusion_core/attackby(var/obj/item/W, var/mob/user)
 
 	if(owned_field)
-		to_chat(user,"<span class='warning'>Shut \the [src] off first!</span>")
+		to_chat(user,span_warning("Shut \the [src] off first!"))
 		return
 
 	if(default_deconstruction_screwdriver(user, W))
@@ -148,8 +148,9 @@ GLOBAL_LIST_EMPTY(fusion_cores)
 	if(default_part_replacement(user, W))
 		return
 
-	if(istype(W, /obj/item/device/multitool))
-		var/new_ident = input("Enter a new ident tag.", "Fusion Core", id_tag) as null|text
+	if(istype(W, /obj/item/multitool))
+		var/new_ident = tgui_input_text(usr, "Enter a new ident tag.", "Fusion Core", id_tag, MAX_NAME_LEN)
+		new_ident = sanitize(new_ident,MAX_NAME_LEN)
 		if(new_ident && user.Adjacent(src))
 			id_tag = new_ident
 		return

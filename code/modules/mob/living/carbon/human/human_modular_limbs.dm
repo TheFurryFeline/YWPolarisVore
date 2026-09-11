@@ -58,8 +58,7 @@
 // Checks the organ list for limbs meeting a predicate. Way overengineered for such a limited use
 // case but I can see it being expanded in the future if meat limbs or doona limbs use it.
 /mob/living/carbon/human/proc/get_modular_limbs(var/return_first_found = FALSE, var/validate_proc)
-	for(var/bp in organs)
-		var/obj/item/organ/external/E = bp
+	for(var/obj/item/organ/external/E as anything in organs)
 		if(!validate_proc || call(E, validate_proc)(src) > MODULAR_BODYPART_INVALID)
 			LAZYADD(., E)
 			if(return_first_found)
@@ -67,21 +66,20 @@
 	// Prune children so we can't remove every individual component of an entire prosthetic arm
 	// piece by piece. Technically a circular dependency here would remove the limb entirely but
 	// if there's a parent whose child is also its parent, there's something wrong regardless.
-	for(var/bp in .)
-		var/obj/item/organ/external/E = bp
+	for(var/obj/item/organ/external/E as anything in .)
 		if(length(E.children))
 			. -= E.children
 
 // Called in robotize(), replaced() and removed() to update our modular limb verbs.
 /mob/living/carbon/human/proc/refresh_modular_limb_verbs()
 	if(length(get_modular_limbs(return_first_found = TRUE, validate_proc = /obj/item/organ/external/proc/can_attach_modular_limb_here)))
-		verbs |= .proc/attach_limb_verb
+		add_verb(src, /mob/living/carbon/human/proc/attach_limb_verb)
 	else
-		verbs -= .proc/attach_limb_verb
+		remove_verb(src, /mob/living/carbon/human/proc/attach_limb_verb)
 	if(length(get_modular_limbs(return_first_found = TRUE, validate_proc = /obj/item/organ/external/proc/can_remove_modular_limb)))
-		verbs |= .proc/detach_limb_verb
+		add_verb(src, /mob/living/carbon/human/proc/detach_limb_verb)
 	else
-		verbs -= .proc/detach_limb_verb
+		remove_verb(src, /mob/living/carbon/human/proc/detach_limb_verb)
 
 // Proc helper for attachment verb.
 /mob/living/carbon/human/proc/check_can_attach_modular_limb(var/obj/item/organ/external/E)
@@ -89,34 +87,34 @@
 		return FALSE
 	//VOREStation Addition Start
 	if(species.name == SPECIES_PROTEAN)
-		to_chat(src, SPAN_WARNING("This is not compatible with your nanomachine body!"))
+		to_chat(src, span_warning("This is not compatible with your nanomachine body!"))
 		return FALSE
 	//VOREStation Addition End
 	if(incapacitated() || restrained())
-		to_chat(src, SPAN_WARNING("You can't do that in your current state!"))
+		to_chat(src, span_warning("You can't do that in your current state!"))
 		return FALSE
 	if(QDELETED(E) || !istype(E))
-		to_chat(src, SPAN_WARNING("You are not holding a compatible limb to attach."))
+		to_chat(src, span_warning("You are not holding a compatible limb to attach."))
 		return FALSE
 	if(!E.can_be_attached_modular_limb(src))
-		to_chat(src, SPAN_WARNING("\The [E] cannot be attached to your current body."))
+		to_chat(src, span_warning("\The [E] cannot be attached to your current body."))
 		return FALSE
 	if(E.get_modular_limb_category() <= MODULAR_BODYPART_INVALID)
-		to_chat(src, SPAN_WARNING("\The [E] cannot be attached by your own hand."))
+		to_chat(src, span_warning("\The [E] cannot be attached by your own hand."))
 		return FALSE
 	var/install_to_zone = E.organ_tag
 	if(!isnull(get_organ(install_to_zone)))
-		to_chat(src, SPAN_WARNING("There is already a limb attached at that part of your body."))
+		to_chat(src, span_warning("There is already a limb attached at that part of your body."))
 		return FALSE
 	if(E.check_modular_limb_damage(src))
-		to_chat(src, SPAN_WARNING("\The [E] is too damaged to be attached."))
+		to_chat(src, span_warning("\The [E] is too damaged to be attached."))
 		return FALSE
 	var/obj/item/organ/external/parent = E.parent_organ && get_organ(E.parent_organ)
 	if(!parent)
-		to_chat(src, SPAN_WARNING("\The [E] needs an existing limb to be attached to."))
+		to_chat(src, span_warning("\The [E] needs an existing limb to be attached to."))
 		return FALSE
 	if(parent.check_modular_limb_damage(src))
-		to_chat(src, SPAN_WARNING("Your [parent.name] is too damaged to have anything attached."))
+		to_chat(src, span_warning("Your [parent.name] is too damaged to have anything attached."))
 		return FALSE
 	return TRUE
 
@@ -126,22 +124,22 @@
 		return FALSE
 	//VOREStation Addition Start
 	if(species.name == SPECIES_PROTEAN)
-		to_chat(src, SPAN_WARNING("You can't just detach parts of your nanomachine body!"))
+		to_chat(src, span_warning("You can't just detach parts of your nanomachine body!"))
 		return FALSE
 	//VOREStation Addition End
 	if(incapacitated() || restrained())
-		to_chat(src, SPAN_WARNING("You can't do that in your current state!"))
+		to_chat(src, span_warning("You can't do that in your current state!"))
 		return FALSE
 	if(!istype(E) || QDELETED(src) || QDELETED(E) || E.owner != src || E.loc != src)
 		return FALSE
 	if(E.check_modular_limb_damage(src))
-		to_chat(src, SPAN_WARNING("That limb is too damaged to be removed!"))
+		to_chat(src, span_warning("That limb is too damaged to be removed!"))
 		return FALSE
 	var/obj/item/organ/external/parent = E.parent_organ && get_organ(E.parent_organ)
 	if(!parent)
 		return FALSE
 	if(parent.check_modular_limb_damage(src))
-		to_chat(src, SPAN_WARNING("Your [parent.name] is too damaged to detach anything from it."))
+		to_chat(src, span_warning("Your [parent.name] is too damaged to detach anything from it."))
 		return FALSE
 	return (E in get_modular_limbs(return_first_found = FALSE, validate_proc = /obj/item/organ/external/proc/can_remove_modular_limb))
 
@@ -171,8 +169,8 @@
 
 	var/datum/gender/G = gender_datums[gender]
 	visible_message(
-		SPAN_NOTICE("\The [src] attaches \the [E] to [G.his] body!"),
-		SPAN_NOTICE("You attach \the [E] to your body!"))
+		span_notice("\The [src] attaches \the [E] to [G.his] body!"),
+		span_notice("You attach \the [E] to your body!"))
 	regenerate_icons() // Not sure why this isn't called by removed(), but without it we don't update our limb appearance.
 	return TRUE
 
@@ -183,9 +181,9 @@
 
 	var/list/detachable_limbs = get_modular_limbs(return_first_found = FALSE, validate_proc = /obj/item/organ/external/proc/can_remove_modular_limb)
 	if(!length(detachable_limbs))
-		to_chat(src, SPAN_WARNING("You have no detachable limbs."))
+		to_chat(src, span_warning("You have no detachable limbs."))
 		return FALSE
-	var/obj/item/organ/external/E = input(usr, "Which limb do you wish to detach?", "Limb Removal") as null|anything in detachable_limbs
+	var/obj/item/organ/external/E = tgui_input_list(usr, "Which limb do you wish to detach?", "Limb Removal", detachable_limbs)
 	if(!check_can_detach_modular_limb(E))
 		return FALSE
 	if(!do_after(src, 2 SECONDS, src))
@@ -199,6 +197,6 @@
 	put_in_hands(E)
 	var/datum/gender/G = gender_datums[gender]
 	visible_message(
-		SPAN_NOTICE("\The [src] detaches [G.his] [E.name]!"),
-		SPAN_NOTICE("You detach your [E.name]!"))
+		span_notice("\The [src] detaches [G.his] [E.name]!"),
+		span_notice("You detach your [E.name]!"))
 	return TRUE

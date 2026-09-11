@@ -3,9 +3,10 @@
 	desc = "An incredibly lifelike marble carving"
 	icon = 'icons/obj/statue.dmi'
 	icon_state = "human_male"
-	density = 1
-	anchored = 1
+	density = TRUE
+	anchored = TRUE
 	health = 0 //destroying the statue kills the mob within
+	blocks_emissive = EMISSIVE_BLOCK_UNIQUE
 	var/intialTox = 0 	//these are here to keep the mob from taking damage from things that logically wouldn't affect a rock
 	var/intialFire = 0	//it's a little sloppy I know but it was this or the GODMODE flag. Lesser of two evils.
 	var/intialBrute = 0
@@ -16,7 +17,7 @@
 	if(L && (ishuman(L) || L.isMonkey() || iscorgi(L)))
 		if(L.buckled)
 			L.buckled = 0
-			L.anchored = 0
+			L.anchored = FALSE
 		if(L.client)
 			L.client.perspective = EYE_PERSPECTIVE
 			L.client.eye = src
@@ -105,7 +106,7 @@
 /obj/structure/closet/statue/attackby(obj/item/I as obj, mob/user as mob)
 	health -= I.force
 	user.do_attack_animation(src)
-	visible_message("<span class='danger'>[user] strikes [src] with [I].</span>")
+	visible_message(span_danger("[user] strikes [src] with [I]."))
 	check_health()
 
 /obj/structure/closet/statue/MouseDrop_T()
@@ -127,5 +128,5 @@
 	if (user)
 		user.dust()
 	dump_contents()
-	visible_message("<span class='warning'>[src] shatters!.</span>")
+	visible_message(span_warning("[src] shatters!."))
 	qdel(src)

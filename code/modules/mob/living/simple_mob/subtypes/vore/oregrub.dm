@@ -33,16 +33,16 @@
 	icon_living = "oregrub"
 	icon_dead = "oregrub-dead"
 
-	faction = "grubs"
+	faction = FACTION_GRUBS
 	maxHealth = 50 //oregrubs are quite hardy
 	health = 50
 
 	melee_damage_lower = 1
 	melee_damage_upper = 3	//low damage, they prefer to flee
 
-	movement_cooldown = 8
+	movement_cooldown = 3.5
 
-	meat_type = /obj/item/weapon/ore/coal
+	meat_type = /obj/item/ore/coal
 
 	response_help = "pokes"
 	response_disarm = "pushes"
@@ -64,7 +64,7 @@
 	vore_capacity = 1
 	vore_pounce_chance = 0 //grubs only eat incapacitated targets
 	vore_default_mode = DM_DIGEST
-	
+
 	min_oxy = 0
 	max_oxy = 0
 	min_tox = 0
@@ -88,6 +88,8 @@
 				"rad"		= 100
 				)
 
+	glow_override = TRUE
+
 /mob/living/simple_mob/vore/oregrub/lava
 	name = "mature lavagrub"
 	desc = "A mature, rocky lavagrub"
@@ -96,7 +98,7 @@
 	icon_living = "lavagrub"
 	icon_dead = "lavagrub-dead"
 
-	movement_cooldown = 5
+	movement_cooldown = 2
 	maxHealth = 75 //lavagrubs are really hardy
 	health = 75
 	ai_holder_type = /datum/ai_holder/simple_mob/oregrub/lava
@@ -110,10 +112,10 @@
 				"bio"		= 100,
 				"rad"		= 100
 				)
-	
+
 	var/lava_min_ore = 6
 	var/lava_max_ore = 10
-	
+
 	poison_per_bite = 5
 	poison_chance = 66
 
@@ -128,10 +130,10 @@
 			inject_poison(L, target_zone)
 
 /mob/living/simple_mob/vore/oregrub/death()
-	visible_message("<span class='warning'>\The [src] shudders and collapses, expelling the ores it had devoured!</span>")
+	visible_message(span_warning("\The [src] shudders and collapses, expelling the ores it had devoured!"))
 	var/i = rand(min_ore,max_ore)
 	while(i>1)
-		var/ore = pick(/obj/item/weapon/ore/glass,/obj/item/weapon/ore/coal,/obj/item/weapon/ore/iron,/obj/item/weapon/ore/lead,/obj/item/weapon/ore/marble,/obj/item/weapon/ore/phoron,/obj/item/weapon/ore/silver,/obj/item/weapon/ore/gold)
+		var/ore = pick(/obj/item/ore/glass,/obj/item/ore/coal,/obj/item/ore/iron,/obj/item/ore/lead,/obj/item/ore/marble,/obj/item/ore/phoron,/obj/item/ore/silver,/obj/item/ore/gold)
 		new ore(src.loc)
 		i--
 	..()
@@ -141,12 +143,14 @@
 	if(. == 0 && !is_dead())
 		set_light(2.5, 1, COLOR_ORANGE)
 		return 1
+	else if(is_dead())
+		glow_override = FALSE
 
 /mob/living/simple_mob/vore/oregrub/lava/death()
 	set_light(0)
 	var/p = rand(lava_min_ore,lava_max_ore)
 	while(p>1)
-		var/ore = pick(/obj/item/weapon/ore/osmium,/obj/item/weapon/ore/uranium,/obj/item/weapon/ore/hydrogen,/obj/item/weapon/ore/diamond,/obj/item/weapon/ore/verdantium)
+		var/ore = pick(/obj/item/ore/osmium,/obj/item/ore/uranium,/obj/item/ore/hydrogen,/obj/item/ore/diamond,/obj/item/ore/verdantium)
 		new ore(src.loc)
 		p--
 	..()
@@ -154,7 +158,7 @@
 // Does actual poison injection, after all checks passed.
 /mob/living/simple_mob/vore/oregrub/proc/inject_poison(mob/living/L, target_zone)
 	if(prob(poison_chance))
-		to_chat(L, "<span class='warning'>You feel fire running through your veins!</span>")
+		to_chat(L, span_warning("You feel fire running through your veins!"))
 		L.reagents.add_reagent(poison_type, poison_per_bite)
 
 //I'm no good at writing this stuff, so I've just left it as placeholders and disabled the chances of them eating you.

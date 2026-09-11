@@ -13,6 +13,7 @@ var/list/admin_verbs_default = list(
 //	/client/proc/cmd_mod_say,
 //	/client/proc/deadchat				//toggles deadchat on/off,
 //	/client/proc/toggle_ahelp_sound,
+	/client/proc/debugstatpanel,
 	)
 
 var/list/admin_verbs_admin = list(
@@ -83,7 +84,6 @@ var/list/admin_verbs_admin = list(
 	/client/proc/cmd_admin_rejuvenate,
 	/client/proc/toggleghostwriters,
 	/client/proc/toggledrones,
-	/datum/admins/proc/show_skills,
 	/client/proc/check_customitem_activity,
 	/client/proc/man_up,
 	/client/proc/global_man_up,
@@ -120,7 +120,8 @@ var/list/admin_verbs_ban = list(
 var/list/admin_verbs_sounds = list(
 	/client/proc/play_local_sound,
 	/client/proc/play_sound,
-	/client/proc/play_server_sound
+	/client/proc/play_server_sound,
+	/client/proc/play_web_sound
 	)
 
 var/list/admin_verbs_fun = list(
@@ -142,6 +143,7 @@ var/list/admin_verbs_fun = list(
 	/datum/admins/proc/call_drop_pod,
 	/client/proc/smite,
 	/client/proc/admin_lightning_strike,
+	/client/proc/cmd_admin_droppod_deploy
 	)
 
 var/list/admin_verbs_spawn = list(
@@ -150,6 +152,7 @@ var/list/admin_verbs_spawn = list(
 	/datum/admins/proc/check_custom_items,
 	/datum/admins/proc/spawn_plant,
 	/datum/admins/proc/spawn_atom,		//allows us to spawn instances,
+	/client/proc/cmd_admin_droppod_spawn,
 	/client/proc/respawn_character,
 	/client/proc/virus2_editor,
 	/client/proc/spawn_chemdisp_cartridge,
@@ -187,7 +190,8 @@ var/list/admin_verbs_server = list(
 	/client/proc/panicbunker,
 	/client/proc/paranoia_logging,
 	/client/proc/ip_reputation,
-	/client/proc/debug_global_variables
+	/client/proc/debug_global_variables,
+	/client/proc/dbcon_fix
 	)
 
 var/list/admin_verbs_debug = list(
@@ -238,7 +242,8 @@ var/list/admin_verbs_debug = list(
 	/datum/admins/proc/view_feedback,
 	/client/proc/debug_global_variables,
 	/client/proc/ping_webhook,
-	/client/proc/reload_webhooks
+	/client/proc/reload_webhooks,
+	/client/proc/stop_sounds
 	)
 
 var/list/admin_verbs_paranoid_debug = list(
@@ -284,6 +289,7 @@ var/list/admin_verbs_hideable = list(
 	/client/proc/play_local_sound,
 	/client/proc/play_sound,
 	/client/proc/play_server_sound,
+	/client/proc/play_web_sound,
 	/client/proc/object_talk,
 	/datum/admins/proc/cmd_admin_dress,
 	/client/proc/cmd_admin_gib_self,
@@ -333,7 +339,8 @@ var/list/admin_verbs_hideable = list(
 	/proc/possess,
 	/proc/release,
 	/datum/admins/proc/set_tcrystals,
-	/client/proc/debug_global_variables
+	/client/proc/debug_global_variables,
+	/client/proc/stop_sounds
 	)
 var/list/admin_verbs_mod = list(
 	/client/proc/cmd_admin_pm_context,	//right-click adminPM interface,
@@ -348,7 +355,6 @@ var/list/admin_verbs_mod = list(
 	/client/proc/colorooc,
 	/client/proc/player_panel_new,
 	/client/proc/dsay,
-	/datum/admins/proc/show_skills,
 	/datum/admins/proc/show_player_panel,
 	/client/proc/check_antagonists,
 	/client/proc/aooc,
@@ -465,7 +471,6 @@ var/list/admin_verbs_event_manager = list(
 	/client/proc/cmd_admin_change_custom_event,
 	/client/proc/cmd_admin_rejuvenate,
 	/client/proc/toggleghostwriters,
-	/datum/admins/proc/show_skills,
 	/client/proc/man_up,
 	/client/proc/global_man_up,
 	/client/proc/response_team, // Response Teams admin verb,
@@ -501,27 +506,27 @@ var/list/admin_verbs_event_manager = list(
 
 /client/proc/add_admin_verbs()
 	if(holder)
-		verbs += admin_verbs_default
-		if(holder.rights & R_BUILDMODE)		verbs += /client/proc/togglebuildmodeself
-		if(holder.rights & R_ADMIN)			verbs += admin_verbs_admin
-		if(holder.rights & R_BAN)			verbs += admin_verbs_ban
-		if(holder.rights & R_FUN)			verbs += admin_verbs_fun
-		if(holder.rights & R_SERVER)		verbs += admin_verbs_server
+		add_verb(src, admin_verbs_default)
+		if(holder.rights & R_BUILDMODE)		add_verb(src, /client/proc/togglebuildmodeself)
+		if(holder.rights & R_ADMIN)			add_verb(src, admin_verbs_admin)
+		if(holder.rights & R_BAN)			add_verb(src, admin_verbs_ban)
+		if(holder.rights & R_FUN)			add_verb(src, admin_verbs_fun)
+		if(holder.rights & R_SERVER)		add_verb(src, admin_verbs_server)
 		if(holder.rights & R_DEBUG)
-			verbs += admin_verbs_debug
+			add_verb(src, admin_verbs_debug)
 			if(config.debugparanoid && !(holder.rights & R_ADMIN))
-				verbs.Remove(admin_verbs_paranoid_debug)			//Right now it's just callproc but we can easily add others later on.
-		if(holder.rights & R_POSSESS)		verbs += admin_verbs_possess
-		if(holder.rights & R_PERMISSIONS)	verbs += admin_verbs_permissions
-		if(holder.rights & R_STEALTH)		verbs += /client/proc/stealth
-		if(holder.rights & R_REJUVINATE)	verbs += admin_verbs_rejuv
-		if(holder.rights & R_SOUNDS)		verbs += admin_verbs_sounds
-		if(holder.rights & R_SPAWN)			verbs += admin_verbs_spawn
-		if(holder.rights & R_MOD)			verbs += admin_verbs_mod
-		if(holder.rights & R_EVENT)			verbs += admin_verbs_event_manager
+				remove_verb(src, admin_verbs_paranoid_debug)			//Right now it's just callproc but we can easily add others later on.
+		if(holder.rights & R_POSSESS)		add_verb(src, admin_verbs_possess)
+		if(holder.rights & R_PERMISSIONS)	add_verb(src, admin_verbs_permissions)
+		if(holder.rights & R_STEALTH)		add_verb(src, /client/proc/stealth)
+		if(holder.rights & R_REJUVINATE)	add_verb(src, admin_verbs_rejuv)
+		if(holder.rights & R_SOUNDS)		add_verb(src, admin_verbs_sounds)
+		if(holder.rights & R_SPAWN)			add_verb(src, admin_verbs_spawn)
+		if(holder.rights & R_MOD)			add_verb(src, admin_verbs_mod)
+		if(holder.rights & R_EVENT)			add_verb(src, admin_verbs_event_manager)
 
 /client/proc/remove_admin_verbs()
-	verbs.Remove(
+	remove_verb(src, list(
 		admin_verbs_default,
 		/client/proc/togglebuildmodeself,
 		admin_verbs_admin,
@@ -536,4 +541,4 @@ var/list/admin_verbs_event_manager = list(
 		admin_verbs_sounds,
 		admin_verbs_spawn,
 		debug_verbs
-		)
+		))

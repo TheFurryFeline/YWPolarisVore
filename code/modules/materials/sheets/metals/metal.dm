@@ -1,7 +1,7 @@
 /obj/item/stack/material/steel
-	name = DEFAULT_WALL_MATERIAL
+	name = MAT_STEEL
 	icon_state = "sheet-refined"
-	default_type = DEFAULT_WALL_MATERIAL
+	default_type = MAT_STEEL
 	no_variants = FALSE
 	apply_colour = TRUE
 
@@ -11,6 +11,19 @@
 	default_type = "plasteel"
 	no_variants = FALSE
 	apply_colour = TRUE
+
+/obj/item/stack/material/plasteel/rebar
+	name = MAT_PLASTEELREBAR
+	icon_state = "rods"
+	default_type = MAT_PLASTEELREBAR
+	apply_colour = 1
+
+/obj/item/stack/material/plasteel/rebar/update_icon()
+	var/amount = get_amount()
+	if((amount <= 5) && (amount > 0))
+		icon_state = "rods-[amount]"
+	else
+		icon_state = "rods"
 
 /obj/item/stack/material/durasteel
 	name = "durasteel"

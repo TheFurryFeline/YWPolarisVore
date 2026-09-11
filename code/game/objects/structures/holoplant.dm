@@ -26,7 +26,7 @@
 		return
 
 	if(!anchored)
-		to_chat(user,"<span class='warning'>\The [src] must be anchored before activation!</span>")
+		to_chat(user,span_warning("\The [src] must be anchored before activation!"))
 		return
 
 	if(!plant)
@@ -46,12 +46,13 @@
 		return
 
 	plant = prepare_icon(emagged ? "emagged" : null)
-	overlays += plant
+	cut_overlays()
+	add_overlay(plant)
 	set_light(2)
 	update_use_power(USE_POWER_ACTIVE)
 
 /obj/machinery/holoplant/proc/deactivate()
-	overlays -= plant
+	cut_overlays()
 	QDEL_NULL(plant)
 	set_light(0)
 	update_use_power(USE_POWER_OFF)
@@ -66,16 +67,16 @@
 /obj/machinery/holoplant/proc/flicker()
 	interference = TRUE
 	spawn(0)
-		overlays -= plant
+		cut_overlays()
 		set_light(0)
 		sleep(rand(2,4))
-		overlays += plant
+		add_overlay(plant)
 		set_light(2)
 		sleep(rand(2,4))
-		overlays -= plant
+		cut_overlays()
 		set_light(0)
 		sleep(rand(2,4))
-		overlays += plant
+		add_overlay(plant)
 		set_light(2)
 		interference = FALSE
 

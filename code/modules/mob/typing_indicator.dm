@@ -1,4 +1,4 @@
-/proc/generate_speech_bubble(var/bubble_loc, var/speech_state, var/set_layer = FLOAT_LAYER)
+/proc/generate_speech_bubble(bubble_loc, speech_state, set_layer = FLOAT_LAYER)
 	var/image/I = image('icons/mob/talk_vr.dmi', bubble_loc, speech_state, set_layer)  //VOREStation Edit - talk_vr.dmi instead of talk.dmi for right-side icons
 	I.appearance_flags |= (RESET_COLOR|PIXEL_SCALE)			//VOREStation Edit
 	/*			//VOREStation Removal Start
@@ -11,51 +11,69 @@
 	*/			//VOREStation Removal Start
 	return I
 
-/mob/proc/init_typing_indicator(var/set_state = "typing")
-	typing_indicator = new
-	typing_indicator.appearance = generate_speech_bubble(null, set_state)
-	typing_indicator.appearance_flags |= (RESET_COLOR|PIXEL_SCALE)			//VOREStation Edit
+/mob/verb/say_wrapper()
+	set name = "Say verb"
+	set category = "IC"
 
-/mob/proc/set_typing_indicator(var/state) //Leaving this here for mobs.
-
-	if(!is_preference_enabled(/datum/client_preference/show_typing_indicator))
-		if(typing_indicator)
-			cut_overlay(typing_indicator, TRUE)
+	if(client?.prefs?.read_preference(/datum/preference/toggle/tgui_say))
+		winset(src, null, "command=[client.tgui_say_create_open_command(SAY_CHANNEL)]")
 		return
 
-	if(!typing_indicator)
-		init_typing_indicator("[speech_bubble_appearance()]_typing")
-
-	if(state && !typing)
-		add_overlay(typing_indicator, TRUE)
-		typing = TRUE
-	else if(typing)
-		cut_overlay(typing_indicator, TRUE)
-		typing = FALSE
-
-	if(shadow) //Multi-Z above-me shadows
-		shadow.set_typing_indicator(state)
-
-	return state
-
-/mob/verb/say_wrapper()
-	set name = ".Say"
-	set hidden = 1
-
-	set_typing_indicator(TRUE)
-	var/message = input("","say (text)") as text
-	set_typing_indicator(FALSE)
+	client?.start_thinking()
+	client?.start_typing()
+	var/message = tgui_input_text(usr, "Type your message:", "Say")
+	client?.stop_thinking()
 
 	if(message)
 		say_verb(message)
 
 /mob/verb/me_wrapper()
-	set name = ".Me"
-	set hidden = 1
+	set name = "Me verb"
+	set category = "IC"
 
-	set_typing_indicator(TRUE)
-	var/message = input("","me (text)") as message //VOREStation Edit
-	set_typing_indicator(FALSE)
+	if(client?.prefs?.read_preference(/datum/preference/toggle/tgui_say) && client?.prefs?.read_preference(/datum/preference/toggle/tgui_say_emotes))
+		winset(src, null, "command=[client.tgui_say_create_open_command(ME_CHANNEL)]")
+		return
+
+	client?.start_thinking()
+	client?.start_typing()
+	var/message = tgui_input_text(usr, "Type your message:", "Emote", multiline = TRUE)
+	client?.stop_thinking()
 
 	if(message)
 		me_verb(message)
+
+/mob/verb/whisper_wrapper()
+	set name = "Whisper verb"
+	set category = "IC"
+
+	if(client?.prefs?.read_preference(/datum/preference/toggle/tgui_say))
+		winset(src, null, "command=[client.tgui_say_create_open_command(WHIS_CHANNEL)]")
+		return
+
+	if(client?.prefs?.read_preference(/datum/preference/toggle/show_typing_indicator_subtle))
+		client?.start_thinking()
+		client?.start_typing()
+	var/message = tgui_input_text(usr, "Type your message:", "Whisper")
+	client?.stop_thinking()
+
+	if(message)
+		whisper(message)
+
+/mob/verb/subtle_wrapper()
+	set name = "Subtle verb"
+	set category = "IC"
+	set desc = "Emote to nearby people (and your pred/prey)"
+
+	if(client?.prefs?.read_preference(/datum/preference/toggle/tgui_say) && client?.prefs?.read_preference(/datum/preference/toggle/tgui_say_emotes))
+		winset(src, null, "command=[client.tgui_say_create_open_command(SUBTLE_CHANNEL)]")
+		return
+
+	if(client?.prefs?.read_preference(/datum/preference/toggle/show_typing_indicator_subtle))
+		client?.start_thinking()
+		client?.start_typing()
+	var/message = tgui_input_text(usr, "Type your message:", "Subtle", multiline = TRUE)
+	client?.stop_thinking()
+
+	if(message)
+		me_verb_subtle(message)

@@ -42,6 +42,11 @@
 #define COMSIG_PARENT_QDELETING "parent_qdeleting"
 /// generic topic handler (usr, href_list)
 #define COMSIG_TOPIC "handle_topic"
+/// from datum tgui_act (usr, action)
+#define COMSIG_UI_ACT "COMSIG_UI_ACT"
+/// from datum tgui_fallback (payload)
+#define COMSIG_UI_FALLBACK "COMSIG_UI_FALLBACK"
+
 
 /// fires on the target datum when an element is attached to it (/datum/element)
 #define COMSIG_ELEMENT_ATTACH "element_attach"
@@ -55,8 +60,8 @@
 #define COMSIG_ATOM_AFTER_SUCCESSFUL_INITIALIZE "atom_init_success"
 ///from base of atom/attackby(): (/obj/item, /mob/living, params)
 #define COMSIG_PARENT_ATTACKBY "atom_attackby"
-///Return this in response if you don't want afterattack to be called
-	#define COMPONENT_NO_AFTERATTACK (1<<0)
+///Return this in response if you don't want later item attack procs to be called.
+	#define COMPONENT_CANCEL_ATTACK_CHAIN (1<<0)
 ///from base of atom/attack_hulk(): (/mob/living/carbon/human)
 #define COMSIG_ATOM_HULK_ATTACK "hulk_attack"
 ///from base of atom/animal_attack(): (/mob/user)
@@ -91,6 +96,7 @@
 #define COMSIG_ATOM_BUMPED "atom_bumped"
 ///from base of atom/ex_act(): (severity, target)
 #define COMSIG_ATOM_EX_ACT "atom_ex_act"
+	#define COMPONENT_IGNORE_EXPLOSION (1<<0)
 ///from base of atom/emp_act(): (severity)
 #define COMSIG_ATOM_EMP_ACT "atom_emp_act"
 ///from base of atom/fire_act(): (exposed_temperature, exposed_volume)
@@ -118,13 +124,11 @@
 ///from obj/machinery/bsa/full/proc/fire(): ()
 #define COMSIG_ATOM_BSA_BEAM "atom_bsa_beam_pass"
 	#define COMSIG_ATOM_BLOCKS_BSA_BEAM (1<<0)
-///from base of atom/set_light(): (l_range, l_power, l_color)
-#define COMSIG_ATOM_SET_LIGHT "atom_set_light"
 ///from base of atom/setDir(): (old_dir, new_dir)
 #define COMSIG_ATOM_DIR_CHANGE "atom_dir_change"
 ///from base of atom/handle_atom_del(): (atom/deleted)
 #define COMSIG_ATOM_CONTENTS_DEL "atom_contents_del"
-///from base of atom/has_gravity(): (turf/location, list/forced_gravities)
+///from base of atom/get_gravity(): (turf/location, list/forced_gravities)
 #define COMSIG_ATOM_HAS_GRAVITY "atom_has_gravity"
 ///from proc/get_rad_contents(): ()
 #define COMSIG_ATOM_RAD_PROBE "atom_rad_probe"
@@ -162,6 +166,8 @@
 #define COMSIG_ATOM_ORBIT_BEGIN "atom_orbit_begin"
 ///called when an atom stops orbiting another atom: (atom)
 #define COMSIG_ATOM_ORBIT_STOP "atom_orbit_stop"
+///from base of atom/set_opacity(): (new_opacity)
+#define COMSIG_ATOM_SET_OPACITY "atom_set_opacity"
 /////////////////
 ///from base of atom/attack_ghost(): (mob/dead/observer/ghost)
 #define COMSIG_ATOM_ATTACK_GHOST "atom_attack_ghost"
@@ -185,6 +191,8 @@
 #define COMSIG_ENTER_AREA "enter_area"
 ///from base of area/Exited(): (/area)
 #define COMSIG_EXIT_AREA "exit_area"
+///from base of client/Click(): (atom/target, atom/location, control, params, mob/user)
+#define COMSIG_CLIENT_CLICK "atom_client_click"
 ///from base of atom/Click(): (location, control, params, mob/user)
 #define COMSIG_CLICK "atom_click"
 ///from base of atom/ShiftClick(): (/mob)
@@ -213,29 +221,24 @@
 
 ///from base of turf/ChangeTurf(): (path, list/new_baseturfs, flags, list/transferring_comps)
 #define COMSIG_TURF_CHANGE "turf_change"
-///from base of atom/has_gravity(): (atom/asker, list/forced_gravities)
+///from base of atom/get_gravity(): (atom/asker, list/forced_gravities)
 #define COMSIG_TURF_HAS_GRAVITY "turf_has_gravity"
-///from base of turf/New(): (turf/source, direction)
+///from base of turf/multiz_turf_del(): (turf/source, direction)
+#define COMSIG_TURF_MULTIZ_DEL "turf_multiz_del"
+///from base of turf/multiz_turf_new: (turf/source, direction)
 #define COMSIG_TURF_MULTIZ_NEW "turf_multiz_new"
 
 // /atom/movable signals
 
-///from base of atom/movable/Moved(): (/atom)
+///from base of atom/movable/Move(): (atom/newloc, dir, movetime)
 #define COMSIG_MOVABLE_PRE_MOVE "movable_pre_move"
 	#define COMPONENT_MOVABLE_BLOCK_PRE_MOVE (1<<0)
 ///from base of atom/movable/Moved(): (/atom, dir)
 #define COMSIG_MOVABLE_MOVED "movable_moved"
 ///from base of atom/movable/Cross(): (/atom/movable)
 #define COMSIG_MOVABLE_CROSS "movable_cross"
-///from base of atom/movable/Crossed(): (/atom/movable)
-#define COMSIG_MOVABLE_CROSSED "movable_crossed"
 ///when we cross over something (calling Crossed() on that atom)
 #define COMSIG_CROSSED_MOVABLE "crossed_movable"
-///from base of atom/movable/Uncross(): (/atom/movable)
-#define COMSIG_MOVABLE_UNCROSS "movable_uncross"
-	#define COMPONENT_MOVABLE_BLOCK_UNCROSS (1<<0)
-///from base of atom/movable/Uncrossed(): (/atom/movable)
-#define COMSIG_MOVABLE_UNCROSSED "movable_uncrossed"
 ///from base of atom/movable/Bump(): (/atom)
 #define COMSIG_MOVABLE_BUMP "movable_bump"
 ///from base of atom/movable/throw_impact(): (/atom/hit_atom, /datum/thrownthing/throwingdatum)
@@ -398,10 +401,6 @@
 #define COMSIG_CARBON_EMBED_RIP "item_embed_start_rip"
 ///called when removing a given item from a mob, from mob/living/carbon/remove_embedded_object(mob/living/carbon/target, /obj/item)
 #define COMSIG_CARBON_EMBED_REMOVAL "item_embed_remove_safe"
-
-// /mob/living/simple_animal/hostile signals
-#define COMSIG_HOSTILE_ATTACKINGTARGET "hostile_attackingtarget"
-	#define COMPONENT_HOSTILE_NO_ATTACK (1<<0)
 
 // /obj signals
 
@@ -717,6 +716,16 @@
 ///from base of datum/action/proc/Trigger(): (datum/action)
 #define COMSIG_ACTION_TRIGGER "action_trigger"
 	#define COMPONENT_ACTION_BLOCK_TRIGGER (1<<0)
+/// From /datum/action/Grant(): (mob/grant_to)
+#define COMSIG_ACTION_GRANTED "action_grant"
+/// From /datum/action/Remove(): (mob/removed_from)
+#define COMSIG_ACTION_REMOVED "action_removed"
+/// From /datum/action/Grant(): (datum/action)
+#define COMSIG_MOB_GRANTED_ACTION "mob_action_grant"
+/// From /datum/action/Remove(): (datum/action)
+#define COMSIG_MOB_REMOVED_ACTION "mob_action_removed"
+/// From /datum/action/apply_button_overlay()
+#define COMSIG_ACTION_OVERLAY_APPLY "action_overlay_applied"
 
 //Xenobio hotkeys
 
@@ -738,3 +747,64 @@
 #define COMSIG_CANCELLED_ALARM "ssalarm_cancelled"
 
 #define COMSIG_REAGENTS_CRAFTING_PING "reagents_crafting_ping"
+
+// Lighting:
+///from base of [atom/proc/set_light]: (l_range, l_power, l_color, l_on)
+#define COMSIG_ATOM_SET_LIGHT "atom_set_light"
+	/// Blocks [/atom/proc/set_light], [/atom/proc/set_light_power], [/atom/proc/set_light_range], [/atom/proc/set_light_color], [/atom/proc/set_light_on], and [/atom/proc/set_light_flags].
+	#define COMPONENT_BLOCK_LIGHT_UPDATE (1<<0)
+///Called right before the atom changes the value of light_power to a different one, from base [atom/proc/set_light_power]: (new_power)
+#define COMSIG_ATOM_SET_LIGHT_POWER "atom_set_light_power"
+///Called right after the atom changes the value of light_power to a different one, from base of [/atom/proc/set_light_power]: (old_power)
+#define COMSIG_ATOM_UPDATE_LIGHT_POWER "atom_update_light_power"
+///Called right before the atom changes the value of light_range to a different one, from base [atom/proc/set_light_range]: (new_range)
+#define COMSIG_ATOM_SET_LIGHT_RANGE "atom_set_light_range"
+///Called right after the atom changes the value of light_range to a different one, from base of [/atom/proc/set_light_range]: (old_range)
+#define COMSIG_ATOM_UPDATE_LIGHT_RANGE "atom_update_light_range"
+///Called right before the atom changes the value of light_color to a different one, from base [atom/proc/set_light_color]: (new_color)
+#define COMSIG_ATOM_SET_LIGHT_COLOR "atom_set_light_color"
+///Called right after the atom changes the value of light_color to a different one, from base of [/atom/proc/set_light_color]: (old_color)
+#define COMSIG_ATOM_UPDATE_LIGHT_COLOR "atom_update_light_color"
+///Called right before the atom changes the value of light_on to a different one, from base [atom/proc/set_light_on]: (new_value)
+#define COMSIG_ATOM_SET_LIGHT_ON "atom_set_light_on"
+///Called right after the atom changes the value of light_on to a different one, from base of [/atom/proc/set_light_on]: (old_value)
+#define COMSIG_ATOM_UPDATE_LIGHT_ON "atom_update_light_on"
+///Called right before the atom changes the value of light_flags to a different one, from base [atom/proc/set_light_flags]: (new_flags)
+#define COMSIG_ATOM_SET_LIGHT_FLAGS "atom_set_light_flags"
+///Called right after the atom changes the value of light_flags to a different one, from base of [/atom/proc/set_light_flags]: (old_flags)
+#define COMSIG_ATOM_UPDATE_LIGHT_FLAGS "atom_update_light_flags"
+
+// /datum/element/light_eater
+///from base of [/datum/element/light_eater/proc/table_buffet]: (list/light_queue, datum/light_eater)
+#define COMSIG_LIGHT_EATER_QUEUE "light_eater_queue"
+///from base of [/datum/element/light_eater/proc/devour]: (datum/light_eater)
+#define COMSIG_LIGHT_EATER_ACT "light_eater_act"
+	///Prevents the default light eater behavior from running in case of immunity or custom behavior
+	#define COMPONENT_BLOCK_LIGHT_EATER (1<<0)
+///from base of [/datum/element/light_eater/proc/devour]: (atom/eaten_light)
+#define COMSIG_LIGHT_EATER_DEVOUR "light_eater_devour"
+
+// conflict checking elements
+/// (id) - returns flags - Registered on something by conflict checking elements.
+#define COMSIG_CONFLICT_ELEMENT_CHECK "conflict_element_check"
+	/// A conflict was found
+	#define ELEMENT_CONFLICT_FOUND	(1<<0)
+//From reagents touch_x.
+#define COMSIG_REAGENTS_TOUCH "reagent_touch"
+
+
+//Moved observer stuff to DCS
+#define COMSIG_OBSERVER_MOVED "observer_move"
+#define COMSIG_OBSERVER_DESTROYED "observer_destroyed"
+#define COMSIG_OBSERVER_SHUTTLE_ADDED "observer_shuttle_added"
+#define COMSIG_OBSERVER_SHUTTLE_PRE_MOVE "observer_shuttle_premove"
+#define COMSIG_OBSERVER_SHUTTLE_MOVED "observer_shuttle_moved"
+#define COMSIG_OBSERVER_TURF_ENTERED "observer_turf_entered"
+#define COMSIG_OBSERVER_TURF_EXITED "observer_turf_exited"
+#define COMSIG_OBSERVER_Z_MOVED "observer_z_moved"
+#define COMSIG_OBSERVER_MOB_EQUIPPED "observer_mob_equipped"
+#define COMSIG_OBSERVER_ITEM_EQUIPPED "observer_item_equipped"
+#define COMSIG_OBSERVER_MOB_UNEQUIPPED "observer_mob_unequipped"
+#define COMSIG_OBSERVER_ITEM_UNEQUIPPED "observer_item_unequipped"
+#define COMSIG_OBSERVER_APC "observer_apc"
+#define COMSIG_OBSERVER_GLOBALMOVED "observer_global_move"

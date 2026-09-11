@@ -189,11 +189,152 @@
 	icon_state = "pinkblack_tshirt"
 
 /datum/category_item/underwear/undershirt/turtle
+	name = "Turtleneck, Old"
+	icon_state = "turtleneck_old"
+	has_color = TRUE
+
+/datum/category_item/underwear/undershirt/sleevelessturtle
+	name = "Turtleneck, Sleeveless, Old"
+	icon_state = "turtleneck_sleeveless_old"
+	has_color = TRUE
+
+/datum/category_item/underwear/undershirt/turtleneck
 	name = "Turtleneck"
 	icon_state = "turtleneck"
 	has_color = TRUE
 
-/datum/category_item/underwear/undershirt/sleevelessturtle
-	name = "Turtleneck, Sleeveless"
-	icon_state = "sleevelessturtle"
+/datum/category_item/underwear/undershirt/turtleneck_smooth
+	name = "Turtleneck, Smooth"
+	icon_state = "turtleneck_smooth"
 	has_color = TRUE
+
+/datum/category_item/underwear/undershirt/turtlesleeveless
+	name = "Turtleneck, Sleeveless"
+	icon_state = "turtleneck_sleeveless"
+	has_color = TRUE
+
+/datum/category_item/underwear/undershirt/leotardturtle
+	name = "Leotard Turtleneck"
+	icon_state = "leotard_turtleneck"
+	has_color = TRUE
+
+/datum/category_item/underwear/undershirt/leotardturtlesleeveless
+	name = "Leotard Turtleneck, Sleeveless"
+	icon_state = "leotard_turtleneck_sleeveless"
+	has_color = TRUE
+
+/datum/category_item/underwear/undershirt/dress_shirt_fem
+	name = "Dress shirt, feminine"
+	icon_state = "undershirt_dress_fem"
+	has_color = TRUE
+
+/datum/category_item/underwear/undershirt/dress_shirt
+	name = "Dress shirt, masculine"
+	icon_state = "undershirt_dress"
+	has_color = TRUE
+
+/datum/category_item/underwear/undershirt/midriff
+	name = "Tanktop, midriff"
+	icon_state = "tank_midriff"
+	has_color = TRUE
+
+/datum/category_item/underwear/undershirt/midriffshort
+	name = "Tanktop, midriff, short"
+	icon_state = "tank_midriff_short"
+	has_color = TRUE
+
+/datum/category_item/underwear/undershirt/shibari
+	name = "Shibari Binding"
+	icon_state = "shibari"
+	has_color = TRUE
+
+/datum/category_item/underwear/undershirt/leotard
+	name = "Leotard"
+	icon_state = "leotard"
+	has_color = TRUE
+
+/datum/category_item/underwear/undershirt/tshirt
+	name = "Feminine T-Shirt"
+	icon_state = "t-shirt_full"
+	has_color = TRUE
+
+/datum/category_item/underwear/undershirt/tshirt_midriff
+	name = "Feminine T-Shirt (midriff)"
+	icon_state = "t-shirt_midriff"
+	has_color = TRUE
+
+/datum/category_item/underwear/undershirt/tshirt_shoulders
+	name = "Feminine T-Shirt (black with shoulders)"
+	icon_state = "t-shirt_full_shoulders"
+	has_color = TRUE
+
+/datum/category_item/underwear/undershirt/tshirt_midriff_shoulders
+	name = "Feminine T-Shirt (midriff, black with shoulders)"
+	icon_state = "t-shirt_midriff_shoulders"
+	has_color = TRUE
+
+/datum/category_item/underwear/undershirt/tshirt_shoulders_text
+	name = "Feminine T-Shirt (black with shoulders and text)"
+	icon_state = "t-shirt_full_shoulders_text"
+	has_color = TRUE
+
+/datum/category_item/underwear/undershirt/tshirt_midriff_shoulders_text
+	name = "Feminine T-Shirt (midriff, black with shoulders and text)"
+	icon_state = "t-shirt_midriff_shoulders_text"
+	has_color = TRUE
+
+// YW CHANGES START HERE //
+
+/datum/category_item/underwear/undershirt/alien
+	name = "Alien Shirt"
+	icon_state = "shirt_alien"
+	icon = 'icons/mob/human_yw.dmi'
+	has_color = FALSE
+
+/datum/category_item/underwear/undershirt/pogoman
+	name = "Pogoman Shirt"
+	icon_state = "pogoman"
+	icon = 'icons/mob/human_yw.dmi'
+	has_color = FALSE
+
+/datum/category_item/underwear/undershirt/question
+	name = "Question Mark Shirt"
+	icon_state = "shirt_question"
+	icon = 'icons/mob/human_yw.dmi'
+	has_color = FALSE
+
+/datum/category_item/underwear/undershirt/band
+	name = "Band Tee"
+	icon_state = "band"
+	icon = 'icons/mob/human_yw.dmi'
+
+/datum/category_item/underwear/undershirt/ss13
+	name = "13 Shirt"
+	icon_state = "shirt_ss13"
+	icon = 'icons/mob/human_yw.dmi'
+
+
+/datum/category_item/underwear/undershirt/commie
+	name = "Communism Shirt"
+	icon_state = "shirt_commie"
+	icon = 'icons/mob/human_yw.dmi'
+
+
+/datum/category_item/underwear/undershirt/skull
+	name = "Skull Shirt"
+	icon_state = "shirt_skull"
+	icon = 'icons/mob/human_yw.dmi'
+
+
+/datum/category_item/underwear/undershirt/peace
+	name = "Peace Shirt"
+	icon = 'icons/mob/human_yw.dmi'
+	icon_state = "peace"
+
+
+/datum/category_item/underwear/undershirt/bee
+	name = "Bee Shirt"
+	icon = 'icons/mob/human_yw.dmi'
+	icon_state = "bee_shirt"
+
+// YW CHANGES END HERE //

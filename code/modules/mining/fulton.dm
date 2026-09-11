@@ -18,8 +18,7 @@ var/global/list/total_extraction_beacons = list()
 
 /obj/item/extraction_pack/attack_self(mob/user)
 	var/list/possible_beacons = list()
-	for(var/B in global.total_extraction_beacons)
-		var/obj/structure/extraction_point/EP = B
+	for(var/obj/structure/extraction_point/EP as anything in global.total_extraction_beacons)
 		if(EP.beacon_network in beacon_networks)
 			possible_beacons += EP
 
@@ -30,7 +29,7 @@ var/global/list/total_extraction_beacons = list()
 	else
 		var/A
 
-		A = input("Select a beacon to connect to", "Balloon Extraction Pack", A) as null|anything in possible_beacons
+		A = tgui_input_list(usr, "Select a beacon to connect to", "Balloon Extraction Pack", possible_beacons)
 
 		if(!A)
 			return
@@ -43,7 +42,7 @@ var/global/list/total_extraction_beacons = list()
 		return
 	if(!can_use_indoors)
 		var/turf/T = get_turf(A)
-		if(T && !T.outdoors)
+		if(T && !T.is_outdoors())
 			to_chat(user, "[src] can only be used on things that are outdoors!")
 			return
 	if(!flag)
@@ -58,9 +57,9 @@ var/global/list/total_extraction_beacons = list()
 			return
 		if(A.anchored)
 			return
-		to_chat(user, "<span class='notice'>You start attaching the pack to [A]...</span>")
+		to_chat(user, span_notice("You start attaching the pack to [A]..."))
 		if(do_after(user,50,target=A))
-			to_chat(user, "<span class='notice'>You attach the pack to [A] and activate it.</span>")
+			to_chat(user, span_notice("You attach the pack to [A] and activate it."))
 			/* No components, sorry. No convienence for you!
 			if(loc == user && istype(user.back, /obj/item/storage/backpack))
 				var/obj/item/storage/backpack/B = user.back
@@ -140,20 +139,20 @@ var/global/list/total_extraction_beacons = list()
 
 /obj/item/fulton_core
 	name = "extraction beacon signaller"
-	desc = "Emits a signal which fulton recovery devices can lock onto. Activate in hand to create a beacon."
+	desc = "Emits a signal which Fulton recovery devices can lock onto. Activate in hand to create a beacon."
 	icon = 'icons/obj/stock_parts.dmi'
 	icon_state = "subspace_amplifier"
 
 /obj/item/fulton_core/attack_self(mob/user)
 	var/turf/T = get_turf(user)
-	var/outdoors = T.outdoors
+	var/outdoors = T.is_outdoors()
 	if(do_after(user,15,target = user) && !QDELETED(src) && outdoors)
 		new /obj/structure/extraction_point(get_turf(user))
 		qdel(src)
 
 /obj/structure/extraction_point
 	name = "fulton recovery beacon"
-	desc = "A beacon for the fulton recovery system. Activate a pack in your hand to link it to a beacon."
+	desc = "A beacon for the Fulton recovery system. Activate a pack in your hand to link it to a beacon."
 	icon = 'icons/obj/fulton.dmi'
 	icon_state = "extraction_point"
 	anchored = TRUE
@@ -171,7 +170,7 @@ var/global/list/total_extraction_beacons = list()
 
 /obj/effect/extraction_holder
 	name = "extraction holder"
-	desc = "you shouldnt see this"
+	desc = "you shouldn't see this"
 	var/atom/movable/stored_obj
 
 /obj/item/extraction_pack/proc/check_for_living_mobs(atom/A)

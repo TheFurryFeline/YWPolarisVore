@@ -118,8 +118,8 @@
 	glass_center_of_mass = list("x"=16, "y"=8)
 	glass_icon_file = 'icons/obj/drinks_vr.dmi'
 
-/datum/reagent/ethanol/pink_moo
-	glass_icon_state = "pinkmooglass"
+/datum/reagent/ethanol/pink_russian
+	glass_icon_state = "pinkrussianglass"
 	glass_center_of_mass = list("x"=16, "y"=9)
 	glass_icon_file = 'icons/obj/drinks_vr.dmi'
 
@@ -233,4 +233,13 @@
 	glass_icon_file = 'icons/obj/drinks_vr.dmi'
 
 /datum/reagent/ethanol/angelskiss
+	glass_icon_file = 'icons/obj/drinks_vr.dmi'
+
+/datum/reagent/ethanol/burnout
+	glass_icon_state = "burnout"
+	glass_center_of_mass = list("x"=16, "y"=8)
+	glass_icon_file = 'icons/obj/drinks_vr.dmi'
+
+/datum/reagent/ethanol/manager_summoner
+	glass_icon_state = "manager_summoner"
 	glass_icon_file = 'icons/obj/drinks_vr.dmi'

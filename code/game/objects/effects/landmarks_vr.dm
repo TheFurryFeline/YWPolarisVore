@@ -1,6 +1,16 @@
 /obj/effect/landmark
 	var/abductor = 0
 
+/obj/effect/landmark/vines
+	name = "vinestart"
+
+/obj/effect/landmark/vermin
+	name = "verminstart"
+
+/obj/effect/landmark/wildlife
+	name = "wildlife"
+	var/wildlife_type = 2		//1 for water, 2 for land; thats all for now
+
 /obj/effect/landmark/late_antag
 	name = "Antag Latespawn"
 	var/antag_id

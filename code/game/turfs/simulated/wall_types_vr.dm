@@ -20,7 +20,7 @@
 	icon = 'icons/turf/stomach_vr.dmi'
 	icon_state = "flesh"
 	opacity = 1
-	density = 1
+	density = TRUE
 	blocks_air = 1
 
 /turf/simulated/flesh/colour
@@ -29,7 +29,7 @@
 	icon = 'icons/turf/stomach_vr.dmi'
 	icon_state = "colorable-wall"
 	opacity = 1
-	density = 1
+	density = TRUE
 	blocks_air = 1
 
 /turf/simulated/flesh/attackby()
@@ -67,7 +67,7 @@ var/list/flesh_overlay_cache = list()
 	icon = 'icons/goonstation/turf/meatland.dmi'
 	icon_state = "bloodwall_2"
 	opacity = 1
-	density = 1
+	density = TRUE
 	blocks_air = 1
 
 /turf/simulated/goreeyes
@@ -76,7 +76,7 @@ var/list/flesh_overlay_cache = list()
 	icon = 'icons/goonstation/turf/meatland.dmi'
 	icon_state = "bloodwall_4"
 	opacity = 1
-	density = 1
+	density = TRUE
 	blocks_air = 1
 
 /turf/simulated/shuttle/wall/flock
@@ -206,6 +206,7 @@ var/list/flesh_overlay_cache = list()
 /turf/simulated/wall/solidrock
 	icon_state = "solidrock"
 	icon = 'icons/turf/wall_masks_vr.dmi'
+	climbable = TRUE
 
 /turf/simulated/wall/titanium
 	icon_state = "titanium"
@@ -222,3 +223,17 @@ var/list/flesh_overlay_cache = list()
 /turf/simulated/wall/wood
 	icon_state = "wood"
 	icon = 'icons/turf/wall_masks_vr.dmi'
+
+/turf/simulated/wall/stonebricks
+	icon_state = "stonebrick"
+	icon = 'icons/turf/wall_masks_vr.dmi'
+
+/turf/simulated/wall/stonebricks/Initialize(mapload)
+		. = ..(mapload, "concrete")
+
+/turf/simulated/wall/stonelogs
+	icon_state = "stonelogs"
+	icon = 'icons/turf/wall_masks_vr.dmi'
+
+/turf/simulated/wall/stonelogs/Initialize(mapload)
+			. = ..(mapload, "concrete",MAT_LOG)

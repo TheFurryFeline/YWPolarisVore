@@ -45,7 +45,7 @@
 
 //Turn it into a hailer mask
 /obj/item/clothing/mask/gas/half/attackby(obj/item/I, mob/user)
-	if(istype(I, /obj/item/device/hailer))
+	if(istype(I, /obj/item/hailer))
 		playsound(src, 'sound/items/Screwdriver.ogg', 50, 1)
 		user.drop_item(src)
 		var/obj/item/clothing/mask/gas/sechailer/N = new /obj/item/clothing/mask/gas/sechailer(src.loc)
@@ -71,7 +71,7 @@
 
 /obj/item/clothing/mask/gas/plaguedoctor/gold
 	name = "gold plague doctor mask"
-	desc = "A modern version of the age old classic, this mask is both capable of filtering air, and connecting to an air supply. This one is gold."
+	desc = "A modernised version of the classic design, this mask will not only filter out phoron but it can also be connected to an air supply. This one is gold."
 	icon_state = "plaguedoctor2"
 
 /obj/item/clothing/mask/gas/swat
@@ -90,7 +90,7 @@
 	species_restricted = list(SPECIES_VOX)
 	filtered_gases = list("oxygen", "nitrous_oxide")
 	var/mask_open = FALSE	// Controls if the Vox can eat through this mask
-	action_button_name = "Toggle Feeding Port"
+	actions_types = list(/datum/action/item_action/toggle_feeding_port)
 
 /obj/item/clothing/mask/gas/swat/vox/proc/feeding_port(mob/user)
 	if(user.canmove && !user.stat)

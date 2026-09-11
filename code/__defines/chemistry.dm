@@ -26,6 +26,7 @@
 #define IS_TESHARI 7
 #define IS_SLIME   8
 #define IS_ZADDAT  9
+#define IS_ZORREN  10
 
 #define CE_STABLE "stable" // Inaprovaline
 #define CE_ANTIBIOTIC "antibiotic" // Antibiotics
@@ -36,8 +37,11 @@
 #define CE_SPEEDBOOST "gofast" // Hyperzine
 #define CE_SLOWDOWN "goslow" // Slowdown
 #define CE_ANTACID "nopuke" // Don't puke.
+#define CE_ALLERGEN "allergyreaction" // Self explanatory
+#define CE_DARKSIGHT "darksight" // Gives perfect vision in dark
 
 #define REAGENTS_PER_SHEET 20
+#define REAGENTS_PER_ORE 20
 
 // Attached to CE_ANTIBIOTIC
 #define ANTIBIO_NORM	1
@@ -46,8 +50,8 @@
 
 // Chemistry lists.
 var/list/tachycardics  = list("coffee", "inaprovaline", "hyperzine", "nitroglycerin", "thirteenloko", "nicotine") // Increase heart rate.
-var/list/bradycardics  = list("neurotoxin", "cryoxadone", "clonexadone", "space_drugs", "stoxin")                 // Decrease heart rate.
-var/list/heartstopper  = list("potassium_chlorophoride", "zombie_powder") // This stops the heart.
+var/list/bradycardics  = list("neurotoxin", "cryoxadone", "clonexadone", "bliss", "stoxin", "ambrosia_extract")   // Decrease heart rate.
+var/list/heartstopper  = list("potassium_chlorophoride", "zombiepowder") // This stops the heart.
 var/list/cheartstopper = list("potassium_chloride")                       // This stops the heart when overdose is met. -- c = conditional
 
 #define MAX_PILL_SPRITE 24 //max icon state of the pill sprites

@@ -84,12 +84,10 @@
 		RestrainedClickOn(A)
 		return 1
 
-	if(in_throw_mode)
-		if(isturf(A) || isturf(A.loc))
-			throw_item(A)
-			trigger_aiming(TARGET_CAN_CLICK)
-			return 1
+	if(in_throw_mode && (isturf(A) || isturf(A.loc)) && throw_item(A))
+		trigger_aiming(TARGET_CAN_CLICK)
 		throw_mode_off()
+		return TRUE
 
 	var/obj/item/W = get_active_hand()
 
@@ -160,7 +158,7 @@
 	next_click = max(world.time + timeout, next_click)
 
 /mob/proc/checkClickCooldown()
-	if(next_click > world.time && !config.no_click_cooldown)
+	if(next_click > world.time && !CONFIG_GET(flag/no_click_cooldown))
 		return FALSE
 	return TRUE
 
@@ -191,6 +189,10 @@
 		return 0
 
 	if(stat)
+		return 0
+
+	// prevent picking up items while being in them
+	if(istype(A, /obj/item) && A == loc)
 		return 0
 
 	return 1
@@ -284,15 +286,8 @@
 /atom/proc/AltClick(var/mob/user)
 	var/turf/T = get_turf(src)
 	if(T && user.TurfAdjacent(T))
-		user.ToggleTurfTab(T)
+		user.set_listed_turf(T)
 	return 1
-	
-/mob/proc/ToggleTurfTab(var/turf/T)
-	if(listed_turf == T)
-		listed_turf = null
-	else
-		listed_turf = T
-		client.statpanel = "Turf"
 
 /mob/proc/TurfAdjacent(var/turf/T)
 	return T.AdjacentQuick(src)
@@ -335,7 +330,7 @@
 		nutrition = max(nutrition - rand(1,5),0)
 		handle_regular_hud_updates()
 	else
-		to_chat(src, "<span class='warning'>You're out of energy!  You need food!</span>")
+		to_chat(src, span_warning("You're out of energy!  You need food!"))
 
 // Simple helper to face what you clicked on, in case it should be needed in more than one place
 /mob/proc/face_atom(var/atom/A)
@@ -355,13 +350,17 @@
 		facedir(direction)
 
 /obj/screen/click_catcher
-	name = "Darkness"
+	name = "" // Empty string names don't show up in context menu clicks
 	icon = 'icons/mob/screen_gen.dmi'
 	icon_state = "click_catcher"
 	plane = CLICKCATCHER_PLANE
 	layer = LAYER_HUD_UNDER
 	mouse_opacity = 2
 	screen_loc = "SOUTHWEST to NORTHEAST"
+
+/obj/screen/click_catcher/Initialize(mapload, ...)
+	. = ..()
+	verbs.Cut()
 
 /obj/screen/click_catcher/Click(location, control, params)
 	var/list/modifiers = params2list(params)

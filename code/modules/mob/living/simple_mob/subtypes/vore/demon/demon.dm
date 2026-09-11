@@ -9,10 +9,10 @@
 	icon = 'icons/mob/demon_vr.dmi'
 	vis_height = 47
 
-	faction = "demon"
+	faction = FACTION_DEMON
 	maxHealth = 30
 	health = 30
-	movement_cooldown = 0
+	movement_cooldown = -2
 
 	see_in_dark = 10
 	seedarkness = FALSE

@@ -1,15 +1,15 @@
 /obj/machinery/mecha_part_fabricator
 	icon = 'icons/obj/robotics_vr.dmi' //VOREStation Edit - New icon
-	icon_state = "mechfab-idle"
+	icon_state = "mechfab"
 	name = "Exosuit Fabricator"
-	desc = "A machine used for construction of mechas."
-	density = 1
-	anchored = 1
+	desc = "A machine used for the construction of mechas."
+	density = TRUE
+	anchored = TRUE
 	use_power = USE_POWER_IDLE
 	idle_power_usage = 20
 	active_power_usage = 5000
 	req_access = list(access_robotics)
-	circuit = /obj/item/weapon/circuitboard/mechfab
+	circuit = /obj/item/circuitboard/mechfab
 
 	/// Current items in the build queue.
 	var/list/queue = list()
@@ -31,23 +31,23 @@
 	var/time_coeff = 1
 	/// Coefficient for the efficiency of material usage in item building. Based on the installed parts.
 	var/component_coeff = 1
-	
+
 	var/loading_icon_state = "mechfab-idle"
 
 	var/list/materials = list(
-		DEFAULT_WALL_MATERIAL = 0,
-		"glass" = 0,
-		"plastic" = 0,
+		MAT_STEEL = 0,
+		MAT_GLASS = 0,
+		MAT_PLASTIC = 0,
 		MAT_GRAPHITE = 0,
 		MAT_PLASTEEL = 0,
-		"gold" = 0,
-		"silver" = 0,
+		MAT_GOLD = 0,
+		MAT_SILVER = 0,
 		MAT_LEAD = 0,
-		"osmium" = 0,
-		"diamond" = 0,
+		MAT_OSMIUM = 0,
+		MAT_DIAMOND = 0,
 		MAT_DURASTEEL = 0,
-		"phoron" = 0,
-		"uranium" = 0,
+		MAT_PHORON = 0,
+		MAT_URANIUM = 0,
 		MAT_VERDANTIUM = 0,
 		MAT_MORPHIUM = 0,
 		MAT_METALHYDROGEN = 0,
@@ -101,13 +101,13 @@
 
 /obj/machinery/mecha_part_fabricator/RefreshParts()
 	res_max_amount = 0
-	for(var/obj/item/weapon/stock_parts/matter_bin/M in component_parts)
+	for(var/obj/item/stock_parts/matter_bin/M in component_parts)
 		res_max_amount += M.rating * 100000 // 200k -> 600k
 	var/T = 0
-	for(var/obj/item/weapon/stock_parts/manipulator/M in component_parts)
+	for(var/obj/item/stock_parts/manipulator/M in component_parts)
 		T += M.rating
 	component_coeff = max(1 - (T - 1) / 4, 0.2) // 1 -> 0.2
-	for(var/obj/item/weapon/stock_parts/micro_laser/M in component_parts) // Not resetting T is intended; time_coeff is affected by both
+	for(var/obj/item/stock_parts/micro_laser/M in component_parts) // Not resetting T is intended; time_coeff is affected by both
 		T += M.rating
 	time_coeff = T / 2 // 1 -> 3
 	update_tgui_static_data(usr)
@@ -138,6 +138,12 @@
 			var/module_types = initial(U.module_flags)
 			sub_category = list()
 			if(module_types)
+				if(module_types & BORG_UTILITY)
+					sub_category += "All Cyborgs - Utility"
+				if(module_types & BORG_BASIC)
+					sub_category += "All Cyborgs - Basic"
+				if(module_types & BORG_ADVANCED)
+					sub_category += "All Cyborgs - Advanced"
 				if(module_types & BORG_MODULE_SECURITY)
 					sub_category += "Security"
 				if(module_types & BORG_MODULE_MINER)
@@ -148,8 +154,18 @@
 					sub_category += "Medical"
 				if(module_types & BORG_MODULE_ENGINEERING)
 					sub_category += "Engineering"
+				if(module_types & BORG_MODULE_SCIENCE)
+					sub_category += "Science"
+				if(module_types & BORG_MODULE_SERVICE)
+					sub_category += "Service"
+				if(module_types & BORG_MODULE_CLERIC)
+					sub_category += "Cleric"
+				if(module_types & BORG_MODULE_COMBAT)
+					sub_category += "Combat"
+				if(module_types & BORG_MODULE_EXPLO)
+					sub_category += "Exploration"
 			else
-				sub_category += "All Cyborgs"
+				sub_category += "This shouldn't be here, bother a dev!"
 		// Else check if this design builds a piece of exosuit equipment.
 		else if(built_item in typesof(/obj/item/mecha_parts/mecha_equipment))
 			var/obj/item/mecha_parts/mecha_equipment/E = built_item
@@ -210,7 +226,7 @@
   * Adds the overlay to show the fab working and sets active power usage settings.
   */
 /obj/machinery/mecha_part_fabricator/proc/on_start_printing()
-	add_overlay("fab-active")
+	add_overlay("[icon_state]-active")
 	use_power = USE_POWER_ACTIVE
 
 /**
@@ -219,7 +235,7 @@
   * Removes the overlay to show the fab working and sets idle power usage settings. Additionally resets the description and turns off queue processing.
   */
 /obj/machinery/mecha_part_fabricator/proc/on_finish_printing()
-	cut_overlay("fab-active")
+	cut_overlay("[icon_state]-active")
 	use_power = USE_POWER_IDLE
 	desc = initial(desc)
 	process_queue = FALSE
@@ -309,7 +325,7 @@
 		atom_say("Obstruction cleared. \The [stored_part] is complete.")
 		stored_part.forceMove(exit)
 		stored_part = null
-	
+
 	// If there's nothing being built, try to build something
 	if(!being_built)
 		// If we're not processing the queue anymore or there's nothing to build, end processing.
@@ -451,6 +467,7 @@
 	if(..())
 		return
 	if(!allowed(user))
+		to_chat(user, span_warning("\The [src] rejects your use due to lack of access!"))
 		return
 	tgui_interact(user)
 
@@ -519,14 +536,14 @@
 
 	return data
 
-/obj/machinery/mecha_part_fabricator/tgui_act(action, var/list/params)
+/obj/machinery/mecha_part_fabricator/tgui_act(action, list/params, datum/tgui/ui)
 	if(..())
 		return TRUE
 
 	. = TRUE
 
-	add_fingerprint(usr)
-	usr.set_machine(src)
+	add_fingerprint(ui.user)
+	ui.user.set_machine(src)
 
 	switch(action)
 		if("sync_rnd")
@@ -607,7 +624,7 @@
 
 /obj/machinery/mecha_part_fabricator/attackby(var/obj/item/I, var/mob/user)
 	if(being_built)
-		to_chat(user, "<span class='notice'>\The [src] is busy. Please wait for completion of previous operation.</span>")
+		to_chat(user, span_notice("\The [src] is busy. Please wait for completion of previous operation."))
 		return 1
 	if(default_deconstruction_screwdriver(user, I))
 		return
@@ -619,7 +636,7 @@
 	if(istype(I,/obj/item/stack/material))
 		var/obj/item/stack/material/S = I
 		if(!(S.material.name in materials))
-			to_chat(user, "<span class='warning'>The [src] doesn't accept [S.material]!</span>")
+			to_chat(user, span_warning("The [src] doesn't accept [S.material]!"))
 			return
 
 		var/sname = "[S.name]"
@@ -628,11 +645,9 @@
 			if(S && S.get_amount() >= 1)
 				var/count = 0
 				flick("[loading_icon_state]", src)
-				// yess hacky but whatever
+				// yess hacky but whatever //even more hacky now, but at least it works
 				if(loading_icon_state == "mechfab-idle")
-					overlays += "mechfab-load-metal"
-					spawn(10)
-						overlays -= "mechfab-load-metal"
+					flick("mechfab-load-metal", src)
 				while(materials[S.material.name] + amnt <= res_max_amount && S.get_amount() >= 1)
 					materials[S.material.name] += amnt
 					S.use(1)
@@ -649,34 +664,60 @@
 	switch(emagged)
 		if(0)
 			emagged = 0.5
-			visible_message("[bicon(src)] <b>[src]</b> beeps: \"DB error \[Code 0x00F1\]\"")
+			visible_message("[icon2html(src,viewers(src))] <b>[src]</b> beeps: \"DB error \[Code 0x00F1\]\"")
 			sleep(10)
-			visible_message("[bicon(src)] <b>[src]</b> beeps: \"Attempting auto-repair\"")
+			visible_message("[icon2html(src,viewers(src))] <b>[src]</b> beeps: \"Attempting auto-repair\"")
 			sleep(15)
-			visible_message("[bicon(src)] <b>[src]</b> beeps: \"User DB corrupted \[Code 0x00FA\]. Truncating data structure...\"")
+			visible_message("[icon2html(src,viewers(src))] <b>[src]</b> beeps: \"User DB corrupted \[Code 0x00FA\]. Truncating data structure...\"")
 			sleep(30)
-			visible_message("[bicon(src)] <b>[src]</b> beeps: \"User DB truncated. Please contact your [using_map.company_name] system operator for future assistance.\"")
+			visible_message("[icon2html(src,viewers(src))] <b>[src]</b> beeps: \"User DB truncated. Please contact your [using_map.company_name] system operator for future assistance.\"")
 			req_access = null
 			emagged = 1
 			return 1
 		if(0.5)
-			visible_message("[bicon(src)] <b>[src]</b> beeps: \"DB not responding \[Code 0x0003\]...\"")
+			visible_message("[icon2html(src,viewers(src))] <b>[src]</b> beeps: \"DB not responding \[Code 0x0003\]...\"")
 		if(1)
-			visible_message("[bicon(src)] <b>[src]</b> beeps: \"No records in User DB\"")
+			visible_message("[icon2html(src,viewers(src))] <b>[src]</b> beeps: \"No records in User DB\"")
 
 /obj/machinery/mecha_part_fabricator/proc/eject_materials(var/material, var/amount) // 0 amount = 0 means ejecting a full stack; -1 means eject everything
-	var/recursive = amount == -1 ? 1 : 0
+	var/recursive = amount == -1 ? TRUE : FALSE
 	var/matstring = lowertext(material)
-	var/datum/material/M = get_material_by_name(matstring)
 
-	var/obj/item/stack/material/S = M.place_sheet(get_turf(src))
-	if(amount <= 0)
-		amount = S.max_amount
-	var/ejected = min(round(materials[matstring] / S.perunit), amount)
-	S.amount = min(ejected, amount)
-	if(S.amount <= 0)
-		qdel(S)
+	// 0 or null, nothing to eject
+	if(!materials[matstring])
 		return
+	// Problem, fix problem and abort
+	if(materials[matstring] < 0)
+		warning("[src] tried to eject material '[material]', which it has 'materials[matstring]' of!")
+		materials[matstring] = 0
+		return
+
+	// Find the material datum for our material
+	var/datum/material/M = get_material_by_name(matstring)
+	if(!M)
+		warning("[src] tried to eject material '[matstring]', which didn't match any known material datum!")
+		return
+	// Find what type of sheets it makes
+	var/obj/item/stack/material/S = M.stack_type
+	if(!S)
+		warning("[src] tried to eject material '[matstring]', which didn't have a stack_type!")
+		return
+
+	// If we were passed -1, then it's recursive ejection and we should eject all we can
+	if(amount <= 0)
+		amount = initial(S.max_amount)
+	// Smaller of what we have left, or the desired amount (note the amount is in sheets, but the array stores perunit values)
+	var/ejected = min(round(materials[matstring] / initial(S.perunit)), amount)
+
+	// Place a sheet
+	S = M.place_sheet(get_turf(src), ejected)
+	if(!istype(S))
+		warning("[src] tried to eject material '[material]', which didn't generate a proper stack when asked!")
+		return
+
+	// Reduce our amount stored
 	materials[matstring] -= ejected * S.perunit
+
+	// Recurse if we have enough left for more sheets
 	if(recursive && materials[matstring] >= S.perunit)
 		eject_materials(matstring, -1)

@@ -65,7 +65,7 @@
 		.+=360
 
 //Returns location. Returns null if no location was found.
-/proc/get_teleport_loc(turf/location,mob/target,distance = 1, density = 0, errorx = 0, errory = 0, eoffsetx = 0, eoffsety = 0)
+/proc/get_teleport_loc(turf/location,mob/target,distance = 1, density = FALSE, errorx = 0, errory = 0, eoffsetx = 0, eoffsety = 0)
 /*
 Location where the teleport begins, target that will teleport, distance to go, density checking 0/1(yes/no).
 Random error in tile placement x, error in tile placement y, and block offset.
@@ -196,9 +196,6 @@ Turf and target are seperate in case you want to teleport some distance from a t
 			return 1
 	return 0
 
-/proc/sign(x)
-	return x!=0?x/abs(x):0
-
 /proc/getline(atom/M,atom/N)//Ultra-Fast Bresenham Line-Drawing Algorithm
 	var/px=M.x		//starting x
 	var/py=M.y
@@ -207,8 +204,8 @@ Turf and target are seperate in case you want to teleport some distance from a t
 	var/dy=N.y-py
 	var/dxabs=abs(dx)//Absolute value of x distance
 	var/dyabs=abs(dy)
-	var/sdx=sign(dx)	//Sign of x distance (+ or -)
-	var/sdy=sign(dy)
+	var/sdx=SIGN(dx)	//Sign of x distance (+ or -)
+	var/sdy=SIGN(dy)
 	var/x=dxabs>>1	//Counters for steps taken, setting to distance/2
 	var/y=dyabs>>1	//Bit-shifting makes me l33t.  It also makes getline() unnessecarrily fast.
 	var/j			//Generic integer for counting
@@ -318,16 +315,16 @@ Turf and target are seperate in case you want to teleport some distance from a t
 		var/search_pda = 1
 
 		for(var/A in searching)
-			if( search_id && istype(A,/obj/item/weapon/card/id) )
-				var/obj/item/weapon/card/id/ID = A
+			if( search_id && istype(A,/obj/item/card/id) )
+				var/obj/item/card/id/ID = A
 				if(ID.registered_name == oldname)
 					ID.registered_name = newname
 					ID.name = "[newname]'s ID Card ([ID.assignment])"
 					if(!search_pda)	break
 					search_id = 0
 
-			else if( search_pda && istype(A,/obj/item/device/pda) )
-				var/obj/item/device/pda/PDA = A
+			else if( search_pda && istype(A,/obj/item/pda) )
+				var/obj/item/pda/PDA = A
 				if(PDA.owner == oldname)
 					PDA.owner = newname
 					PDA.name = "PDA-[newname] ([PDA.ownjob])"
@@ -347,7 +344,8 @@ Turf and target are seperate in case you want to teleport some distance from a t
 		var/newname
 
 		for(var/i=1,i<=3,i++)	//we get 3 attempts to pick a suitable name.
-			newname = input(src,"You are \a [role]. Would you like to change your name to something else?", "Name change",oldname) as text
+			//newname = tgui_input_text(src,"You are \a [role]. Would you like to change your name to something else?", "Name change",oldname)
+			newname = input(src,"You are \a [role]. Would you like to change your name to something else?", "Name change",oldname)
 			if((world.time-time_passed)>3000)
 				return	//took too long
 			newname = sanitizeName(newname, ,allow_numbers)	//returns null if the name doesn't meet some basic requirements. Tidies up a few other things like bad-characters.
@@ -369,7 +367,7 @@ Turf and target are seperate in case you want to teleport some distance from a t
 			if(isAI(src))
 				var/mob/living/silicon/ai/A = src
 				oldname = null//don't bother with the records update crap
-				//to_world("<b>[newname] is the AI!</b>")
+				//to_world(span_world("[newname] is the AI!"))
 				//world << sound('sound/AI/newAI.ogg')
 				// Set eyeobj name
 				A.SetName(newname)
@@ -394,8 +392,9 @@ Turf and target are seperate in case you want to teleport some distance from a t
 		borgs[name] = A
 
 	if (borgs.len)
-		select = input("Unshackled borg signals detected:", "Borg selection", null, null) as null|anything in borgs
-		return borgs[select]
+		select = tgui_input_list(usr, "Unshackled borg signals detected:", "Borg selection", borgs)
+		if(select)
+			return borgs[select]
 
 //When a borg is activated, it can choose which AI it wants to be slaved to
 /proc/active_ais()
@@ -421,37 +420,9 @@ Turf and target are seperate in case you want to teleport some distance from a t
 /proc/select_active_ai(var/mob/user)
 	var/list/ais = active_ais()
 	if(ais.len)
-		if(user)	. = input(usr,"AI signals detected:", "AI selection") in ais
+		if(user)	. = tgui_input_list(user, "AI signals detected:", "AI selection", ais)
 		else		. = pick(ais)
 	return .
-
-/proc/get_sorted_mobs()
-	var/list/old_list = getmobs()
-	var/list/AI_list = list()
-	var/list/Dead_list = list()
-	var/list/keyclient_list = list()
-	var/list/key_list = list()
-	var/list/logged_list = list()
-	for(var/named in old_list)
-		var/mob/M = old_list[named]
-		if(issilicon(M))
-			AI_list |= M
-		else if(isobserver(M) || M.stat == 2)
-			Dead_list |= M
-		else if(M.key && M.client)
-			keyclient_list |= M
-		else if(M.key)
-			key_list |= M
-		else
-			logged_list |= M
-		old_list.Remove(named)
-	var/list/new_list = list()
-	new_list += AI_list
-	new_list += keyclient_list
-	new_list += key_list
-	new_list += logged_list
-	new_list += Dead_list
-	return new_list
 
 //Returns a list of all mobs with their name
 /proc/getmobs()
@@ -471,8 +442,13 @@ Turf and target are seperate in case you want to teleport some distance from a t
 		moblist.Add(M)
 	for(var/mob/living/silicon/robot/M in sortmob)
 		moblist.Add(M)
+	var/list/delaylist = list()
 	for(var/mob/living/carbon/human/M in sortmob)
-		moblist.Add(M)
+		if(M.low_sorting_priority && !M.client)
+			delaylist.Add(M)
+		else
+			moblist.Add(M)
+	moblist.Add(delaylist)
 	for(var/mob/living/carbon/brain/M in sortmob)
 		moblist.Add(M)
 	for(var/mob/living/carbon/alien/M in sortmob)
@@ -483,6 +459,11 @@ Turf and target are seperate in case you want to teleport some distance from a t
 		moblist.Add(M)
 	for(var/mob/living/simple_mob/M in sortmob)
 		moblist.Add(M)
+	//VOREStation Addition Start
+	for(var/mob/living/dominated_brain/M in sortmob)
+		moblist.Add(M)
+	//VOREStation Addition End
+
 //	for(var/mob/living/silicon/hivebot/M in sortmob)
 //		mob_list.Add(M)
 //	for(var/mob/living/silicon/hive_mainframe/M in sortmob)
@@ -526,14 +507,6 @@ Turf and target are seperate in case you want to teleport some distance from a t
 	else if(powerused < 1000000000) //Less than a GW
 		return "[round((powerused * 0.000001),0.001)] MW"
 	return "[round((powerused * 0.000000001),0.0001)] GW"
-
-/proc/get_mob_by_ckey(key)
-	if(!key)
-		return
-	var/list/mobs = sortmobs()
-	for(var/mob/M in mobs)
-		if(M.ckey == key)
-			return M
 
 //Forces a variable to be posative
 /proc/modulus(var/M)
@@ -591,12 +564,8 @@ Turf and target are seperate in case you want to teleport some distance from a t
 	var/y = min(world.maxy, max(1, A.y + dy))
 	return locate(x,y,A.z)
 
-//Makes sure MIDDLE is between LOW and HIGH. If not, it adjusts it. Returns the adjusted value.
-/proc/between(var/low, var/middle, var/high)
-	return max(min(middle, high), low)
-
 //returns random gauss number
-proc/GaussRand(var/sigma)
+/proc/GaussRand(var/sigma)
   var/x,y,rsq
   do
     x=2*rand()-1
@@ -606,7 +575,7 @@ proc/GaussRand(var/sigma)
   return sigma*y*sqrt(-2*log(rsq)/rsq)
 
 //returns random gauss number, rounded to 'roundto'
-proc/GaussRandRound(var/sigma,var/roundto)
+/proc/GaussRandRound(var/sigma,var/roundto)
 	return round(GaussRand(sigma),roundto)
 
 //Will return the contents of an atom recursivly to a depth of 'searchDepth'
@@ -647,34 +616,6 @@ proc/GaussRandRound(var/sigma,var/roundto)
 			cant_pass = 1
 	return cant_pass
 
-/proc/get_step_towards2(var/atom/ref , var/atom/trg)
-	var/base_dir = get_dir(ref, get_step_towards(ref,trg))
-	var/turf/temp = get_step_towards(ref,trg)
-
-	if(is_blocked_turf(temp))
-		var/dir_alt1 = turn(base_dir, 90)
-		var/dir_alt2 = turn(base_dir, -90)
-		var/turf/turf_last1 = temp
-		var/turf/turf_last2 = temp
-		var/free_tile = null
-		var/breakpoint = 0
-
-		while(!free_tile && breakpoint < 10)
-			if(!is_blocked_turf(turf_last1))
-				free_tile = turf_last1
-				break
-			if(!is_blocked_turf(turf_last2))
-				free_tile = turf_last2
-				break
-			turf_last1 = get_step(turf_last1,dir_alt1)
-			turf_last2 = get_step(turf_last2,dir_alt2)
-			breakpoint++
-
-		if(!free_tile) return get_step(ref, base_dir)
-		else return get_step_towards(ref,free_tile)
-
-	else return get_step(ref, base_dir)
-
 //Takes: Anything that could possibly have variables and a varname to check.
 //Returns: 1 if found, 0 if not.
 /proc/hasvar(var/datum/A, var/varname)
@@ -685,26 +626,12 @@ proc/GaussRandRound(var/sigma,var/roundto)
 /proc/return_areas()
 	var/list/area/areas = list()
 	for(var/area/A in world)
-		areas += A
+		areas[A.name] = A
 	return areas
 
 //Returns: all the areas in the world, sorted.
 /proc/return_sorted_areas()
-	return sortAtom(return_areas())
-
-//Takes: Area type as text string or as typepath OR an instance of the area.
-//Returns: A list of all areas of that type in the world.
-/proc/get_areas(var/areatype)
-	if(!areatype) return null
-	if(istext(areatype)) areatype = text2path(areatype)
-	if(isarea(areatype))
-		var/area/areatemp = areatype
-		areatype = areatemp.type
-
-	var/list/areas = new/list()
-	for(var/area/N in world)
-		if(istype(N, areatype)) areas += N
-	return areas
+	return sortTim(return_areas(), GLOBAL_PROC_REF(cmp_text_asc))
 
 //Takes: Area type as text string or as typepath OR an instance of the area.
 //Returns: A list of all turfs in areas of that type of that type in the world.
@@ -721,6 +648,20 @@ proc/GaussRandRound(var/sigma,var/roundto)
 			for(var/turf/T in N) turfs += T
 	return turfs
 
+
+//Takes: An instance of the area.
+//Returns: A list of all turfs in that area.
+//Side note: I don't know why this was never a thing. Did everyone just ignore the Blueprint item?! - C.L.
+/proc/get_current_area_turfs(var/area/checked_area)
+	if(!checked_area)
+		return null
+
+	var/list/turfs = new/list()
+	for(var/turf/counted_turfs in checked_area.contents) //Cheap. Efficient. Lovely.
+		turfs += counted_turfs
+	return turfs
+
+
 //Takes: Area type as text string or as typepath OR an instance of the area.
 //Returns: A list of all atoms	(objs, turfs, mobs) in areas of that type of that type in the world.
 /proc/get_area_all_atoms(var/areatype)
@@ -735,6 +676,18 @@ proc/GaussRandRound(var/sigma,var/roundto)
 		if(istype(N, areatype))
 			for(var/atom/A in N)
 				atoms += A
+	return atoms
+
+
+//Takes: Area as an instance of the area.
+//Returns: A list of all atoms	(objs, turfs, mobs) in the selected area.
+/proc/get_current_area_atoms(var/area/checked_area)
+	if(!checked_area)
+		return null
+
+	var/list/atoms = new/list()
+	for(var/atom/A in checked_area.contents)
+		atoms += A
 	return atoms
 
 /datum/coords //Simple datum for storing coordinates.
@@ -839,7 +792,11 @@ proc/GaussRandRound(var/sigma,var/roundto)
 					//Move the objects. Not forceMove because the object isn't "moving" really, it's supposed to be on the "same" turf.
 					for(var/obj/O in T)
 						O.loc = X
-						O.update_light()
+						if(O.light_system == STATIC_LIGHT)
+							O.update_light()
+						else
+							var/datum/component/overlay_lighting/OL = O.GetComponent(/datum/component/overlay_lighting)
+							OL?.on_parent_moved(O, T, O.dir, TRUE)
 						if(z_level_change) // The objects still need to know if their z-level changed.
 							O.onTransitZ(T.z, X.z)
 
@@ -850,10 +807,6 @@ proc/GaussRandRound(var/sigma,var/roundto)
 
 						if(z_level_change) // Same goes for mobs.
 							M.onTransitZ(T.z, X.z)
-
-						if(istype(M, /mob/living))
-							var/mob/living/LM = M
-							LM.check_shadow() // Need to check their Z-shadow, which is normally done in forceMove().
 
 					if(shuttlework)
 						var/turf/simulated/shuttle/SS = T
@@ -867,7 +820,7 @@ proc/GaussRandRound(var/sigma,var/roundto)
 					refined_trg -= B
 					continue moving
 
-proc/DuplicateObject(obj/original, var/perfectcopy = 0 , var/sameloc = 0)
+/proc/DuplicateObject(obj/original, var/perfectcopy = 0 , var/sameloc = 0)
 	if(!original)
 		return null
 
@@ -878,10 +831,22 @@ proc/DuplicateObject(obj/original, var/perfectcopy = 0 , var/sameloc = 0)
 	else
 		O=new original.type(locate(0,0,0))
 
+	var/static/list/blacklisted_var_names = list(
+		"ATOM_TOPIC_EXAMINE",
+		"type",
+		"loc",
+		"locs",
+		"vars",
+		"parent",
+		"parent_type",
+		"verbs",
+		"ckey",
+		"key"
+	)
 	if(perfectcopy)
 		if((O) && (original))
 			for(var/V in original.vars)
-				if(!(V in list("type","loc","locs","vars", "parent", "parent_type","verbs","ckey","key")))
+				if(!(V in blacklisted_var_names))
 					O.vars[V] = original.vars[V]
 	return O
 
@@ -1009,22 +974,18 @@ proc/DuplicateObject(obj/original, var/perfectcopy = 0 , var/sameloc = 0)
 
 	if(toupdate.len)
 		for(var/turf/simulated/T1 in toupdate)
-			air_master.mark_for_update(T1)
+			SSair.mark_for_update(T1)
 
 	return copiedobjs
 
 
 
-proc/get_cardinal_dir(atom/A, atom/B)
+/proc/get_cardinal_dir(atom/A, atom/B)
 	var/dx = abs(B.x - A.x)
 	var/dy = abs(B.y - A.y)
 	return get_dir(A, B) & (rand() * (dx+dy) < dy ? 3 : 12)
 
-//chances are 1:value. anyprob(1) will always return true
-proc/anyprob(value)
-	return (rand(1,value)==value)
-
-proc/view_or_range(distance = world.view , center = usr , type)
+/proc/view_or_range(distance = world.view , center = usr , type)
 	switch(type)
 		if("view")
 			. = view(distance,center)
@@ -1032,15 +993,7 @@ proc/view_or_range(distance = world.view , center = usr , type)
 			. = range(distance,center)
 	return
 
-proc/oview_or_orange(distance = world.view , center = usr , type)
-	switch(type)
-		if("view")
-			. = oview(distance,center)
-		if("range")
-			. = orange(distance,center)
-	return
-
-proc/get_mob_with_client_list()
+/proc/get_mob_with_client_list()
 	var/list/mobs = list()
 	for(var/mob/M in mob_list)
 		if (M.client)
@@ -1077,12 +1030,13 @@ proc/get_mob_with_client_list()
 //Quick type checks for some tools
 var/global/list/common_tools = list(
 /obj/item/stack/cable_coil,
-/obj/item/weapon/tool/wrench,
-/obj/item/weapon/weldingtool,
-/obj/item/weapon/tool/screwdriver,
-/obj/item/weapon/tool/wirecutters,
-/obj/item/device/multitool,
-/obj/item/weapon/tool/crowbar)
+/obj/item/tool/wrench,
+/obj/item/weldingtool,
+/obj/item/tool/screwdriver,
+/obj/item/tool/wirecutters,
+/obj/item/multitool,
+/obj/item/tool/crowbar,
+/obj/item/tool/transforming)
 
 /proc/istool(O)
 	if(O && is_type_in_list(O, common_tools))
@@ -1091,26 +1045,32 @@ var/global/list/common_tools = list(
 
 
 /proc/is_wire_tool(obj/item/I)
-	if(istype(I, /obj/item/device/multitool) || I.is_wirecutter())
+	if(istype(I, /obj/item/multitool) || I.has_tool_quality(TOOL_WIRECUTTER))
 		return TRUE
-	if(istype(I, /obj/item/device/assembly/signaler))
+	if(istype(I, /obj/item/assembly/signaler))
 		return TRUE
 	return
 
-proc/is_hot(obj/item/W as obj)
+/proc/is_hot(obj/item/W as obj)
 	switch(W.type)
-		if(/obj/item/weapon/weldingtool)
-			var/obj/item/weapon/weldingtool/WT = W
+		if(/obj/item/weldingtool)
+			var/obj/item/weldingtool/WT = W
 			if(WT.isOn())
 				return 3800
 			else
 				return 0
-		if(/obj/item/weapon/flame/lighter)
+		if(/obj/item/tool/transforming)
+			var/obj/item/tool/transforming/TT = W
+			if(TT.possible_tooltypes[TT.current_tooltype] == TOOL_WELDER)
+				return 3800
+			else
+				return 0
+		if(/obj/item/flame/lighter)
 			if(W:lit)
 				return 1500
 			else
 				return 0
-		if(/obj/item/weapon/flame/match)
+		if(/obj/item/flame/match)
 			if(W:lit)
 				return 1000
 			else
@@ -1120,9 +1080,9 @@ proc/is_hot(obj/item/W as obj)
 				return 1000
 			else
 				return 0
-		if(/obj/item/weapon/pickaxe/plasmacutter)
+		if(/obj/item/pickaxe/plasmacutter)
 			return 3800
-		if(/obj/item/weapon/melee/energy)
+		if(/obj/item/melee/energy)
 			return 3500
 		else
 			return 0
@@ -1152,23 +1112,13 @@ proc/is_hot(obj/item/W as obj)
 	if(W.sharp)
 		return TRUE
 	return ( \
-		W.is_screwdriver()		     				              || \
-		istype(W, /obj/item/weapon/pen)                           || \
-		istype(W, /obj/item/weapon/weldingtool)					  || \
-		istype(W, /obj/item/weapon/flame/lighter/zippo)			  || \
-		istype(W, /obj/item/weapon/flame/match)            		  || \
+		W.has_tool_quality(TOOL_SCREWDRIVER)		     				              || \
+		istype(W, /obj/item/pen)                           || \
+		istype(W, /obj/item/weldingtool)					  || \
+		istype(W, /obj/item/flame/lighter/zippo)			  || \
+		istype(W, /obj/item/flame/match)            		  || \
 		istype(W, /obj/item/clothing/mask/smokable/cigarette) 		      || \
-		istype(W, /obj/item/weapon/shovel) \
-	)
-
-/proc/is_surgery_tool(obj/item/W as obj)
-	return (	\
-	istype(W, /obj/item/weapon/surgical/scalpel)			||	\
-	istype(W, /obj/item/weapon/surgical/hemostat)		||	\
-	istype(W, /obj/item/weapon/surgical/retractor)		||	\
-	istype(W, /obj/item/weapon/surgical/cautery)			||	\
-	istype(W, /obj/item/weapon/surgical/bonegel)			||	\
-	istype(W, /obj/item/weapon/surgical/bonesetter)
+		istype(W, /obj/item/shovel) \
 	)
 
 // check if mob is lying down on something we can operate him on.
@@ -1190,41 +1140,25 @@ proc/is_hot(obj/item/W as obj)
 	var/obj/surface = null
 	for(var/obj/O in loc) // Looks for the best surface.
 		if(O.surgery_odds)
-			if(!surface || surface.surgery_odds < O)
+			if(!surface || surface.surgery_odds < O.surgery_odds)
 				surface = O
 	if(surface)
 		return surface
 
 /proc/reverse_direction(var/dir)
-	switch(dir)
-		if(NORTH)
-			return SOUTH
-		if(NORTHEAST)
-			return SOUTHWEST
-		if(EAST)
-			return WEST
-		if(SOUTHEAST)
-			return NORTHWEST
-		if(SOUTH)
-			return NORTH
-		if(SOUTHWEST)
-			return NORTHEAST
-		if(WEST)
-			return EAST
-		if(NORTHWEST)
-			return SOUTHEAST
+	return global.reverse_dir[dir]
 
 /*
 Checks if that loc and dir has a item on the wall
 TODO - Fix this ancient list of wall items. Preferably make it dynamically populated. ~Leshana
 */
 var/list/WALLITEMS = list(
-	/obj/machinery/power/apc, /obj/machinery/alarm, /obj/item/device/radio/intercom, /obj/structure/frame,
+	/obj/machinery/power/apc, /obj/machinery/alarm, /obj/item/radio/intercom, /obj/structure/frame,
 	/obj/structure/extinguisher_cabinet, /obj/structure/reagent_dispensers/peppertank,
 	/obj/machinery/status_display, /obj/machinery/requests_console, /obj/machinery/light_switch, /obj/structure/sign,
 	/obj/machinery/newscaster, /obj/machinery/firealarm, /obj/structure/noticeboard, /obj/machinery/button/remote,
 	/obj/machinery/computer/security/telescreen, /obj/machinery/embedded_controller/radio,
-	/obj/item/weapon/storage/secure/safe, /obj/machinery/door_timer, /obj/machinery/flasher, /obj/machinery/keycard_auth,
+	/obj/item/storage/secure/safe, /obj/machinery/door_timer, /obj/machinery/flasher, /obj/machinery/keycard_auth,
 	/obj/structure/mirror, /obj/structure/fireaxecabinet, /obj/machinery/computer/security/telescreen/entertainment
 	)
 /proc/gotwallitem(loc, dir)
@@ -1277,7 +1211,7 @@ var/list/WALLITEMS = list(
 			if(length(temp_col )<2)
 				temp_col  = "0[temp_col]"
 			colour += temp_col
-	return colour
+	return "#[colour]"
 
 /proc/color_square(red, green, blue, hex)
 	var/color = hex ? hex : "#[num2hex(red, 2)][num2hex(green, 2)][num2hex(blue, 2)]"
@@ -1294,7 +1228,7 @@ var/mob/dview/dview_mob = new
 		log_error("Had to recreate the dview mob!")
 
 	dview_mob.loc = center
-	
+
 	dview_mob.see_invisible = invis_flags
 
 	. = view(range, dview_mob)
@@ -1302,10 +1236,10 @@ var/mob/dview/dview_mob = new
 
 /mob/dview
 	invisibility = 101
-	density = 0
+	density = FALSE
 
-	anchored = 1
-	simulated = 0
+	anchored = TRUE
+	simulated = FALSE
 
 	see_in_dark = 1e6
 
@@ -1329,15 +1263,11 @@ var/mob/dview/dview_mob = new
 	living_mob_list -= src
 
 /mob/dview/Destroy(var/force)
-	crash_with("Attempt to delete the dview_mob: [log_info_line(src)]")
+	stack_trace("Attempt to delete the dview_mob: [log_info_line(src)]")
 	if (!force)
 		return QDEL_HINT_LETMELIVE
 	global.dview_mob = new
 	return ..()
-
-// call to generate a stack trace and print to runtime logs
-/proc/crash_with(msg)
-	CRASH(msg)
 
 /proc/screen_loc2turf(scr_loc, turf/origin)
 	var/tX = splittext(scr_loc, ",")
@@ -1378,8 +1308,7 @@ var/mob/dview/dview_mob = new
 	if(orange)
 		turfs -= get_turf(center)
 	. = list()
-	for(var/V in turfs)
-		var/turf/T = V
+	for(var/turf/T as anything in turfs)
 		. += T
 		. += T.contents
 		if(areas)
@@ -1399,43 +1328,40 @@ var/mob/dview/dview_mob = new
 
 	if (NOT_FLAG(USE_ALLOW_NON_ADJACENT) && !Adjacent(user))
 		if (show_messages)
-			to_chat(user, span("notice","You're too far away from [src] to do that."))
+			to_chat(user, span_notice("You're too far away from [src] to do that."))
 		return USE_FAIL_NON_ADJACENT
 
 	if (NOT_FLAG(USE_ALLOW_DEAD) && user.stat == DEAD)
 		if (show_messages)
-			to_chat(user, span("notice","You can't do that when you're dead."))
+			to_chat(user, span_notice("You can't do that when you're dead."))
 		return USE_FAIL_DEAD
 
 	if (NOT_FLAG(USE_ALLOW_INCAPACITATED) && (user.incapacitated()))
 		if (show_messages)
-			to_chat(user, span("notice","You cannot do that in your current state."))
+			to_chat(user, span_notice("You cannot do that in your current state."))
 		return USE_FAIL_INCAPACITATED
 
 	if (NOT_FLAG(USE_ALLOW_NON_ADV_TOOL_USR) && !user.IsAdvancedToolUser())
 		if (show_messages)
-			to_chat(user, span("notice","You don't know how to operate [src]."))
+			to_chat(user, span_notice("You don't know how to operate [src]."))
 		return USE_FAIL_NON_ADV_TOOL_USR
 
 	if (HAS_FLAG(USE_DISALLOW_SILICONS) && issilicon(user))
 		if (show_messages)
-			to_chat(user, span("notice","You need hands for that."))
+			to_chat(user, span_notice("You need hands for that."))
 		return USE_FAIL_IS_SILICON
 
 	if (HAS_FLAG(USE_FORCE_SRC_IN_USER) && !(src in user))
 		if (show_messages)
-			to_chat(user, span("notice","You need to be holding [src] to do that."))
+			to_chat(user, span_notice("You need to be holding [src] to do that."))
 		return USE_FAIL_NOT_IN_USER
 
 #undef NOT_FLAG
 #undef HAS_FLAG
 
-//datum may be null, but it does need to be a typed var
-#define NAMEOF(datum, X) (#X || ##datum.##X)
-
-#define VARSET_LIST_CALLBACK(target, var_name, var_value) CALLBACK(GLOBAL_PROC, /proc/___callbackvarset, ##target, ##var_name, ##var_value)
+#define VARSET_LIST_CALLBACK(target, var_name, var_value) CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(___callbackvarset), ##target, ##var_name, ##var_value)
 //dupe code because dm can't handle 3 level deep macros
-#define VARSET_CALLBACK(datum, var, var_value) CALLBACK(GLOBAL_PROC, /proc/___callbackvarset, ##datum, NAMEOF(##datum, ##var), ##var_value)
+#define VARSET_CALLBACK(datum, var, var_value) CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(___callbackvarset), ##datum, NAMEOF(##datum, ##var), ##var_value)
 //we'll see about those 3-level deep macros
 #define VARSET_IN(datum, var, var_value, time) addtimer(VARSET_CALLBACK(datum, var, var_value), time)
 
@@ -1484,14 +1410,9 @@ var/mob/dview/dview_mob = new
 		if(337.5)
 			return "North-Northwest"
 
-/proc/pass()
-	return
-
-#define NAMEOF(datum, X) (#X || ##datum.##X)
-
 /proc/pick_closest_path(value, list/matches = get_fancy_list_of_atom_types())
 	if (value == FALSE) //nothing should be calling us with a number, so this is safe
-		value = input("Enter type to find (blank for all, cancel to cancel)", "Search for type") as null|text
+		value = tgui_input_text(usr, "Enter type to find (blank for all, cancel to cancel)", "Search for type")
 		if (isnull(value))
 			return
 	value = trim(value)
@@ -1505,7 +1426,7 @@ var/mob/dview/dview_mob = new
 	if(matches.len==1)
 		chosen = matches[1]
 	else
-		chosen = input("Select a type", "Pick Type", matches[1]) as null|anything in matches
+		chosen = tgui_input_list(usr, "Select a type", "Pick Type", matches)
 		if(!chosen)
 			return
 	chosen = matches[chosen]
@@ -1539,12 +1460,12 @@ var/mob/dview/dview_mob = new
 		var/typename = "[type]"
 		var/static/list/TYPES_SHORTCUTS = list(
 			/obj/effect/decal/cleanable = "CLEANABLE",
-			/obj/item/device/radio/headset = "HEADSET",
+			/obj/item/radio/headset = "HEADSET",
 			/obj/item/clothing/head/helmet/space = "SPESSHELMET",
-			/obj/item/weapon/book/manual = "MANUAL",
-			/obj/item/weapon/reagent_containers/food/drinks = "DRINK",
-			/obj/item/weapon/reagent_containers/food = "FOOD",
-			/obj/item/weapon/reagent_containers = "REAGENT_CONTAINERS",
+			/obj/item/book/manual = "MANUAL",
+			/obj/item/reagent_containers/food/drinks = "DRINK",
+			/obj/item/reagent_containers/food = "FOOD",
+			/obj/item/reagent_containers = "REAGENT_CONTAINERS",
 			/obj/machinery/atmospherics = "ATMOS_MECH",
 			/obj/machinery/portable_atmospherics = "PORT_ATMOS",
 			/obj/item/mecha_parts/mecha_equipment/weapon/ballistic/missile_rack = "MECHA_MISSILE_RACK",
@@ -1621,6 +1542,9 @@ GLOBAL_REAL_VAR(list/stack_trace_storage)
 	// 'Utility' planes
 	. += new /obj/screen/plane_master/fullbright						//Lighting system (lighting_overlay objects)
 	. += new /obj/screen/plane_master/lighting							//Lighting system (but different!)
+	. += new /obj/screen/plane_master/o_light_visual					//Object lighting (using masks)
+	. += new /obj/screen/plane_master/emissive							//Emissive overlays
+
 	. += new /obj/screen/plane_master/ghosts							//Ghosts!
 	. += new /obj/screen/plane_master{plane = PLANE_AI_EYE}			//AI Eye!
 
@@ -1653,6 +1577,7 @@ GLOBAL_REAL_VAR(list/stack_trace_storage)
 	. += new /obj/screen/plane_master{plane = PLANE_CH_HEALTH_VR}			//Health bar but transparent at 100
 	. += new /obj/screen/plane_master{plane = PLANE_CH_BACKUP}				//Backup implant status
 	. += new /obj/screen/plane_master{plane = PLANE_CH_VANTAG}				//Vore Antags
+	. += new /obj/screen/plane_master{plane = PLANE_CH_STOMACH}				//Stomachs
 	. += new /obj/screen/plane_master{plane = PLANE_AUGMENTED}				//Augmented reality
 	//VOREStation Add End
 /proc/CallAsync(datum/source, proctype, list/arguments)

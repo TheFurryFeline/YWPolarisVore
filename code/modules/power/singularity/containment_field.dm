@@ -3,13 +3,16 @@
 /obj/machinery/containment_field
 	name = "Containment Field"
 	desc = "An energy field."
-	icon = 'icons/obj/singularity.dmi'
+	icon = 'icons/obj/machines/field_generator.dmi'
 	icon_state = "Contain_F"
-	anchored = 1
-	density = 0
-	unacidable = 1
+	anchored = TRUE
+	density = FALSE
+	unacidable = TRUE
 	use_power = USE_POWER_OFF
-	light_range = 4
+	light_on = TRUE
+	light_range = 2
+	light_power = 0.5
+	light_color = "#5BA8FF"
 	var/obj/machinery/field_generator/FG1 = null
 	var/obj/machinery/field_generator/FG2 = null
 	var/list/shockdirs

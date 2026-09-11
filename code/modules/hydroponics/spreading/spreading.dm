@@ -3,15 +3,8 @@
 
 /proc/spacevine_infestation(var/potency_min=70, var/potency_max=100, var/maturation_min=5, var/maturation_max=15)
 	spawn() //to stop the secrets panel hanging
-		var/list/turf/simulated/floor/turfs = list() //list of all the empty floor turfs in the hallway areas
-		for(var/areapath in typesof(/area/hallway))
-			var/area/A = locate(areapath)
-			for(var/turf/simulated/floor/F in A.contents)
-				if(!F.check_density())
-					turfs += F
-
-		if(turfs.len) //Pick a turf to spawn at if we can
-			var/turf/simulated/floor/T = pick(turfs)
+		if(vinestart.len) //Pick a turf to spawn at if we can
+			var/turf/simulated/floor/T = pick(vinestart)
 			var/datum/seed/seed = SSplants.create_random_seed(1)
 			seed.set_trait(TRAIT_SPREAD,2)             // So it will function properly as vines.
 			seed.set_trait(TRAIT_POTENCY,rand(potency_min, potency_max)) // 70-100 potency will help guarantee a wide spread and powerful effects.
@@ -24,14 +17,14 @@
 			vine.mature_time = 0
 			vine.process()
 
-			message_admins("<span class='notice'>Event: Spacevines spawned at [T.loc] ([T.x],[T.y],[T.z])</span>")
+			message_admins(span_notice("Event: Spacevines spawned at [T.loc] ([T.x],[T.y],[T.z])"))
 			return
-		message_admins("<span class='notice'>Event: Spacevines failed to find a viable turf.</span>")
+		message_admins(span_notice("Event: Spacevines failed to find a viable turf."))
 
 /obj/effect/dead_plant
-	anchored = 1
+	anchored = TRUE
 	opacity = 0
-	density = 0
+	density = FALSE
 	color = DEAD_PLANT_COLOUR
 
 /obj/effect/dead_plant/attack_hand()
@@ -45,10 +38,10 @@
 
 /obj/effect/plant
 	name = "plant"
-	anchored = 1
-	can_buckle = 1
+	anchored = TRUE
+	can_buckle = TRUE
 	opacity = 0
-	density = 0
+	density = FALSE
 	icon = 'icons/obj/hydroponics_growing.dmi'
 	icon_state = "bush4-1"
 	pass_flags = PASSTABLE
@@ -84,6 +77,10 @@
 	spread_chance = 0
 
 /obj/effect/plant/New(var/newloc, var/datum/seed/newseed, var/obj/effect/plant/newparent)
+	//VOREStation Edit Start
+	if(istype(loc, /turf/simulated/open))
+		qdel(src)
+	//VOREStation Edit End
 	..()
 
 	if(!newparent)
@@ -94,7 +91,7 @@
 	if(!SSplants)
 		sleep(250) // ugly hack, should mean roundstart plants are fine. TODO initialize perhaps?
 	if(!SSplants)
-		to_world("<span class='danger'>Plant controller does not exist and [src] requires it. Aborting.</span>")
+		to_world(span_danger("Plant controller does not exist and [src] requires it. Aborting."))
 		qdel(src)
 		return
 
@@ -116,7 +113,7 @@
 		if(seed.get_trait(TRAIT_CARNIVOROUS) >= 2)
 			growth_type = 1 // WOOOORMS.
 		else if(!(seed.seed_noun in list("seeds","pits")))
-			if(seed.seed_noun == "nodes")
+			if(seed.seed_noun in list("nodes", "cuttings"))
 				growth_type = 3 // Biomass
 			else
 				growth_type = 4 // Mold
@@ -166,7 +163,12 @@
 		var/clr
 		if(seed.get_trait(TRAIT_BIOLUM_COLOUR))
 			clr = seed.get_trait(TRAIT_BIOLUM_COLOUR)
-		set_light(1+round(seed.get_trait(TRAIT_POTENCY)/20), l_color = clr)
+		//VOREStation Edit Start - Tons of super bright super long range lights everywhere is annoying and laggy, so let's limit it a bit.
+		var/blight = 1+round(seed.get_trait(TRAIT_POTENCY)/20)
+		if(blight >= 5)
+			blight = 5
+		set_light(blight, 0.5, l_color = clr)
+		//VOREStation Edit End
 		return
 	else
 		set_light(0)
@@ -197,10 +199,10 @@
 		plane = ABOVE_PLANE
 		set_opacity(1)
 		if(!isnull(seed.chems["woodpulp"]))
-			density = 1
+			density = TRUE
 	else
 		reset_plane_and_layer()
-		density = 0
+		density = FALSE
 
 /obj/effect/plant/proc/calc_dir()
 	set background = 1
@@ -238,23 +240,23 @@
 	floor = 1
 	return 1
 
-/obj/effect/plant/attackby(var/obj/item/weapon/W, var/mob/user)
+/obj/effect/plant/attackby(var/obj/item/W, var/mob/user)
 
 	user.setClickCooldown(user.get_attack_speed(W))
 	SSplants.add_plant(src)
 
-	if(W.is_wirecutter() || istype(W, /obj/item/weapon/surgical/scalpel))
+	if(W.has_tool_quality(TOOL_WIRECUTTER) || istype(W, /obj/item/surgical/scalpel))
 		if(sampled)
-			to_chat(user, "<span class='warning'>\The [src] has already been sampled recently.</span>")
+			to_chat(user, span_warning("\The [src] has already been sampled recently."))
 			return
 		if(!is_mature())
-			to_chat(user, "<span class='warning'>\The [src] is not mature enough to yield a sample yet.</span>")
+			to_chat(user, span_warning("\The [src] is not mature enough to yield a sample yet."))
 			return
 		if(!seed)
-			to_chat(user, "<span class='warning'>There is nothing to take a sample from.</span>")
+			to_chat(user, span_warning("There is nothing to take a sample from."))
 			return
 		if(sampled)
-			to_chat(user, "<span class='danger'>You cannot take another sample from \the [src].</span>")
+			to_chat(user, span_danger("You cannot take another sample from \the [src]."))
 			return
 		if(prob(70))
 			sampled = 1
@@ -315,3 +317,6 @@
 
 /obj/effect/plant/proc/is_mature()
 	return (health >= (max_health/3) && world.time > mature_time)
+
+#undef DEFAULT_SEED
+#undef VINE_GROWTH_STAGES

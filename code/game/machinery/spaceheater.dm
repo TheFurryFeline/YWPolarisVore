@@ -1,13 +1,24 @@
+#define SHEATER_OFF 0
+#define SHEATER_STANDBY 1
+#define SHEATER_HEAT 2
+#define SHEATER_COOL 3
+
 /obj/machinery/space_heater
-	anchored = 0
-	density = 1
+	anchored = FALSE
+	density = TRUE
 	icon = 'icons/obj/atmos.dmi'
 	icon_state = "sheater0"
 	name = "space heater"
 	desc = "Made by Space Amish using traditional space techniques, this heater is guaranteed not to set the station on fire."
-	var/obj/item/weapon/cell/cell
-	var/cell_type = /obj/item/weapon/cell/high
-	var/on = 0
+
+	light_system = MOVABLE_LIGHT
+	light_range = 3
+	light_power = 1
+	light_on = FALSE
+
+	var/obj/item/cell/cell
+	var/cell_type = /obj/item/cell/high
+	var/state = 0
 	var/set_temperature = T0C + 20	//K
 	var/heating_power = 40000
 	clicksound = "switch"
@@ -20,19 +31,26 @@
 	update_icon()
 
 /obj/machinery/space_heater/update_icon()
-	overlays.Cut()
-	icon_state = "sheater[on]"
+	cut_overlays()
+	icon_state = "sheater[state]"
 	if(panel_open)
-		overlays  += "sheater-open"
-	if(on)
-		set_light(3, 3, "#FFCC00")
-	else
-		set_light(0)
+		add_overlay("sheater-open")
+	switch(state)
+		if(SHEATER_OFF)
+			set_light_on(FALSE)
+		if(SHEATER_STANDBY)
+			set_light_on(FALSE)
+		if(SHEATER_HEAT)
+			set_light_color("#FFCC00")
+			set_light_on(TRUE)
+		if(SHEATER_COOL)
+			set_light_color("#00ccff")
+			set_light_on(TRUE)
 
 /obj/machinery/space_heater/examine(mob/user)
 	. = ..()
 
-	. += "The heater is [on ? "on" : "off"] and the hatch is [panel_open ? "open" : "closed"]."
+	. += "The heater is [state ? "on" : "off"] and the hatch is [panel_open ? "open" : "closed"]."
 	if(panel_open)
 		. += "The power cell is [cell ? "installed" : "missing"]."
 	else
@@ -53,29 +71,29 @@
 	..(severity)
 
 /obj/machinery/space_heater/attackby(obj/item/I, mob/user)
-	if(istype(I, /obj/item/weapon/cell))
+	if(istype(I, /obj/item/cell))
 		if(panel_open)
 			if(cell)
 				to_chat(user, "There is already a power cell inside.")
 				return
 			else
 				// insert cell
-				var/obj/item/weapon/cell/C = usr.get_active_hand()
+				var/obj/item/cell/C = user.get_active_hand()
 				if(istype(C))
 					user.drop_item()
 					cell = C
 					C.loc = src
-					C.add_fingerprint(usr)
+					C.add_fingerprint(user)
 
-					user.visible_message("<span class='notice'>[user] inserts a power cell into [src].</span>", "<span class='notice'>You insert the power cell into [src].</span>")
+					user.visible_message(span_notice("[user] inserts a power cell into [src]."), span_notice("You insert the power cell into [src]."))
 					power_change()
 		else
 			to_chat(user, "The hatch must be open to insert a power cell.")
 			return
-	else if(I.is_screwdriver())
+	else if(I.has_tool_quality(TOOL_SCREWDRIVER))
 		panel_open = !panel_open
 		playsound(src, I.usesound, 50, 1)
-		user.visible_message("<span class='notice'>[user] [panel_open ? "opens" : "closes"] the hatch on the [src].</span>", "<span class='notice'>You [panel_open ? "open" : "close"] the hatch on the [src].</span>")
+		user.visible_message(span_notice("[user] [panel_open ? "opens" : "closes"] the hatch on the [src]."), span_notice("You [panel_open ? "open" : "close"] the hatch on the [src]."))
 		update_icon()
 		if(!panel_open && user.machine == src)
 			user << browse(null, "window=spaceheater")
@@ -92,8 +110,8 @@
 	if(panel_open)
 		tgui_interact(user)
 	else
-		on = !on
-		user.visible_message("<span class='notice'>[user] switches [on ? "on" : "off"] the [src].</span>","<span class='notice'>You switch [on ? "on" : "off"] the [src].</span>")
+		state = state ? SHEATER_OFF : SHEATER_STANDBY
+		user.visible_message(span_notice("[user] switches [state ? "on" : "off"] the [src]."),span_notice("You switch [state ? "on" : "off"] the [src]."))
 		update_icon()
 	return
 
@@ -122,7 +140,7 @@
 
 	return data
 
-/obj/machinery/space_heater/tgui_act(action, params)
+/obj/machinery/space_heater/tgui_act(action, params, datum/tgui/ui)
 	if(..())
 		return TRUE
 
@@ -136,11 +154,11 @@
 			. = TRUE
 
 		if("cellremove")
-			if(cell && !usr.get_active_hand())
-				usr.visible_message("<span class='notice'>[usr] removes [cell] from [src].</span>", "<span class='notice'>You remove [cell] from [src].</span>")
+			if(cell && !ui.user.get_active_hand())
+				ui.user.visible_message(span_notice("[ui.user] removes [cell] from [src]."), span_notice("You remove [cell] from [src]."))
 				cell.update_icon()
-				usr.put_in_hands(cell)
-				cell.add_fingerprint(usr)
+				ui.user.put_in_hands(cell)
+				cell.add_fingerprint(ui.user)
 				cell = null
 				power_change()
 				. = TRUE
@@ -148,45 +166,58 @@
 
 		if("cellinstall")
 			if(!cell)
-				var/obj/item/weapon/cell/C = usr.get_active_hand()
+				var/obj/item/cell/C = ui.user.get_active_hand()
 				if(istype(C))
-					usr.drop_item()
+					ui.user.drop_item()
 					cell = C
 					C.loc = src
-					C.add_fingerprint(usr)
+					C.add_fingerprint(ui.user)
 					power_change()
-					usr.visible_message("<span class='notice'>[usr] inserts \the [C] into \the [src].</span>", "<span class='notice'>You insert \the [C] into \the [src].</span>")
+					ui.user.visible_message(span_notice("[ui.user] inserts \the [C] into \the [src]."), span_notice("You insert \the [C] into \the [src]."))
 				. = TRUE
 
 /obj/machinery/space_heater/process()
-	if(on)
-		if(cell && cell.charge)
-			var/datum/gas_mixture/env = loc.return_air()
-			if(env && abs(env.temperature - set_temperature) > 0.1)
-				var/transfer_moles = 0.25 * env.total_moles
-				var/datum/gas_mixture/removed = env.remove(transfer_moles)
+	if(!state)
+		return
 
-				if(removed)
-					var/heat_transfer = removed.get_thermal_energy_change(set_temperature)
-					if(heat_transfer > 0)	//heating air
-						heat_transfer = min(heat_transfer , heating_power) //limit by the power rating of the heater
+	if(cell && cell.charge)
+		var/datum/gas_mixture/env = loc.return_air()
+		if(env && abs(env.temperature - set_temperature) > 0.1)
+			var/transfer_moles = 0.25 * env.total_moles
+			var/datum/gas_mixture/removed = env.remove(transfer_moles)
 
-						removed.add_thermal_energy(heat_transfer)
-						cell.use(heat_transfer*CELLRATE)
-					else	//cooling air
-						heat_transfer = abs(heat_transfer)
+			if(removed)
+				var/heat_transfer = removed.get_thermal_energy_change(set_temperature)
+				if(heat_transfer > 0)	//heating air
+					if(state == SHEATER_STANDBY)
+						state = SHEATER_HEAT
+						update_icon()
+					heat_transfer = min(heat_transfer , heating_power) //limit by the power rating of the heater
 
-						//Assume the heat is being pumped into the hull which is fixed at 20 C
-						var/cop = removed.temperature/T20C	//coefficient of performance from thermodynamics -> power used = heat_transfer/cop
-						heat_transfer = min(heat_transfer, cop * heating_power)	//limit heat transfer by available power
+					removed.add_thermal_energy(heat_transfer)
+					cell.use(heat_transfer*CELLRATE)
+				else	//cooling air
+					if(state == SHEATER_STANDBY)
+						state = SHEATER_COOL
+						update_icon()
+					heat_transfer = abs(heat_transfer)
 
-						heat_transfer = removed.add_thermal_energy(-heat_transfer)	//get the actual heat transfer
+					//Assume the heat is being pumped into the hull which is fixed at 20 C
+					var/cop = removed.temperature/T20C	//coefficient of performance from thermodynamics -> power used = heat_transfer/cop
+					heat_transfer = min(heat_transfer, cop * heating_power)	//limit heat transfer by available power
 
-						var/power_used = abs(heat_transfer)/cop
-						cell.use(power_used*CELLRATE)
+					heat_transfer = removed.add_thermal_energy(-heat_transfer)	//get the actual heat transfer
 
-				env.merge(removed)
-		else
-			on = 0
-			power_change()
-			update_icon()
+					var/power_used = abs(heat_transfer)/cop
+					cell.use(power_used*CELLRATE)
+
+			env.merge(removed)
+	else
+		state = SHEATER_OFF
+		power_change()
+		update_icon()
+
+#undef SHEATER_OFF
+#undef SHEATER_STANDBY
+#undef SHEATER_HEAT
+#undef SHEATER_COOL

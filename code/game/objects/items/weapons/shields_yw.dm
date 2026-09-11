@@ -11,13 +11,13 @@ obj/item/weapon/shield/riot/stun
 	w_class = ITEMSIZE_NORMAL
 	var/active = 0
 /*
-/obj/item/weapon/shield/energy/IsShield()
+/obj/item/shield/energy/IsShield()
 	if(active)
 		return 1
 	else
 		return 0
 */
-/obj/item/weapon/shield/riot/tele/attack_self(mob/living/user)
+/obj/item/shield/riot/tele/attack_self(mob/living/user)
 	active = !active
 	icon_state = "teleriot[active]"
 	playsound(src.loc, 'sound/weapons/empty.ogg', 50, 1)
@@ -28,14 +28,14 @@ obj/item/weapon/shield/riot/stun
 		throw_speed = 2
 		w_class = ITEMSIZE_LARGE
 		slot_flags = SLOT_BACK
-		user << "<span class='notice'>You extend \the [src].</span>"
+		user << "<b>You extend \the [src].</b>"
 	else
 		force = 3
 		throwforce = 3
 		throw_speed = 3
 		w_class = ITEMSIZE_NORMAL
 		slot_flags = null
-		user << "<span class='notice'>[src] can now be concealed.</span>"
+		user << "<b>[src] can now be concealed.</b>"
 
 	if(istype(user,/mob/living/carbon/human))
 		var/mob/living/carbon/human/H = user
@@ -44,4 +44,3 @@ obj/item/weapon/shield/riot/stun
 
 	add_fingerprint(user)
 	return
-

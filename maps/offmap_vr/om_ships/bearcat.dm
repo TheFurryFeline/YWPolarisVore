@@ -1,5 +1,5 @@
 // Compile in the map for CI testing if we're testing compileability of all the maps
-#if MAP_TEST
+#ifdef MAP_TEST
 #include "bearcat.dmm"
 #endif
 
@@ -7,7 +7,7 @@
 /datum/map_template/om_ships/bearcat
 	name = "OM Ship - Bearcat (New Z)"
 	desc = "An old salvage ship, abandoned but seemingly intact."
-	mappath = 'bearcat.dmm'
+	mappath = "maps/offmap_vr/om_ships/bearcat.dmm"
 
 // The 'shuttle'
 /datum/shuttle/autodock/overmap/bearcat
@@ -55,14 +55,12 @@
 	shuttle_type = /datum/shuttle/autodock/overmap/bearcat
 
 /obj/effect/overmap/visitable/ship/landable/bearcat
-	scanner_name = "Binturong-class Salvage Vessel"
+	name = "Binturong-class Salvage Vessel"
 	scanner_desc = @{"[i]Registration[/i]: IRV Bearcat
 [i]Class:[/i] Corvette
 [i]Transponder[/i]: Transmitting \'Keep-Away\' Signal
 [b]Notice[/b]: Abandoned under unclear circumstances."}
 	known = FALSE
-	color = "#ee3333" //Reddish, so it looks kinda rusty and beat up
-//	initial_generic_waypoints = list("bearcat_dock_w", "bearcat_dock_e")
 	vessel_mass = 3500
 	vessel_size = SHIP_SIZE_LARGE
 	shuttle = "Bearcat"

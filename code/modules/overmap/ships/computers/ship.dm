@@ -22,7 +22,7 @@ somewhere on that shuttle. Subtypes of these can be then used to perform ship ov
 		return
 	. = attempt_hook_up_recursive(sector)
 	if(. && linked && user)
-		to_chat(user, "<span class='notice'>[src] reconnected to [linked]</span>")
+		to_chat(user, span_notice("[src] reconnected to [linked]"))
 		user << browse(null, "window=[src]") // close reconnect dialog
 
 /obj/machinery/computer/ship/proc/attempt_hook_up_recursive(obj/effect/overmap/visitable/ship/sector)
@@ -55,11 +55,11 @@ somewhere on that shuttle. Subtypes of these can be then used to perform ship ov
 		return TRUE
 	switch(action)
 		if("sync")
-			sync_linked(usr)
+			sync_linked(ui.user)
 			return TRUE
 		if("close")
-			unlook(usr)
-			usr.unset_machine()
+			unlook(ui.user)
+			ui.user.unset_machine()
 			return TRUE
 	return FALSE
 
@@ -69,29 +69,34 @@ somewhere on that shuttle. Subtypes of these can be then used to perform ship ov
 	if(linked)
 		apply_visual(user)
 		user.reset_view(linked)
+		if(linked.real_appearance)
+			user.client?.images += linked.real_appearance
 	user.set_machine(src)
 	if(isliving(user))
 		var/mob/living/L = user
 		L.looking_elsewhere = 1
 		L.handle_vision()
 	user.set_viewsize(world.view + extra_view)
-	GLOB.moved_event.register(user, src, /obj/machinery/computer/ship/proc/unlook)
+	user.AddComponent(/datum/component/recursive_move)
+	RegisterSignal(user, COMSIG_OBSERVER_MOVED, /obj/machinery/computer/ship/proc/unlook, override = TRUE) //This needs override or else it will spam runtimes because it is called repeatedly.
 	// TODO GLOB.stat_set_event.register(user, src, /obj/machinery/computer/ship/proc/unlook)
-	LAZYDISTINCTADD(viewers, weakref(user))
+	LAZYDISTINCTADD(viewers, WEAKREF(user))
 
 /obj/machinery/computer/ship/proc/unlook(var/mob/user)
 	user.reset_view()
+	if(linked?.real_appearance)
+		user.client?.images -= linked.real_appearance
 	if(isliving(user))
 		var/mob/living/L = user
 		L.looking_elsewhere = 0
 		L.handle_vision()
 	user.set_viewsize() // reset to default
-	GLOB.moved_event.unregister(user, src, /obj/machinery/computer/ship/proc/unlook)
+	UnregisterSignal(user, COMSIG_OBSERVER_MOVED)
 	// TODO GLOB.stat_set_event.unregister(user, src, /obj/machinery/computer/ship/proc/unlook)
-	LAZYREMOVE(viewers, weakref(user))
+	LAZYREMOVE(viewers, WEAKREF(user))
 
 /obj/machinery/computer/ship/proc/viewing_overmap(mob/user)
-	return (weakref(user) in viewers)
+	return (WEAKREF(user) in viewers)
 
 /obj/machinery/computer/ship/tgui_status(mob/user)
 	. = ..()
@@ -116,7 +121,7 @@ somewhere on that shuttle. Subtypes of these can be then used to perform ship ov
 /obj/machinery/computer/ship/sensors/Destroy()
 	sensors = null
 	if(LAZYLEN(viewers))
-		for(var/weakref/W in viewers)
+		for(var/datum/weakref/W in viewers)
 			var/M = W.resolve()
 			if(M)
 				unlook(M)

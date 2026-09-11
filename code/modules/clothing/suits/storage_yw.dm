@@ -7,7 +7,7 @@
 	armor = list(melee = 0, bullet = 0, laser = 0,energy = 0, bomb = 0, bio = 0, rad = 0)
 	siemens_coefficient = 0.9
 	flags_inv = HIDEHOLSTER //VOREStation Add - These obviously do.
-	allowed = list(/obj/item/weapon/tank/emergency/oxygen,/obj/item/device/flashlight,/obj/item/weapon/pen,/obj/item/clothing/head/soft,/obj/item/clothing/head/beret,/obj/item/weapon/storage/fancy/cigarettes,/obj/item/weapon/flame/lighter,/obj/item/device/taperecorder,/obj/item/device/analyzer,/obj/item/device/radio,/obj/item/taperoll)
+	allowed = list(/obj/item/tank/emergency/oxygen,/obj/item/flashlight,/obj/item/pen,/obj/item/clothing/head/soft,/obj/item/clothing/head/beret,/obj/item/storage/fancy/cigarettes,/obj/item/flame/lighter,/obj/item/taperecorder,/obj/item/analyzer,/obj/item/radio,/obj/item/taperoll)
 
 /obj/item/clothing/suit/storage/explorer/crew
 	name = "\improper Explorer jacket"
@@ -58,17 +58,17 @@
 /obj/item/clothing/suit/storage/tailcoat
 	name = "victorian tailcoat"
 	desc = "A fancy victorian tailcoat."
-	icon = 'icons/mob/suit_yw.dmi'
+	icon = 'icons/inventory/suit/mob_yw.dmi'
 	icon_state = "tailcoat"
-	icon_override = 'icons/mob/suit_yw.dmi'
+	icon_override = 'icons/inventory/suit/mob_yw.dmi'
 	item_state = "tailcoat_s"
 
 /obj/item/clothing/suit/storage/victcoat
 	name = "ladies black victorian coat"
 	desc = "A fancy victorian coat."
-	icon = 'icons/mob/suit_yw.dmi'
+	icon = 'icons/inventory/suit/mob_yw.dmi'
 	icon_state = "ladiesvictoriancoat"
-	icon_override = 'icons/mob/suit_yw.dmi'
+	icon_override = 'icons/inventory/suit/mob_yw.dmi'
 	item_state = "ladiesvictoriancoat_s"
 
 /obj/item/clothing/suit/storage/victcoat/red

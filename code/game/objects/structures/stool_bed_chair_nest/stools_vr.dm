@@ -1,4 +1,4 @@
-/obj/item/weapon/stool/baystool
+/obj/item/stool/baystool
 	name = "bar stool"
 	desc = "Apply butt."
 	icon = 'icons/obj/furniture_vr.dmi' //VOREStation Edit - new Icons
@@ -9,7 +9,10 @@
 	throwforce = 10
 	w_class = ITEMSIZE_HUGE
 	base_icon = "bar_stool_base"
-	anchored = 1
+	anchored = TRUE
 
-/obj/item/weapon/stool/baystool/padded/New(var/newloc, var/new_material)
+/obj/item/stool/baystool/padded
+	icon_state = "bar_stool_padded_preview" //set for the map
+
+/obj/item/stool/baystool/padded/New(var/newloc, var/new_material)
 	..(newloc, "steel", "carpet")

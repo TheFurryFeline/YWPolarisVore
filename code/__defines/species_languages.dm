@@ -25,28 +25,32 @@
 #define EMP_OXY_DMG	0x100	// EMPs inflict oxy damage
 
 // Species allergens
-#define MEAT		0x1	// Skrell won't like this.
-#define FISH		0x2	// Seperate for completion's sake. Still bad for skrell.
-#define FRUIT		0x4	// An apple a day only keeps the doctor away if they're allergic.
-#define VEGETABLE	0x8	// Taters 'n' carrots. Potato allergy is a thing, apparently.
-#define GRAINS		0x10	// Wheat, oats, etc.
-#define BEANS		0x20	// The musical fruit! Includes soy.
-#define SEEDS		0x40	// Hope you don't have a nut allergy.
-#define DAIRY		0x80	// Lactose intolerance, ho! Also bad for skrell.
-#define FUNGI		0x100	// Delicious shrooms.
-#define COFFEE		0x200	// Mostly here for tajara.
-#define GENERIC		0x400	// Catchall for stuff that doesn't fall into the groups above. You shouldn't be allergic to this type, ever.
-#define SUGARS		0x800	// For unathi-like reactions
-#define EGGS      0x1000 // For Skrell eggs allergy
+#define ALLERGEN_MEAT		0x1		// Skrell won't like this.
+#define ALLERGEN_FISH		0x2		// Seperate for completion's sake. Still bad for skrell.
+#define ALLERGEN_FRUIT		0x4		// An apple a day only keeps the doctor away if they're allergic.
+#define ALLERGEN_VEGETABLE	0x8		// Taters 'n' carrots. Potato allergy is a thing, apparently.
+#define ALLERGEN_GRAINS		0x10	// Wheat, oats, etc.
+#define ALLERGEN_BEANS		0x20	// The musical fruit! Includes soy.
+#define ALLERGEN_SEEDS		0x40	// Hope you don't have a nut allergy.
+#define ALLERGEN_DAIRY		0x80	// Lactose intolerance, ho! Also bad for skrell.
+#define ALLERGEN_FUNGI		0x100	// Delicious shrooms.
+#define ALLERGEN_COFFEE		0x200	// Mostly here for tajara.
+#define ALLERGEN_SUGARS		0x400	// For unathi-like reactions
+#define ALLERGEN_EGGS		0x800	// For Skrell eggs allergy
+#define ALLERGEN_STIMULANT	0x1000	// Stimulants are what makes the Tajaran heart go ruh roh - not just coffee!
+#define ALLERGEN_CHOCOLATE	0x2000	// Makes dogs die if they want to?
 
 // Allergen reactions
-#define AG_TOX_DMG	0x1	// the classic 
-#define AG_OXY_DMG	0x2	// intense airway reactions
-#define AG_EMOTE	0x4	// general emote reactions based on affect type
-#define AG_PAIN		0x8	// short-lived hurt
-#define AG_WEAKEN	0x10	// too weak to move, oof
-#define AG_BLURRY	0x20	// blurred vision!
-#define AG_SLEEPY	0x40	// fatigue/exhaustion
+#define AG_PHYS_DMG	0x1	// brute
+#define AG_BURN_DMG	0x2	// burns
+#define AG_TOX_DMG	0x4	// the classic
+#define AG_OXY_DMG	0x8	// intense airway reactions
+#define AG_EMOTE	0x10	// general emote reactions based on affect type
+#define AG_PAIN		0x20	// short-lived hurt
+#define AG_WEAKEN	0x40	// too weak to move, oof
+#define AG_BLURRY	0x80	// blurred vision!
+#define AG_SLEEPY	0x100	// fatigue/exhaustion
+#define AG_CONFUSE	0x200	// disorientation
 
 // Species spawn flags
 #define SPECIES_IS_WHITELISTED      0x1  // Must be whitelisted to play.
@@ -83,18 +87,15 @@
 #define LANGUAGE_ROOTLOCAL "Local Rootspeak"
 #define LANGUAGE_ROOTGLOBAL "Global Rootspeak"
 #define LANGUAGE_CULT "Cult"
-#define LANGUAGE_OCCULT "Occult"
 #define LANGUAGE_CHANGELING "Changeling"
 #define LANGUAGE_VOX "Vox-Pidgin"
 #define LANGUAGE_TERMINUS "Terminus"
-#define LANGUAGE_SKRELLIANFAR "High Skrellian"
 #define LANGUAGE_MINBUS "Minbus"
 #define LANGUAGE_EVENT1 "Occursus"
 #define LANGUAGE_AKHANI "Akhani"
 #define LANGUAGE_ALAI "Alai"
 #define LANGUAGE_ZADDAT "Vedahq"
 #define LANGUAGE_PROMETHEAN "Promethean Biolinguistics"
-#define LANGUAGE_BLOB "Chemosense Transmission"
 #define LANGUAGE_GIBBERISH "Babel"
 
 // Language flags.
@@ -108,6 +109,7 @@
 #define NO_TALK_MSG  128 // Do not show the "\The [speaker] talks into \the [radio]" message
 #define NO_STUTTER   256 // No stuttering, slurring, or other speech problems
 #define ALT_TRANSMIT 512 // Language is not based on vision or sound (Todo: add this into the say code and use it for the rootspeak languages)
+#define INAUDIBLE 1024   // Language is not audible (similar to nonverbal) but is still using hearing-based recognition
 
 #define SKIN_NORMAL 0
 #define SKIN_THREAT 1

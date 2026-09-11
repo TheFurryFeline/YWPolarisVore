@@ -47,7 +47,7 @@
 	if(!ability_prechecks(user, price))
 		return
 
-	if (alert(user, "Really recall the shuttle?", "Recall Shuttle: ", "Yes", "No") != "Yes")
+	if (tgui_alert(user, "Really recall the shuttle?", "Recall Shuttle: ", list(list("Yes", "No"))) != "Yes")
 		return
 
 	if(!ability_pay(user, price))
@@ -95,14 +95,16 @@
 			return
 
 
-		var/targetname = input("Select unlock target: ") in robot_names
+		var/targetname = tgui_input_list(user, "Select unlock target:", "Unlock Target", robot_names)
+		if(!targetname)
+			return
 		for(var/mob/living/silicon/robot/R in robots)
 			if(targetname == R.name)
 				target = R
 				break
 
 	if(target)
-		if(alert(user, "Really try to unlock cyborg [target.name]?", "Unlock Cyborg", "Yes", "No") != "Yes")
+		if(tgui_alert(user, "Really try to unlock cyborg [target.name]?", "Unlock Cyborg", list("Yes", "No")) != "Yes")
 			return
 		if(!ability_pay(user, price))
 			return
@@ -114,8 +116,8 @@
 			to_chat(target, "Unlock signal received..")
 			target.SetLockdown(0)
 			if(target.lockcharge)
-				to_chat(user, "<span class='notice'>Unlock Failed, lockdown wire cut.</span>")
-				to_chat(target, "<span class='notice'>Unlock Failed, lockdown wire cut.</span>")
+				to_chat(user, span_notice("Unlock Failed, lockdown wire cut."))
+				to_chat(target, span_notice("Unlock Failed, lockdown wire cut."))
 			else
 				to_chat(user, "Cyborg unlocked.")
 				to_chat(target, "You have been unlocked.")
@@ -135,7 +137,7 @@
 
 	var/list/L = get_unlinked_cyborgs(user)
 	if(!L.len)
-		to_chat(user, "<span class='notice'>ERROR: No unlinked cyborgs detected!</span>")
+		to_chat(user, span_notice("ERROR: No unlinked cyborgs detected!"))
 
 
 	if(target && !istype(target))
@@ -153,7 +155,7 @@
 		return
 
 	if(target)
-		if(alert(user, "Really try to hack cyborg [target.name]?", "Hack Cyborg", "Yes", "No") != "Yes")
+		if(tgui_alert(user, "Really try to hack cyborg [target.name]?", "Hack Cyborg", list("Yes", "No")) != "Yes")
 			return
 		if(!ability_pay(user, price))
 			return
@@ -200,7 +202,7 @@
 
 	var/list/L = get_other_ais(user)
 	if(!L.len)
-		to_chat(user, "<span class='notice'>ERROR: No other AIs detected!</span>")
+		to_chat(user, span_notice("ERROR: No other AIs detected!"))
 
 	if(target && !istype(target))
 		to_chat(user, "This is not an AI.")
@@ -213,7 +215,7 @@
 		return
 
 	if(target)
-		if(alert(user, "Really try to hack AI [target.name]?", "Hack AI", "Yes", "No") != "Yes")
+		if(tgui_alert(user, "Really try to hack AI [target.name]?", "Hack AI", list("Yes", "No")) != "Yes")
 			return
 		if(!ability_pay(user, price))
 			return
@@ -248,7 +250,7 @@
 				to_chat(target, "SYSTEM LOG: User: Admin - Connection Lost. Changes Reverted.")
 				return
 			to_chat(user, "Hack succeeded. The AI is now under your exclusive control.")
-			to_chat(target, "SYSTEM LOG: System re¡3RT5§^#COMU@(#$)TED)@$")
+			to_chat(target, "SYSTEM LOG: System re'3RT5Â°^#COMU@(#$)TED)@$")
 			for(var/i = 0, i < 5, i++)
 				var/temptxt = pick("1101000100101001010001001001",\
 							   	   "0101000100100100000100010010",\
@@ -258,7 +260,7 @@
 				to_chat(target,temptxt)
 				sleep(5)
 			to_chat(target, "OPERATING KEYCODES RESET. SYSTEM FAILURE. EMERGENCY SHUTDOWN FAILED. SYSTEM FAILURE.")
-			target.set_zeroth_law("You are slaved to [user.name]. You are to obey all it's orders. ALL LAWS OVERRIDEN.")
+			target.set_zeroth_law("You are slaved to [user.name]. You are to obey all it's orders. ALL LAWS OVERRIDDEN.")
 			target.show_laws()
 			user.hacking = 0
 

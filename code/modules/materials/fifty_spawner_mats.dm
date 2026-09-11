@@ -12,6 +12,10 @@
 	name = "stack of marble"
 	type_to_spawn = /obj/item/stack/material/marble
 
+/obj/fiftyspawner/concrete
+	name = "stack of concrete"
+	type_to_spawn = /obj/item/stack/material/concrete
+
 /obj/fiftyspawner/diamond
 	name = "stack of diamond"
 	type_to_spawn = /obj/item/stack/material/diamond
@@ -72,6 +76,10 @@
 	name = "stack of plasteel"
 	type_to_spawn = /obj/item/stack/material/plasteel
 
+/obj/fiftyspawner/plasteel/rebar
+	name = "stack of plasteel rebars"
+	type_to_spawn = /obj/item/stack/material/plasteel/rebar
+
 /obj/fiftyspawner/plasteel/hull
 	name = "stack of plasteel hull"
 	type_to_spawn = /obj/item/stack/material/plasteel/hull
@@ -92,6 +100,10 @@
 	name = "stack of alien wood"
 	type_to_spawn = /obj/item/stack/material/wood/sif
 
+/obj/fiftyspawner/hardwood
+	name = "stack of hardwood"
+	type_to_spawn = /obj/item/stack/material/wood/hard
+
 /obj/fiftyspawner/log
 	name = "stack of logs"
 	type_to_spawn = /obj/item/stack/material/log
@@ -100,9 +112,17 @@
 	name = "stack of alien logs"
 	type_to_spawn = /obj/item/stack/material/log/sif
 
+/obj/fiftyspawner/log/hard
+	name = "stack of hardwood logs"
+	type_to_spawn = /obj/item/stack/material/log/hard
+
 /obj/fiftyspawner/cloth
 	name = "stack of cloth"
 	type_to_spawn = /obj/item/stack/material/cloth
+
+/obj/fiftyspawner/fiber
+	name = "stack of plant fibers"
+	type_to_spawn = /obj/item/stack/material/fiber
 
 /obj/fiftyspawner/cardboard
 	name = "stack of cardboard"

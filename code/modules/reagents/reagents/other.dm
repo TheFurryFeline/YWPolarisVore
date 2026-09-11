@@ -114,14 +114,17 @@
 	color_weight = 20
 
 /datum/reagent/paint/touch_turf(var/turf/T)
+	..()
 	if(istype(T) && !istype(T, /turf/space))
 		T.color = color
 
 /datum/reagent/paint/touch_obj(var/obj/O)
+	..()
 	if(istype(O))
 		O.color = color
 
 /datum/reagent/paint/touch_mob(var/mob/M)
+	..()
 	if(istype(M) && !istype(M, /mob/observer)) //painting ghosts: not allowed
 		M.color = color //maybe someday change this to paint only clothes and exposed body parts for human mobs.
 
@@ -167,7 +170,7 @@
 	taste_description = "bwoink"
 	reagent_state = LIQUID
 	color = "#C8A5DC"
-	affects_dead = 1 //This can even heal dead people.
+	affects_dead = TRUE //This can even heal dead people.
 	metabolism = 0.1
 	mrate_static = TRUE //Just in case
 
@@ -178,11 +181,10 @@
 	affect_blood(M, alien, removed)
 
 /datum/reagent/adminordrazine/affect_blood(var/mob/living/carbon/M, var/alien, var/removed)
-	M.setCloneLoss(0)
-	M.setOxyLoss(0)
-	M.radiation = 0
-	M.heal_organ_damage(20,20)
-	M.adjustToxLoss(-20)
+	M.heal_organ_damage(40,40)
+	M.adjustCloneLoss(-40)
+	M.adjustToxLoss(-40)
+	M.adjustOxyLoss(-300)
 	M.hallucination = 0
 	M.setBrainLoss(0)
 	M.disabilities = 0
@@ -202,6 +204,10 @@
 	M.radiation = 0
 	M.ExtinguishMob()
 	M.fire_stacks = 0
+	M.add_chemical_effect(CE_ANTIBIOTIC, ANTIBIO_SUPER)
+	M.add_chemical_effect(CE_STABLE, 15)
+	M.add_chemical_effect(CE_PAINKILLER, 200)
+	M.remove_a_modifier_of_type(/datum/modifier/poisoned)
 	if(M.bodytemperature > 310)
 		M.bodytemperature = max(310, M.bodytemperature - (40 * TEMPERATURE_DAMAGE_COEFFICIENT))
 	else if(M.bodytemperature < 311)
@@ -209,6 +215,9 @@
 	if(ishuman(M))
 		var/mob/living/carbon/human/H = M
 		var/wound_heal = 5
+		for(var/obj/item/organ/I in H.internal_organs)
+			if(I.damage > 0) //Adminordrazine heals even robits, it is magic
+				I.damage = max(I.damage - wound_heal, 0)
 		for(var/obj/item/organ/external/O in H.bad_external_organs)
 			if(O.status & ORGAN_BROKEN)
 				O.mend_fracture()		//Only works if the bone won't rebreak, as usual
@@ -261,6 +270,7 @@
 	M.apply_effect(5 * removed, IRRADIATE, 0)
 
 /datum/reagent/uranium/touch_turf(var/turf/T)
+	..()
 	if(volume >= 3)
 		if(!istype(T, /turf/space))
 			var/obj/effect/decal/cleanable/greenglow/glow = locate(/obj/effect/decal/cleanable/greenglow, T)
@@ -282,7 +292,7 @@
 	name = "Lithium-6"
 	id = "lithium6"
 	description = "An isotope of lithium. It has 3 neutrons, but shares all chemical characteristics with regular lithium."
-	
+
 /datum/reagent/helium/helium3
 	name = "Helium-3"
 	id = "helium3"
@@ -300,6 +310,10 @@
 /datum/reagent/supermatter
 	name = "Supermatter"
 	id = "supermatter"
+	color = "#fffd6b"
+	reagent_state = SOLID
+	affects_dead = TRUE
+	affects_robots = TRUE
 	description = "The immense power of a supermatter crystal, in liquid form. You're not entirely sure how that's possible, but it's probably best handled with care."
 	taste_description = "taffy" // 0. The supermatter is tasty, tasty taffy.
 
@@ -311,11 +325,11 @@
 /datum/reagent/supermatter/affect_ingest(mob/living/carbon/M, alien, removed)
 	. = ..()
 	M.ash()
-	
+
 /datum/reagent/supermatter/affect_blood(mob/living/carbon/M, alien, removed)
 	. = ..()
 	M.ash()
-	
+
 
 /datum/reagent/adrenaline
 	name = "Adrenaline"
@@ -351,6 +365,7 @@
 			cult.remove_antagonist(M.mind)
 
 /datum/reagent/water/holywater/touch_turf(var/turf/T)
+	..()
 	if(volume >= 5)
 		T.holy = 1
 	return
@@ -398,15 +413,17 @@
 	touch_met = 50
 
 /datum/reagent/thermite/touch_turf(var/turf/T)
+	..()
 	if(volume >= 5)
 		if(istype(T, /turf/simulated/wall))
 			var/turf/simulated/wall/W = T
 			W.thermite = 1
-			W.overlays += image('icons/effects/effects.dmi',icon_state = "#673910")
+			W.add_overlay(image('icons/effects/effects.dmi',icon_state = "#673910")) // What??
 			remove_self(5)
 	return
 
 /datum/reagent/thermite/touch_mob(var/mob/living/L, var/amount)
+	..()
 	if(istype(L))
 		L.adjust_fire_stacks(amount / 5)
 
@@ -423,19 +440,25 @@
 	touch_met = 50
 
 /datum/reagent/space_cleaner/touch_mob(var/mob/M)
+	..()
 	if(iscarbon(M))
 		var/mob/living/carbon/C = M
-		C.clean_blood()
+		C.clean_blood(TRUE)
 
 /datum/reagent/space_cleaner/touch_obj(var/obj/O)
+	..()
 	O.clean_blood()
 
 /datum/reagent/space_cleaner/touch_turf(var/turf/T)
+	..()
 	if(volume >= 1)
 		if(istype(T, /turf/simulated))
 			var/turf/simulated/S = T
 			S.dirt = 0
 		T.clean_blood()
+		for(var/obj/effect/O in T)
+			if(istype(O,/obj/effect/rune) || istype(O,/obj/effect/decal/cleanable) || istype(O,/obj/effect/overlay))
+				qdel(O)
 
 		for(var/mob/living/simple_mob/slime/M in T)
 			M.adjustToxLoss(rand(5, 10))
@@ -478,6 +501,7 @@
 			M.vomit()
 
 /datum/reagent/space_cleaner/touch_mob(var/mob/living/L, var/amount)
+	..()
 	if(istype(L, /mob/living/carbon/human))
 		var/mob/living/carbon/human/H = L
 		if(H.wear_mask)
@@ -485,7 +509,7 @@
 				var/obj/item/clothing/mask/smokable/S = H.wear_mask
 				if(S.lit)
 					S.quench() // No smoking in my medbay!
-					H.visible_message("<span class='notice'>[H]\'s [S.name] is put out.</span>")
+					H.visible_message(span_notice("[H]\'s [S.name] is put out."))
 
 /datum/reagent/lube // TODO: spraying on borgs speeds them up
 	name = "Space Lube"
@@ -496,6 +520,7 @@
 	color = "#009CA8"
 
 /datum/reagent/lube/touch_turf(var/turf/simulated/T)
+	..()
 	if(!istype(T))
 		return
 	if(volume >= 1)
@@ -510,6 +535,7 @@
 	color = "#C7FFFF"
 
 /datum/reagent/silicate/touch_obj(var/obj/O)
+	..()
 	if(istype(O, /obj/structure/window))
 		var/obj/structure/window/W = O
 		W.apply_silicate(volume)
@@ -583,9 +609,11 @@
 	color = "#F2F3F4"
 
 /datum/reagent/luminol/touch_obj(var/obj/O)
+	..()
 	O.reveal_blood()
 
 /datum/reagent/luminol/touch_mob(var/mob/living/L)
+	..()
 	L.reveal_blood()
 
 /datum/reagent/nutriment/biomass
@@ -621,13 +649,86 @@
 	M.adjustToxLoss(2 * removed)
 	M.adjustCloneLoss(2 * removed)
 
-/datum/reagent/fishbait
+/datum/reagent/nutriment/fishbait
 	name = "Fish Bait"
 	id = "fishbait"
 	description = "A natural slurry that particularily appeals to fish."
-	taste_description = "earthy"
+	taste_description = "slimy dirt"
 	reagent_state = LIQUID
 	color = "#62764E"
+	nutriment_factor = 15
+
+/datum/reagent/carpet
+	name = "Liquid Carpet"
+	id = "liquidcarpet"
+	description = "Liquified carpet fibers, ready for dyeing."
+	reagent_state = LIQUID
+	color = "#b51d05"
+	taste_description = "carpet"
+
+/datum/reagent/carpet/black
+	name = "Liquid Black Carpet"
+	id = "liquidcarpetb"
+	description = "Black Carpet Fibers, ready for reinforcement."
+	reagent_state = LIQUID
+	color = "#000000"
+	taste_description = "rare and ashy carpet"
+
+/datum/reagent/carpet/blue
+	name = "Liquid Blue Carpet"
+	id = "liquidcarpetblu"
+	description = "Blue Carpet Fibers, ready for reinforcement."
+	reagent_state = LIQUID
+	color = "#3f4aee"
+	taste_description = "commanding carpet"
+
+/datum/reagent/carpet/turquoise
+	name = "Liquid Turquoise Carpet"
+	id = "liquidcarpettur"
+	description = "Turquoise Carpet Fibers, ready for reinforcement."
+	reagent_state = LIQUID
+	color = "#0592b5"
+	taste_description = "water-logged carpet"
+
+/datum/reagent/carpet/sblue
+	name = "Liquid Silver Blue Carpet"
+	id = "liquidcarpetsblu"
+	description = "Silver Blue Carpet Fibers, ready for reinforcement."
+	reagent_state = LIQUID
+	color = "#0011ff"
+	taste_description = "sterile and medicinal carpet"
+
+/datum/reagent/carpet/clown
+	name = "Liquid Clown Carpet"
+	id = "liquidcarpetc"
+	description = "Clown Carpet Fibers.... No clowns were harmed in the making of this."
+	reagent_state = LIQUID
+	color = "#e925be"
+	taste_description = "clown shoes and banana peels"
+
+/datum/reagent/carpet/purple
+	name = "Liquid Purple Carpet"
+	id = "liquidcarpetp"
+	description = "Purple Carpet Fibers, ready for reinforcement."
+	reagent_state = LIQUID
+	color = "#a614d3"
+	taste_description = "bleeding edge carpet research"
+
+/datum/reagent/carpet/orange
+	name = "Liquid Orange Carpet"
+	id = "liquidcarpeto"
+	description = "Orange Carpet Fibers, ready for reinforcement."
+	reagent_state = LIQUID
+	color = "#f16e16"
+	taste_description = "extremely overengineered carpet"
+
+/datum/reagent/essential_oil
+	name = "Essential Oils"
+	id = "essential_oil"
+	description = "A slurry of compounds that contains the basic requirements for life."
+	taste_description = "a mixture of thick, sweet, salty, salty and spicy flavours that all blend together to not be very nice at all"
+	reagent_state = LIQUID
+	color = "#e8e2b0"
 
 //YW Edit Start
 /datum/reagent/nutriment/paper //Paper is made from cellulose. You can eat it. It doesn't fill you up very much at all.

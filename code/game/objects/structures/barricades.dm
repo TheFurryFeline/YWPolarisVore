@@ -4,8 +4,8 @@
 	desc = "This space is blocked off by a barricade."
 	icon = 'icons/obj/structures.dmi'
 	icon_state = "barricade"
-	anchored = 1.0
-	density = 1.0
+	anchored = TRUE
+	density = TRUE
 	var/health = 100
 	var/maxhealth = 100
 	var/datum/material/material
@@ -35,13 +35,13 @@
 			return //hitting things with the wrong type of stack usually doesn't produce messages, and probably doesn't need to.
 		if(health < maxhealth)
 			if(D.get_amount() < 1)
-				to_chat(user, "<span class='warning'>You need one sheet of [material.display_name] to repair \the [src].</span>")
+				to_chat(user, span_warning("You need one sheet of [material.display_name] to repair \the [src]."))
 				return
-			visible_message("<span class='notice'>[user] begins to repair \the [src].</span>")
+			visible_message(span_notice("[user] begins to repair \the [src]."))
 			if(do_after(user,20) && health < maxhealth)
 				if(D.use(1))
 					health = maxhealth
-					visible_message("<span class='notice'>[user] repairs \the [src].</span>")
+					visible_message(span_notice("[user] repairs \the [src]."))
 				return
 		return
 	else
@@ -71,7 +71,7 @@
 	return
 
 /obj/structure/barricade/attack_generic(var/mob/user, var/damage, var/attack_verb)
-	visible_message("<span class='danger'>[user] [attack_verb] the [src]!</span>")
+	visible_message(span_danger("[user] [attack_verb] the [src]!"))
 	if(material == get_material_by_name("resin"))
 		playsound(src, 'sound/effects/attackblob.ogg', 100, 1)
 	else if(material == (get_material_by_name(MAT_CLOTH) || get_material_by_name(MAT_SYNCLOTH)))
@@ -87,7 +87,7 @@
 
 /obj/structure/barricade/proc/dismantle()
 	material.place_dismantled_product(get_turf(src))
-	visible_message("<span class='danger'>\The [src] falls apart!</span>")
+	visible_message(span_danger("\The [src] falls apart!"))
 	qdel(src)
 	return
 
@@ -103,6 +103,12 @@
 	if(istype(mover) && mover.checkpass(PASSTABLE))
 		return TRUE
 	return FALSE
+
+/obj/structure/barricade/planks
+	name = "crude barricade"
+	icon_state = "barricade_planks"
+	health = 50
+	maxhealth = 50
 
 /obj/structure/barricade/sandbag
 	name = "sandbags"
@@ -132,7 +138,7 @@
 /obj/structure/barricade/sandbag/dismantle()
 	update_connections(1, src)
 	material.place_dismantled_product(get_turf(src))
-	visible_message("<span class='danger'>\The [src] falls apart!</span>")
+	visible_message(span_danger("\The [src] falls apart!"))
 	qdel(src)
 	return
 
@@ -144,7 +150,8 @@
 	var/image/I
 
 	for(var/i = 1 to 4)
-		I = image('icons/obj/sandbags.dmi', "sandbags[connections[i]]", dir = 1<<(i-1))
+		var/connect = connections?[i] || 0
+		I = image('icons/obj/sandbags.dmi', "sandbags[connect]", dir = 1<<(i-1))
 		I.color = material.icon_colour
 		add_overlay(I)
 

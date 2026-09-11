@@ -6,9 +6,9 @@
 /obj/structure/transit_tube
 	icon = 'icons/obj/pipes/transit_tube.dmi'
 	icon_state = "E-W"
-	density = 1
+	density = TRUE
 	layer = ABOVE_JUNK_LAYER
-	anchored = 1.0
+	anchored = TRUE
 	var/list/tube_dirs = null
 	var/exit_delay = 2
 	var/enter_delay = 1
@@ -40,8 +40,8 @@
 	icon = 'icons/obj/pipes/transit_tube_pod.dmi'
 	icon_state = "pod"
 	animate_movement = FORWARD_STEPS
-	anchored = 1.0
-	density = 1
+	anchored = TRUE
+	density = TRUE
 	var/moving = 0
 	var/datum/gas_mixture/air_contents = new()
 
@@ -56,7 +56,7 @@
 
 
 // When destroyed by explosions, properly handle contents.
-obj/structure/ex_act(severity)
+/obj/structure/ex_act(severity)
 	switch(severity)
 		if(1.0)
 			for(var/atom/movable/AM in contents)
@@ -101,11 +101,11 @@ obj/structure/ex_act(severity)
 /obj/structure/transit_tube/Bumped(mob/AM as mob|obj)
 	var/obj/structure/transit_tube/T = locate() in AM.loc
 	if(T)
-		to_chat(AM, "<span class='warning'>The tube's support pylons block your way.</span>")
+		to_chat(AM, span_warning("The tube's support pylons block your way."))
 		return ..()
 	else
 		AM.loc = src.loc
-		to_chat(AM, "<span class='info'>You slip under the tube.</span>")
+		to_chat(AM, span_info("You slip under the tube."))
 
 
 /obj/structure/transit_tube/station/New(loc)
@@ -117,7 +117,7 @@ obj/structure/ex_act(severity)
 	if(!pod_moving && icon_state == "open" && istype(AM, /mob))
 		for(var/obj/structure/transit_tube_pod/pod in loc)
 			if(pod.contents.len)
-				to_chat(AM, "<span class='notice'>The pod is already occupied.</span>")
+				to_chat(AM, span_notice("The pod is already occupied."))
 				return
 			else if(!pod.moving && (pod.dir in directions()))
 				AM.loc = pod
@@ -334,7 +334,7 @@ obj/structure/ex_act(severity)
 				current_tube.pod_stopped(src, dir)
 				break
 
-		density = 1
+		density = TRUE
 
 		// If the pod is no longer in a tube, move in a line until stopped or slowed to a halt.
 		//  /turf/inertial_drift appears to only work on mobs, and re-implementing some of the
@@ -427,7 +427,7 @@ obj/structure/ex_act(severity)
 		tube_dirs = parse_dirs(icon_state)
 
 		if(copytext(icon_state, 1, 3) == "D-" || findtextEx(icon_state, "Pass"))
-			density = 0
+			density = FALSE
 
 
 

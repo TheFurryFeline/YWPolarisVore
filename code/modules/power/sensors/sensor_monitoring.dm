@@ -11,9 +11,9 @@
 	light_color = "#ffcc33"
 
 	//computer stuff
-	density = 1
-	anchored = 1.0
-	circuit = /obj/item/weapon/circuitboard/powermonitor
+	density = TRUE
+	anchored = TRUE
+	circuit = /obj/item/circuitboard/powermonitor
 	var/alerting = 0
 	use_power = USE_POWER_IDLE
 	idle_power_usage = 300

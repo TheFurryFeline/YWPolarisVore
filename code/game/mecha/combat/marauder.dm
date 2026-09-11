@@ -8,7 +8,6 @@
 	health = 350
 	maxhealth = 350		//Don't forget to update the /old variant if  you change this number.
 	deflect_chance = 25
-	damage_absorption = list("brute"=0.5,"fire"=0.7,"bullet"=0.45,"laser"=0.6,"energy"=0.7,"bomb"=0.7)
 	max_temperature = 60000
 	infra_luminosity = 3
 	operation_req_access = list(access_cent_specops)
@@ -97,7 +96,7 @@
 			src.occupant_message("Unable to move while connected to the air system port")
 			last_message = world.time
 		return 0
-	if(!thrusters && src.pr_inertial_movement.active())
+	if(!thrusters && (current_processes & MECHA_PROC_MOVEMENT))
 		return 0
 	if(state || !has_charge(step_energy_drain))
 		return 0
@@ -113,9 +112,9 @@
 	if(move_result)
 		if(istype(src.loc, /turf/space))
 			if(!src.check_for_support())
-				src.pr_inertial_movement.start(list(src,direction))
+				float_direction = direction
+				start_process(MECHA_PROC_MOVEMENT)
 				if(thrusters)
-					src.pr_inertial_movement.set_process_args(list(src,direction))
 					tmp_step_energy_drain = step_energy_drain*2
 
 		can_move = 0

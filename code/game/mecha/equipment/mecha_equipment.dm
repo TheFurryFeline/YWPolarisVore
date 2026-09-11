@@ -1,13 +1,5 @@
 //DO NOT ADD MECHA PARTS TO THE GAME WITH THE DEFAULT "SPRITE ME" SPRITE!
 //I'm annoyed I even have to tell you this! SPRITE FIRST, then commit.
-#define EQUIP_HULL		"hull"
-#define EQUIP_WEAPON	"weapon"
-#define EQUIP_UTILITY	"utility"
-#define EQUIP_SPECIAL	"core"
-//VOREStation Addition begin: MICROMECHS
-#define EQUIP_MICRO_UTILITY	"micro_utility"
-#define EQUIP_MICRO_WEAPON	"micro_weapon"
-//VOREStation Addition end: MICROMECHS
 
 /obj/item/mecha_parts/mecha_equipment
 	name = "mecha equipment"
@@ -17,13 +9,13 @@
 	origin_tech = list(TECH_MATERIAL = 2)
 	description_info = "Some equipment may gain new abilities or advantages if equipped to certain types of Exosuits."
 	var/equip_cooldown = 0
-	var/equip_ready = 1
+	var/equip_ready = TRUE
 	var/energy_drain = 0
 	var/obj/mecha/chassis = null
 	var/range = MELEE //bitflags
 	/// Bitflag. Used by exosuit fabricator to assign sub-categories based on which exosuits can equip this.
 	var/mech_flags = NONE
-	var/salvageable = 1
+	var/salvageable = TRUE
 	var/required_type = /obj/mecha //may be either a type or a list of allowed types
 	var/equip_type = null //mechaequip2
 	var/allow_duplicate = FALSE
@@ -34,7 +26,7 @@
 
 /obj/item/mecha_parts/mecha_equipment/proc/do_after_cooldown(target=1)
 	sleep(equip_cooldown)
-	set_ready_state(1)
+	set_ready_state(TRUE)
 	if(ready_sound) //Kind of like the kinetic accelerator.
 		playsound(src, ready_sound, 50, 1, -1)
 	if(target && chassis)
@@ -43,11 +35,7 @@
 
 /obj/item/mecha_parts/mecha_equipment/examine(mob/user)
 	. = ..()
-	. += "<span class='notice'>[src] will fill [equip_type?"a [equip_type]":"any"] slot.</span>"
-
-/obj/item/mecha_parts/mecha_equipment/New()
-	..()
-	return
+	. += span_notice("[src] will fill [equip_type?"a [equip_type]":"any"] slot.")
 
 /obj/item/mecha_parts/mecha_equipment/proc/add_equip_overlay(obj/mecha/M as obj)
 	return
@@ -94,7 +82,7 @@
 		if(chassis.selected == src)
 			chassis.selected = null
 		src.update_chassis_page()
-		chassis.occupant_message("<font color='red'>The [src] is destroyed!</font>")
+		chassis.occupant_message(span_red("The [src] is destroyed!"))
 		chassis.log_append_to_last("[src] is destroyed.",1)
 		if(istype(src, /obj/item/mecha_parts/mecha_equipment/weapon))//Gun
 			switch(chassis.mech_faction)
@@ -123,7 +111,7 @@
 
 /obj/item/mecha_parts/mecha_equipment/proc/get_equip_info()
 	if(!chassis) return
-	return "<span style=\"color:[equip_ready?"#0f0":"#f00"];\">*</span>&nbsp;[chassis.selected==src?"<b>":"<a href='?src=\ref[chassis];select_equip=\ref[src]'>"][src.name][chassis.selected==src?"</b>":"</a>"]"
+	return (equip_ready ? span_green("*") : span_red("*")) + "&nbsp;[chassis.selected==src?"<b>":"<a href='?src=\ref[chassis];select_equip=\ref[src]'>"][src.name][chassis.selected==src?"</b>":"</a>"]"
 
 /obj/item/mecha_parts/mecha_equipment/proc/is_ranged()//add a distance restricted equipment. Why not?
 	return range&RANGED
@@ -227,33 +215,39 @@
 	src.update_chassis_page()
 	return
 
+/obj/item/mecha_parts/mecha_equipment/Destroy()
+	detach()
+	return ..()
+
 /obj/item/mecha_parts/mecha_equipment/proc/detach(atom/moveto=null)
+	if(!chassis)
+		return
 	moveto = moveto || get_turf(chassis)
-	if(src.Move(moveto))
-		chassis.equipment -= src
-		chassis.universal_equipment -= src
-		if(equip_type)
-			switch(equip_type)
-				if(EQUIP_HULL)
-					chassis.hull_equipment -= src
-				if(EQUIP_WEAPON)
-					chassis.weapon_equipment -= src
-				if(EQUIP_UTILITY)
-					chassis.utility_equipment -= src
-				if(EQUIP_SPECIAL)
-					chassis.special_equipment -= src
-				//VOREStation Addition begin: MICROMECHS
-				if(EQUIP_MICRO_UTILITY)
-					chassis.micro_utility_equipment -= src
-				if(EQUIP_MICRO_WEAPON)
-					chassis.micro_weapon_equipment -= src
-				//VOREStation Addition end: MICROMECHS
-		if(chassis.selected == src)
-			chassis.selected = null
-		update_chassis_page()
-		chassis.log_message("[src] removed from equipment.")
-		chassis = null
-		set_ready_state(1)
+	forceMove(moveto)
+	chassis.equipment -= src
+	chassis.universal_equipment -= src
+	if(equip_type)
+		switch(equip_type)
+			if(EQUIP_HULL)
+				chassis.hull_equipment -= src
+			if(EQUIP_WEAPON)
+				chassis.weapon_equipment -= src
+			if(EQUIP_UTILITY)
+				chassis.utility_equipment -= src
+			if(EQUIP_SPECIAL)
+				chassis.special_equipment -= src
+			//VOREStation Addition begin: MICROMECHS
+			if(EQUIP_MICRO_UTILITY)
+				chassis.micro_utility_equipment -= src
+			if(EQUIP_MICRO_WEAPON)
+				chassis.micro_weapon_equipment -= src
+			//VOREStation Addition end: MICROMECHS
+	if(chassis.selected == src)
+		chassis.selected = null
+	update_chassis_page()
+	chassis.log_message("[src] removed from equipment.")
+	chassis = null
+	set_ready_state(TRUE)
 	enable_special = FALSE
 	return
 
@@ -270,7 +264,7 @@
 
 /obj/item/mecha_parts/mecha_equipment/proc/occupant_message(message)
 	if(chassis)
-		chassis.occupant_message("[bicon(src)] [message]")
+		chassis.occupant_message("[icon2html(src, chassis.occupant.client)] [message]")
 	return
 
 /obj/item/mecha_parts/mecha_equipment/proc/log_message(message)

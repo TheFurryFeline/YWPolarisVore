@@ -3,16 +3,16 @@
 	name = "Nav Point"
 	icon = 'icons/effects/effects.dmi'
 	icon_state = "energynet"
-	anchored = 1
-	unacidable = 1
-	simulated = 0
+	anchored = TRUE
+	unacidable = TRUE
+	simulated = FALSE
 	invisibility = 101
 	flags = SLANDMARK_FLAG_AUTOSET // We generally want to use current area/turf as base.
 
 	//ID of the landmark
 	var/landmark_tag
 	//ID of the controller on the dock side (intialize to id_tag, becomes reference)
-	var/datum/computer/file/embedded_program/docking/docking_controller
+	var/datum/embedded_program/docking/docking_controller
 	//Map of shuttle names to ID of controller used for this landmark for shuttles with multiple ones.
 	var/list/special_dock_targets
 
@@ -160,19 +160,20 @@
 //
 // Bluespace flare landmark beacon
 //
-/obj/item/device/spaceflare
+/obj/item/spaceflare
 	name = "bluespace flare"
 	desc = "Burst transmitter used to broadcast all needed information for shuttle navigation systems. Has a flare attached for marking the spot where you probably shouldn't be standing."
+	icon = 'icons/obj/device.dmi'
 	icon_state = "bluflare"
 	light_color = "#3728ff"
 	var/active
 
-/obj/item/device/spaceflare/attack_self(var/mob/user)
+/obj/item/spaceflare/attack_self(var/mob/user)
 	if(!active)
-		visible_message("<span class='notice'>[user] pulls the cord, activating the [src].</span>")
+		visible_message(span_notice("[user] pulls the cord, activating the [src]."))
 		activate()
 
-/obj/item/device/spaceflare/proc/activate()
+/obj/item/spaceflare/proc/activate()
 	if(active)
 		return
 	var/turf/T = get_turf(src)
@@ -181,14 +182,14 @@
 		return
 
 	active = 1
-	anchored = 1
+	anchored = TRUE
 
 	var/obj/effect/shuttle_landmark/automatic/mark = new(T)
 	mark.name = ("Beacon signal ([T.x],[T.y])")
 	T.hotspot_expose(1500, 5)
 	update_icon()
 
-/obj/item/device/spaceflare/update_icon()
+/obj/item/spaceflare/update_icon()
 	. = ..()
 	if(active)
 		icon_state = "bluflare_on"

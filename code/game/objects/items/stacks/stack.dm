@@ -29,12 +29,19 @@
 	var/pass_color = FALSE // Will the item pass its own color var to the created item? Dyed cloth, wood, etc.
 	var/strict_color_stacking = FALSE // Will the stack merge with other stacks that are different colors? (Dyed cloth, wood, etc)
 
-/obj/item/stack/Initialize(var/ml, var/amount)
+/obj/item/stack/Initialize(var/ml, var/starting_amount)
 	. = ..()
 	if(!stacktype)
 		stacktype = type
-	if(amount)
-		src.amount = amount
+	if(!isnull(starting_amount)) // Could be 0
+		// Negative numbers are 'give full stack', like -1
+		if(starting_amount < 0)
+			// But sometimes a coder forgot to define what that even means
+			if(max_amount)
+				starting_amount = max_amount
+			else
+				starting_amount = 1
+		set_amount(starting_amount, TRUE)
 	update_icon()
 
 /obj/item/stack/Destroy()
@@ -56,14 +63,17 @@
 			icon_state = "[initial(icon_state)]_3"
 		item_state = initial(icon_state)
 
+/obj/item/stack/proc/get_examine_string()
+	if(!uses_charge)
+		return "There [src.amount == 1 ? "is" : "are"] [src.amount] [src.singular_name]\s in the stack."
+	else
+		return "There is enough charge for [get_amount()]."
+
 /obj/item/stack/examine(mob/user)
 	. = ..()
 
 	if(Adjacent(user))
-		if(!uses_charge)
-			. += "There are [src.amount] [src.singular_name]\s in the stack."
-		else
-			. += "There is enough charge for [get_amount()]."
+		. += get_examine_string()
 
 /obj/item/stack/attack_self(mob/user)
 	tgui_interact(user)
@@ -76,7 +86,7 @@
 
 /obj/item/stack/tgui_data(mob/user, datum/tgui/ui, datum/tgui_state/state)
 	var/list/data = ..()
-	
+
 	data["amount"] = get_amount()
 
 	return data
@@ -120,14 +130,14 @@
 			if(get_amount() < 1)
 				qdel(src)
 				return
-			
+
 			var/datum/stack_recipe/R = locate(params["ref"])
 			if(!is_valid_recipe(R, recipes)) //href exploit protection
 				return FALSE
 			var/multiplier = text2num(params["multiplier"])
 			if(!multiplier || (multiplier <= 0)) //href exploit protection
 				return
-			produce_recipe(R, multiplier, usr)
+			produce_recipe(R, multiplier, ui.user)
 			return TRUE
 
 /obj/item/stack/proc/is_valid_recipe(datum/stack_recipe/R, list/recipe_list)
@@ -147,21 +157,21 @@
 
 	if (!can_use(required))
 		if (produced>1)
-			to_chat(user, "<span class='warning'>You haven't got enough [src] to build \the [produced] [recipe.title]\s!</span>")
+			to_chat(user, span_warning("You haven't got enough [src] to build \the [produced] [recipe.title]\s!"))
 		else
-			to_chat(user, "<span class='warning'>You haven't got enough [src] to build \the [recipe.title]!</span>")
+			to_chat(user, span_warning("You haven't got enough [src] to build \the [recipe.title]!"))
 		return
 
 	if (recipe.one_per_turf && (locate(recipe.result_type) in user.loc))
-		to_chat(user, "<span class='warning'>There is another [recipe.title] here!</span>")
+		to_chat(user, span_warning("There is another [recipe.title] here!"))
 		return
 
 	if (recipe.on_floor && !isfloor(user.loc))
-		to_chat(user, "<span class='warning'>\The [recipe.title] must be constructed on the floor!</span>")
+		to_chat(user, span_warning("\The [recipe.title] must be constructed on the floor!"))
 		return
 
 	if (recipe.time)
-		to_chat(user, "<span class='notice'>Building [recipe.title] ...</span>")
+		to_chat(user, span_notice("Building [recipe.title] ..."))
 		if (!do_after(user, recipe.time))
 			return
 
@@ -198,17 +208,21 @@
 
 					var/mattermult = istype(Ob, /obj/item) ? min(2000, 400 * Ob.w_class) : 2000
 
-					Ob.matter[recipe.use_material] = mattermult / produced * required
+					Ob.matter[recipe.matter_material] = mattermult / produced * required
 
 		O.set_dir(user.dir)
 		O.add_fingerprint(user)
-
+		//VOREStation Addition Start - Let's not store things that get crafted with materials like this, they won't spawn correctly when retrieved.
+		if (isobj(O))
+			var/obj/P = O
+			P.persist_storable = FALSE
+		//VOREStation Addition End
 		if (istype(O, /obj/item/stack))
 			var/obj/item/stack/S = O
 			S.amount = produced
 			S.add_to_stacks(user)
 
-		if (istype(O, /obj/item/weapon/storage)) //BubbleWrap - so newly formed boxes are empty
+		if (istype(O, /obj/item/storage)) //BubbleWrap - so newly formed boxes are empty
 			for (var/obj/item/I in O)
 				qdel(I)
 
@@ -226,18 +240,19 @@
 //Return 1 if an immediate subsequent call to use() would succeed.
 //Ensures that code dealing with stacks uses the same logic
 /obj/item/stack/proc/can_use(var/used)
-	if (get_amount() < used)
+	if(used < 0 || (used != round(used)))
+		stack_trace("Tried to use a bad stack amount: [used]")
+		return 0
+	if(get_amount() < used)
 		return 0
 	return 1
 
 /obj/item/stack/proc/use(var/used)
-	if (!can_use(used))
+	if(!can_use(used))
 		return 0
 	if(!uses_charge)
 		amount -= used
 		if (amount <= 0)
-			if(usr)
-				usr.remove_from_mob(src)
 			qdel(src) //should be safe to qdel immediately since if someone is still using this stack it will persist for a little while longer
 		update_icon()
 		return 1
@@ -250,6 +265,9 @@
 		return 1
 
 /obj/item/stack/proc/add(var/extra)
+	if(extra < 0 || (extra != round(extra)))
+		stack_trace("Tried to add a bad stack amount: [extra]")
+		return 0
 	if(!uses_charge)
 		if(amount + extra > get_max_amount())
 			return 0
@@ -263,6 +281,27 @@
 		for(var/i = 1 to uses_charge)
 			var/datum/matter_synth/S = synths[i]
 			S.add_charge(charge_costs[i] * extra)
+
+/obj/item/stack/proc/set_amount(var/new_amount, var/no_limits = FALSE)
+	if(new_amount < 0 || (new_amount != round(new_amount)))
+		stack_trace("Tried to set a bad stack amount: [new_amount]")
+		return 0
+
+	// Clean up the new amount
+	new_amount = max(round(new_amount), 0)
+
+	// Can exceed max if you really want
+	if(new_amount > max_amount && !no_limits)
+		new_amount = max_amount
+
+	amount = new_amount
+
+	// Can set it to 0 without qdel if you really want
+	if(amount == 0 && !no_limits)
+		qdel(src)
+		return FALSE
+
+	return TRUE
 
 /*
 	The transfer and split procs work differently than use() and add().
@@ -282,6 +321,10 @@
 	if (isnull(tamount))
 		tamount = src.get_amount()
 
+	if(tamount < 0 || (tamount != round(tamount)))
+		stack_trace("Tried to transfer a bad stack amount: [tamount]")
+		return 0
+
 	var/transfer = max(min(tamount, src.get_amount(), (S.get_max_amount() - S.get_amount())), 0)
 
 	var/orig_amount = src.get_amount()
@@ -290,7 +333,10 @@
 		if (prob(transfer/orig_amount * 100))
 			transfer_fingerprints_to(S)
 			if(blood_DNA)
-				S.blood_DNA |= blood_DNA
+				if(S.blood_DNA)
+					S.blood_DNA |= blood_DNA
+				else
+					S.blood_DNA = blood_DNA.Copy()
 		return transfer
 	return 0
 
@@ -299,6 +345,10 @@
 	if (!amount)
 		return null
 	if(uses_charge)
+		return null
+
+	if(tamount < 0 || (tamount != round(tamount)))
+		stack_trace("Tried to split a bad stack amount: [tamount]")
 		return null
 
 	var/transfer = max(min(tamount, src.amount, initial(max_amount)), 0)
@@ -346,13 +396,16 @@
 			continue
 		var/transfer = src.transfer_to(item)
 		if (transfer)
-			to_chat(user, "<span class='notice'>You add a new [item.singular_name] to the stack. It now contains [item.amount] [item.singular_name]\s.</span>")
+			to_chat(user, span_notice("You add a new [item.singular_name] to the stack. It now contains [item.amount] [item.singular_name]\s."))
 		if(!amount)
 			break
 
 /obj/item/stack/attack_hand(mob/user as mob)
 	if (user.get_inactive_hand() == src)
-		var/N = input("How many stacks of [src] would you like to split off?  There are currently [amount].", "Split stacks", 1) as num|null
+		var/N = tgui_input_number(user, "How many stacks of [src] would you like to split off?  There are currently [amount].", "Split stacks", 1, amount, 1)
+		if(N != round(N))
+			to_chat(user, span_warning("You cannot separate a non-whole number of stacks!"))
+			return
 		if(N)
 			var/obj/item/stack/F = src.split(N)
 			if (F)
@@ -360,8 +413,8 @@
 				src.add_fingerprint(user)
 				F.add_fingerprint(user)
 				spawn(0)
-					if (src && usr.machine==src)
-						src.interact(usr)
+					if (src && user.machine==src)
+						src.interact(user)
 	else
 		..()
 	return
@@ -372,10 +425,10 @@
 		src.transfer_to(S)
 
 		spawn(0) //give the stacks a chance to delete themselves if necessary
-			if (S && usr.machine==S)
-				S.interact(usr)
-			if (src && usr.machine==src)
-				src.interact(usr)
+			if (S && user.machine==S)
+				S.interact(user)
+			if (src && user.machine==src)
+				src.interact(user)
 	else
 		return ..()
 
@@ -432,6 +485,6 @@
 /datum/stack_recipe_list
 	var/title = "ERROR"
 	var/list/recipes = null
-	New(title, recipes)
-		src.title = title
-		src.recipes = recipes
+/datum/stack_recipe_list/New(title, recipes)
+	src.title = title
+	src.recipes = recipes

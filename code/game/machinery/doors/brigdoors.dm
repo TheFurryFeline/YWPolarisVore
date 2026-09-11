@@ -23,8 +23,8 @@
 	layer = ABOVE_WINDOW_LAYER
 	desc = "A remote control for a door."
 	req_access = list(access_brig)
-	anchored = 1.0    		// can't pick it up
-	density = 0       		// can walk through it.
+	anchored = TRUE    		// can't pick it up
+	density = FALSE       		// can walk through it.
 	var/id = null     		// id of door it controls.
 	var/activation_time = 0
 	var/timer_duration = 0
@@ -94,7 +94,7 @@
 	for(var/obj/machinery/door/window/brigdoor/door in targets)
 		if(door.density)
 			continue
-		INVOKE_ASYNC(door, /obj/machinery/door/window/brigdoor.proc/close)
+		INVOKE_ASYNC(door, TYPE_PROC_REF(/obj/machinery/door/window/brigdoor, close))
 
 	for(var/obj/structure/closet/secure_closet/brig/C in targets)
 		if(C.broken)
@@ -118,7 +118,7 @@
 	for(var/obj/machinery/door/window/brigdoor/door in targets)
 		if(!door.density)
 			continue
-		INVOKE_ASYNC(door, /obj/machinery/door/window/brigdoor.proc/open)
+		INVOKE_ASYNC(door, TYPE_PROC_REF(/obj/machinery/door/window/brigdoor, open))
 
 	for(var/obj/structure/closet/secure_closet/brig/C in targets)
 		if(C.broken)
@@ -173,13 +173,13 @@
 			break
 	return data
 
-/obj/machinery/door_timer/tgui_act(action, params)
+/obj/machinery/door_timer/tgui_act(action, params, datum/tgui/ui)
 	if(..())
 		return
 	. = TRUE
 
-	if(!allowed(usr))
-		to_chat(usr, "<span class='warning'>Access denied.</span>")
+	if(!allowed(ui.user))
+		to_chat(ui.user, span_warning("Access denied."))
 		return FALSE
 
 	switch(action)
@@ -292,3 +292,9 @@
 #undef FONT_COLOR
 #undef FONT_STYLE
 #undef CHARS_PER_LINE
+
+#undef MAX_TIMER
+
+#undef PRESET_SHORT
+#undef PRESET_MEDIUM
+#undef PRESET_LONG

@@ -9,35 +9,35 @@
 	food_color = "#FFAD33"
 	cooked_sound = 'sound/machines/ding.ogg'
 	var/datum/looping_sound/deep_fryer/fry_loop
-	circuit = /obj/item/weapon/circuitboard/fryer
+	circuit = /obj/item/circuitboard/fryer
 	appliancetype = FRYER
 	active_power_usage = 12 KILOWATTS
 	heating_power = 12 KILOWATTS
-	
+
 	light_y = 15
-	
+
 	min_temp = 140 + T0C	// Same as above, increasing this to just under 2x to make the % increase on efficiency not quite so painful as it would be at 80.
 	optimal_temp = 400 + T0C // Increasing this to be 2x Oven to allow for a much higher/realistic frying temperatures. Doesn't really do anything but make heating the fryer take a bit longer.
 	optimal_power = 0.95 // .35 higher than the default to give fryers faster cooking speed.
-	
+
 	idle_power_usage = 3.6 KILOWATTS
 	// Power used to maintain temperature once it's heated.
 	// Going with 25% of the active power. This is a somewhat arbitrary value.
 
-	resistance = 10 KILOWATTS	// Approx. 10 minutes to heat up.
+	resistance = 2 KILOWATTS	// Approx. 2 minutes to heat up.
 
 	max_contents = 2
-	container_type = /obj/item/weapon/reagent_containers/cooking_container/fryer
+	container_type = /obj/item/reagent_containers/cooking_container/fryer
 
 	stat = POWEROFF // Starts turned off
 
 	var/datum/reagents/oil
 	var/optimal_oil = 9000 //90 litres of cooking oil
-	
+
 /obj/machinery/appliance/cooker/fryer/Initialize()
 	. = ..()
 	fry_loop = new(list(src), FALSE)
-	
+
 	oil = new/datum/reagents(optimal_oil * 1.25, src)
 	var/variance = rand()*0.15
 	// Fryer is always a little below full, but its usually negligible
@@ -45,18 +45,18 @@
 	if(prob(20))
 		// Sometimes the fryer will start with much less than full oil, significantly impacting efficiency until filled
 		variance = rand()*0.5
-	oil.add_reagent("cornoil", optimal_oil*(1 - variance))
+	oil.add_reagent("cookingoil", optimal_oil*(1 - variance))
 
 /obj/machinery/appliance/cooker/fryer/Destroy()
 	QDEL_NULL(fry_loop)
 	QDEL_NULL(oil)
 	return ..()
-	
+
 /obj/machinery/appliance/cooker/fryer/examine(var/mob/user)
 	. = ..()
 	if(Adjacent(user))
 		to_chat(user, "Oil Level: [oil.total_volume]/[optimal_oil]")
-		
+
 /obj/machinery/appliance/cooker/fryer/update_icon() // We add our own version of the proc to use the special fryer double-lights.
 	cut_overlays()
 	var/image/light
@@ -69,7 +69,7 @@
 	light.pixel_x = light_x
 	light.pixel_y = light_y
 	add_overlay(light)
-		
+
 /obj/machinery/appliance/cooker/fryer/heat_up()
 	if (..())
 		//Set temperature of oil reagent
@@ -102,7 +102,7 @@
 
 
 	cooking_power *= oil_efficiency
-	
+
 /obj/machinery/appliance/cooker/fryer/update_icon()
 	if(!stat)
 		..()
@@ -119,7 +119,7 @@
 		if(fry_loop)
 			fry_loop.stop(src)
 	..()
-	
+
 //Fryer gradually infuses any cooked food with oil. Moar calories
 //This causes a slow drop in oil levels, encouraging refill after extended use
 /obj/machinery/appliance/cooker/fryer/do_cooking_tick(var/datum/cooking_item/CI)
@@ -176,14 +176,14 @@
 	if(!istype(victim))
 		return
 
-	// user.visible_message("<span class='danger'>\The [user] starts pushing \the [victim] into \the [src]!</span>")
-	
+	// user.visible_message(span_danger("\The [user] starts pushing \the [victim] into \the [src]!"))
+
 	//Removed delay on this action in favour of a cooldown after it
 	//If you can lure someone close to the fryer and grab them then you deserve success.
 	//And a delay on this kind of niche action just ensures it never happens
 	//Cooldown ensures it can't be spammed to instakill someone
 	user.setClickCooldown(DEFAULT_ATTACK_COOLDOWN*3)
-	
+
 	fry_loop.start(src)
 
 	if(!do_mob(user, victim, 20))
@@ -193,7 +193,7 @@
 		return
 
 	if(!victim || !victim.Adjacent(user))
-		to_chat(user, "<span class='danger'>Your victim slipped free!</span>")
+		to_chat(user, span_danger("Your victim slipped free!"))
 		cooking = FALSE
 		icon_state = off_icon
 		fry_loop.stop(src)
@@ -206,7 +206,7 @@
 
 	var/obj/item/organ/external/E
 	var/nopain
-	if(ishuman(victim) && user.zone_sel.selecting != "groin" && user.zone_sel.selecting != "chest")
+	if(ishuman(victim) && user.zone_sel.selecting != BP_GROIN && user.zone_sel.selecting != BP_TORSO)
 		var/mob/living/carbon/human/H = victim
 		E = H.get_organ(user.zone_sel.selecting)
 		if(!E || E.species.flags & NO_PAIN)
@@ -214,7 +214,7 @@
 		else if(E.robotic >= ORGAN_ROBOT)
 			nopain = 1
 
-	user.visible_message("<span class='danger'>\The [user] shoves \the [victim][E ? "'s [E.name]" : ""] into \the [src]!</span>")
+	user.visible_message(span_danger("\The [user] shoves \the [victim][E ? "'s [E.name]" : ""] into \the [src]!"))
 	if (damage > 0)
 		if(E)
 			if(E.children && E.children.len)
@@ -228,26 +228,26 @@
 			victim.apply_damage(damage, BURN, user.zone_sel.selecting)
 
 		if(!nopain)
-			to_chat(victim, "<span class='danger'>Agony consumes you as searing hot oil scorches your [E ? E.name : "flesh"] horribly!</span>")
+			to_chat(victim, span_danger("Agony consumes you as searing hot oil scorches your [E ? E.name : "flesh"] horribly!"))
 			victim.emote("scream")
 		else
-			to_chat(victim, "<span class='danger'>Searing hot oil scorches your [E ? E.name : "flesh"]!</span>")
+			to_chat(victim, span_danger("Searing hot oil scorches your [E ? E.name : "flesh"]!"))
 
-		user.attack_log += text("\[[time_stamp()]\] <font color='red'>Has [cook_type] \the [victim] ([victim.ckey]) in \a [src]</font>")
-		victim.attack_log += text("\[[time_stamp()]\] <font color='orange'>Has been [cook_type] in \a [src] by [user.name] ([user.ckey])</font>")
-		msg_admin_attack("[key_name_admin(user)] [cook_type] \the [victim] ([victim.ckey]) in \a [src]. (<A HREF='?_src_=holder;adminplayerobservecoodjump=1;X=[user.x];Y=[user.y];Z=[user.z]'>JMP</a>)")
+		user.attack_log += text("\[[time_stamp()]\] [span_red("Has [cook_type] \the [victim] ([victim.ckey]) in \a [src]")]")
+		victim.attack_log += text("\[[time_stamp()]\] [span_orange("Has been [cook_type] in \a [src] by [user.name] ([user.ckey])")]")
+		msg_admin_attack("[key_name_admin(user)] [cook_type] \the [victim] ([victim.ckey]) in \a [src]. (<A HREF='?_src_=holder;[HrefToken()];adminplayerobservecoodjump=1;X=[user.x];Y=[user.y];Z=[user.z]'>JMP</a>)")
 
 	//Coat the victim in some oil
 	oil.trans_to(victim, 40)
-	
+
 	fry_loop.stop()
-	
+
 /obj/machinery/appliance/cooker/fryer/attackby(var/obj/item/I, var/mob/user)
-	if(istype(I, /obj/item/weapon/reagent_containers/glass) && I.reagents)
+	if(istype(I, /obj/item/reagent_containers/glass) && I.reagents)
 		if (I.reagents.total_volume <= 0 && oil)
 			//Its empty, handle scooping some hot oil out of the fryer
 			oil.trans_to(I, I.reagents.maximum_volume)
-			user.visible_message("[user] scoops some oil out of \the [src].", span("notice","You scoop some oil out of \the [src]."))
+			user.visible_message(span_filter_notice("[user] scoops some oil out of \the [src]."), span_notice("You scoop some oil out of \the [src]."))
 			return 1
 		else
 	//It contains stuff, handle pouring any oil into the fryer
@@ -263,7 +263,7 @@
 					I.reagents.remove_reagent(R.id, delta)
 					amount += delta
 			if (amount > 0)
-				user.visible_message("[user] pours some oil into \the [src].", span("notice","You pour [amount]u of oil into \the [src]."), "<span class='notice'>You hear something viscous being poured into a metal container.</span>")
+				user.visible_message(span_filter_notice("[user] pours some oil into \the [src]."), span_notice("You pour [amount]u of oil into \the [src]."), span_notice("You hear something viscous being poured into a metal container."))
 				return 1
 	//If neither of the above returned, then call parent as normal
 	..()

@@ -1,19 +1,19 @@
 /obj/structure/undies_wardrobe
-	name = "underwear wardrobe"
+	name = "underwear dresser"
 	desc = "Holds item of clothing you shouldn't be showing off in the hallways."
-	icon = 'icons/obj/closet.dmi'
-	icon_state = "cabinet_closed"
-	density = 1
+	icon = 'icons/obj/closets/undies_wardrobe.dmi'
+	icon_state = "wardrobe"
+	density = TRUE
 
 /obj/structure/undies_wardrobe/attack_hand(var/mob/user)
 	if(!human_who_can_use_underwear(user))
-		to_chat(user, "<span class='warning'>Sadly there's nothing in here for you to wear.</span>")
+		to_chat(user, span_warning("Sadly there's nothing in here for you to wear."))
 		return
 	interact(user)
 
 /obj/structure/undies_wardrobe/interact(var/mob/living/carbon/human/H)
 	var/dat = list()
-	dat += "<b>Underwear:</b><br>"
+	dat += span_bold("Underwear:") + "<br>"
 	for(var/datum/category_group/underwear/UWC in global_underwear.categories)
 		var/datum/category_item/underwear/UWI = H.all_underwear[UWC.name]
 		var/item_name = UWI ? UWI.name : "None"
@@ -66,7 +66,7 @@
 		var/datum/category_group/underwear/UWC = global_underwear.categories_by_name[href_list["change_underwear"]]
 		if(!UWC)
 			return
-		var/datum/category_item/underwear/selected_underwear = input(H, "Choose underwear:", "Choose underwear", H.all_underwear[UWC.name]) as null|anything in UWC.items
+		var/datum/category_item/underwear/selected_underwear = tgui_input_list(H, "Choose underwear:", "Choose underwear", UWC.items, H.all_underwear[UWC.name])
 		if(selected_underwear && CanUseTopic(H, GLOB.tgui_default_state))
 			H.all_underwear[UWC.name] = selected_underwear
 			H.hide_underwear[UWC.name] = FALSE

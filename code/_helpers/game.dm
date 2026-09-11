@@ -39,12 +39,6 @@
 		return null
 	return format_text ? format_text(A.name) : A.name
 
-/proc/get_area_master(const/O)
-	var/area/A = get_area(O)
-	if (isarea(A))
-		return A
-
-
 /** Checks if any living humans are in a given area. */
 /proc/area_is_occupied(var/area/myarea)
 	// Testing suggests looping over human_mob_list is quicker than looping over area contents
@@ -178,7 +172,7 @@
 
 		if(ismob(I))
 			if(!sight_check || isInSight(I, O))
-				L |= recursive_content_check(I, L, recursion_limit - 1, client_check, sight_check, include_mobs, include_objects)
+				L |= recursive_content_check(I, L, recursion_limit - 1, client_check, sight_check, include_mobs, include_objects, ignore_show_messages)
 				if(include_mobs)
 					if(client_check)
 						var/mob/M = I
@@ -191,7 +185,7 @@
 			var/obj/check_obj = I
 			if(ignore_show_messages || check_obj.show_messages)
 				if(!sight_check || isInSight(I, O))
-					L |= recursive_content_check(I, L, recursion_limit - 1, client_check, sight_check, include_mobs, include_objects)
+					L |= recursive_content_check(I, L, recursion_limit - 1, client_check, sight_check, include_mobs, include_objects, ignore_show_messages)
 					if(include_objects)
 						L |= I
 
@@ -225,15 +219,14 @@
 	return hear
 
 
-/proc/get_mobs_in_radio_ranges(var/list/obj/item/device/radio/radios)
+/proc/get_mobs_in_radio_ranges(var/list/obj/item/radio/radios)
 
 	set background = 1
 
 	. = list()
 	// Returns a list of mobs who can hear any of the radios given in @radios
 	var/list/speaker_coverage = list()
-	for(var/r in radios)
-		var/obj/item/device/radio/R = r // You better fucking be a radio.
+	for(var/obj/item/radio/R as anything in radios)
 		var/turf/speaker = get_turf(R)
 		if(speaker)
 			for(var/turf/T in hear(R.canhear_range,speaker))
@@ -255,18 +248,18 @@
 
 /mob/living/silicon/robot/can_hear_radio(var/list/hearturfs)
 	var/turf/T = get_turf(src)
-	var/obj/item/device/radio/borg/R = hearturfs[T] // this should be an assoc list of turf-to-radio
-	
+	var/obj/item/radio/borg/R = hearturfs[T] // this should be an assoc list of turf-to-radio
+
 	// We heard it on our own radio? We use power for that.
 	if(istype(R) && R.myborg == src)
 		var/datum/robot_component/CO = get_component("radio")
 		if(!CO || !is_component_functioning("radio") || !cell_use_power(CO.active_usage))
 			return FALSE // Sorry, couldn't hear
-	
+
 	return R // radio, true, false, what's the difference
 
 /mob/observer/dead/can_hear_radio(var/list/hearturfs)
-	return is_preference_enabled(/datum/client_preference/ghost_radio)
+	return client?.prefs?.read_preference(/datum/preference/toggle/ghost_radio)
 
 
 //Uses dview to quickly return mobs and objects in view,
@@ -280,8 +273,26 @@
 	var/list/hear = dview(range,T,INVISIBILITY_MAXIMUM)
 	var/list/hearturfs = list()
 
+	// Openspace visibility handling
+	// Below turfs we can see
+	for(var/turf/simulated/open/O in hear)
+		var/turf/U = GetBelow(O)
+		while(istype(U))
+			hearturfs |= U
+			if(isopenspace(U))
+				U = GetBelow(U)
+			else
+				U = null
+
+	// Above us
+	var/above_range = range
+	var/turf/Ab = GetAbove(T)
+	while(isopenspace(Ab) && --above_range > 0)
+		hear |= dview(above_range,Ab,INVISIBILITY_MAXIMUM)
+		Ab = GetAbove(Ab)
+
 	for(var/thing in hear)
-		if(istype(thing, /obj)) //Can't use isobj() because /atom/movable returns true in that, and so lighting overlays would be included
+		if(istype(thing, /obj)) //Can't use isobj() because /atom/movable returns true in that
 			objs += thing
 			hearturfs |= get_turf(thing)
 		if(ismob(thing))
@@ -302,10 +313,10 @@
 		if(M && M.stat == DEAD && remote_ghosts && !M.forbid_seeing_deadchat)
 			switch(type)
 				if(1) //Audio messages use ghost_ears
-					if(M.is_preference_enabled(/datum/client_preference/ghost_ears))
+					if(M.client?.prefs?.read_preference(/datum/preference/toggle/ghost_ears))
 						mobs |= M
 				if(2) //Visual messages use ghost_sight
-					if(M.is_preference_enabled(/datum/client_preference/ghost_sight))
+					if(M.client?.prefs?.read_preference(/datum/preference/toggle/ghost_sight))
 						mobs |= M
 
 	//For objects below the top level who still want to hear
@@ -315,39 +326,35 @@
 
 	return list("mobs" = mobs, "objs" = objs)
 
-#define SIGN(X) ((X<0)?-1:1)
-
-proc
-	inLineOfSight(X1,Y1,X2,Y2,Z=1,PX1=16.5,PY1=16.5,PX2=16.5,PY2=16.5)
-		var/turf/T
-		if(X1==X2)
-			if(Y1==Y2)
-				return 1 //Light cannot be blocked on same tile
-			else
-				var/s = SIGN(Y2-Y1)
-				Y1+=s
-				while(Y1!=Y2)
-					T=locate(X1,Y1,Z)
-					if(T.opacity)
-						return 0
-					Y1+=s
+/proc/inLineOfSight(X1,Y1,X2,Y2,Z=1,PX1=16.5,PY1=16.5,PX2=16.5,PY2=16.5)
+	var/turf/T
+	if(X1==X2)
+		if(Y1==Y2)
+			return 1 //Light cannot be blocked on same tile
 		else
-			var/m=(32*(Y2-Y1)+(PY2-PY1))/(32*(X2-X1)+(PX2-PX1))
-			var/b=(Y1+PY1/32-0.015625)-m*(X1+PX1/32-0.015625) //In tiles
-			var/signX = SIGN(X2-X1)
-			var/signY = SIGN(Y2-Y1)
-			if(X1<X2)
-				b+=m
-			while(X1!=X2 || Y1!=Y2)
-				if(round(m*X1+b-Y1))
-					Y1+=signY //Line exits tile vertically
-				else
-					X1+=signX //Line exits tile horizontally
+			var/s = SIGN(Y2-Y1)
+			Y1+=s
+			while(Y1!=Y2)
 				T=locate(X1,Y1,Z)
 				if(T.opacity)
 					return 0
-		return 1
-#undef SIGN
+				Y1+=s
+	else
+		var/m=(32*(Y2-Y1)+(PY2-PY1))/(32*(X2-X1)+(PX2-PX1))
+		var/b=(Y1+PY1/32-0.015625)-m*(X1+PX1/32-0.015625) //In tiles
+		var/signX = SIGN(X2-X1)
+		var/signY = SIGN(Y2-Y1)
+		if(X1<X2)
+			b+=m
+		while(X1!=X2 || Y1!=Y2)
+			if(round(m*X1+b-Y1))
+				Y1+=signY //Line exits tile vertically
+			else
+				X1+=signX //Line exits tile horizontally
+			T=locate(X1,Y1,Z)
+			if(T.opacity)
+				return 0
+	return 1
 
 /proc/flick_overlay(image/I, list/show_to, duration, gc_after)
 	for(var/client/C in show_to)
@@ -360,13 +367,12 @@ proc
 
 /proc/flick_overlay_view(image/I, atom/target, duration, gc_after) //wrapper for the above, flicks to everyone who can see the target atom
 	var/list/viewing = list()
-	for(var/m in viewers(target))
-		var/mob/M = m
+	for(var/mob/M as anything in viewers(target))
 		if(M.client)
 			viewing += M.client
 	flick_overlay(I, viewing, duration, gc_after)
 
-proc/isInSight(var/atom/A, var/atom/B)
+/proc/isInSight(var/atom/A, var/atom/B)
 	var/turf/Aturf = get_turf(A)
 	var/turf/Bturf = get_turf(B)
 
@@ -447,7 +453,7 @@ proc/isInSight(var/atom/A, var/atom/B)
 			for(var/client/C in group)
 				C.screen -= O
 
-datum/projectile_data
+/datum/projectile_data
 	var/src_x
 	var/src_y
 	var/time
@@ -696,3 +702,48 @@ datum/projectile_data
 			hear |= recursive_mob_check(A, hear, 3, 1, 0, 1)
 
 	return hear
+
+/proc/get_belly(var/atom/A)				// return a belly we're in, one way or another; and if we aren't (or are too deep to comprehend being in belly), returns null
+	var/atom/loc_check = A.loc
+	var/recursion_level = 0
+	while(loc_check && !isbelly(loc_check) && !isturf(loc_check))
+		if(recursion_level > 7)		// abstractly picked number, but basically means we tried going 8 levels up. Something is wrong if youre THAT deep anyway
+			break
+		loc_check = loc_check.loc
+		recursion_level++
+	if(isbelly(loc_check))
+		return loc_check
+	return null
+
+/proc/get_all_prey_recursive(var/mob/living/L, var/client_check = 1)			// returns all prey inside the target as well all prey of target's prey, as well as all prey inside target's prey, etc.
+	var/list/result = list()
+
+	if(!istype(L) || !(L.vore_organs) || !(L.vore_organs.len))
+		return result
+
+	for(var/obj/belly/B in L.vore_organs)
+		for(var/mob/living/P in B.contents)
+			if(istype(P))
+				if(client_check && P.client)
+					result |= P
+				result |= get_all_prey_recursive(P, client_check)
+
+	return result
+
+/proc/random_color(saturated)	//Returns a random color. If saturated is true, it will avoid pure white or pure black
+	var/r = rand(1,255)
+	var/g = rand(1,255)
+	var/b = rand(1,255)
+
+	if(saturated)	//Let's make sure we don't get too close to pure black or pure white, as they won't look good with grayscale sprites
+		if(r + g + b < 50)
+			r = r + rand(5,20)
+			g = g + rand(5,20)
+			b = b + rand(5,20)
+		else if (r + g + b > 700)
+			r = r - rand(5,50)
+			g = g - rand(5,50)
+			b = b - rand(5,50)
+
+	var/color = rgb(r, g, b)
+	return color

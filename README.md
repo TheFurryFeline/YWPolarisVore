@@ -2,13 +2,16 @@
 
 [![forthebadge](http://forthebadge.com/images/badges/60-percent-of-the-time-works-every-time.svg)](http://forthebadge.com) [![forthebadge](http://forthebadge.com/images/badges/compatibility-club-penguin.svg)](http://forthebadge.com) [![forthebadge](http://forthebadge.com/images/badges/no-ragrets.svg)](http://forthebadge.com)
 
-[Website (we dont have one)](https://www.youtube.com/watch?v=oHg5SJYRHA0) - [Forums](https://yawn-widerstation.proboards.com/) - [Wiki](https://yawn.izac.live/index.php?title=Main_Page) - [Discord](https://discord.gg/Wh27EAY)
+[Website (we dont have one)](https://www.youtube.com/watch?v=oHg5SJYRHA0) - [Forums](https://yawn-widerstation.proboards.com/) - [Wiki](https://yawn.izac.live/Main_Page) - [Discord](https://discord.gg/Wh27EAY)
 
 Going to make a Pull Request? Make sure you read the [CONTRIBUTING.md](.github/CONTRIBUTING.md) first!
 
+Want to make a test server or your own private server? Read our [GitHub Wiki!](https://github.com/VOREStation/VOREStation/wiki)
+
 Yawn-Wider is a fork of the VOREStation code branch which is a fork of the Polaris code branch, itself a fork of the Baystation12 code branch, for the game Space Station 13.
 
-![Render Nanomaps](https://github.com/VOREStation/VOREStation/workflows/Render%20Nanomaps/badge.svg)
+![Render Nanomaps](https://github.com/Yawn-Wider/YWPolarisVore/workflows/Render%20Nanomaps/badge.svg)
+[![CI](https://github.com/Yawn-Wider/YWPolarisVore/actions/workflows/ci.yml/badge.svg)](https://github.com/Yawn-Wider/YWPolarisVore/actions/workflows/ci.yml)
 
 ---
 
@@ -24,9 +27,9 @@ If you wish to develop and host this codebase in a closed source manner you may 
 See [here](https://www.gnu.org/licenses/why-affero-gpl.html) for more information.
 
 Any files located in the
-`vorestation/goon`,
-`vorestation/icons/goonstation`, or
-`vorestation/sound/goonstation`
+`YWPolarisVore/goon`,
+`YWPolarisVore/icons/goonstation`, or
+`YWPolarisVore/sound/goonstation`
 directories, or any subdirectories of mentioned directories are licensed under the
 Creative Commons 3.0 BY-NC-SA license
 (https://creativecommons.org/licenses/by-nc-sa/3.0)
@@ -52,11 +55,11 @@ This will take a while to download, but it provides an easier method for updatin
 
 First-time installation should be fairly straightforward.  First, you'll need BYOND installed.  You can get it from [here](http://www.byond.com/).
 
-This is a sourcecode-only release, so the next step is to compile the server files.  Open vorestation.dme by double-clicking it, open the Build menu, and click compile.  This'll take a little while, and if everything's done right you'll get a message like this:
+**The quick way**. Find `bin/server.cmd` in this folder and double click it to automatically build and host the server on port 1337.
 
-    saving vorestation.dmb (DEBUG mode)
+**The long way**. Find `bin/build.cmd` in this folder, and double click it to initiate the build. It consists of multiple steps and might take around 1-5 minutes to compile. If it closes, it means it has finished its job. You can then [setup the server](.github/guides/RUNNING_A_SERVER.md) normally by opening `tgstation.dmb` in DreamDaemon.
 
-    vorestation.dmb - 0 errors, 0 warnings
+**Building vorestation in DreamMaker directly is deprecated and might produce errors**, such as `'tgui.bundle.js': cannot find file`.
 
 If you see any errors or warnings, something has gone wrong - possibly a corrupt download or the files extracted wrong, or a code issue on the main repo.  Ask on IRC.
 

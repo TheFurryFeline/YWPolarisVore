@@ -1,122 +1,73 @@
-//Outpost area
+//Overrides
+/area/crew_quarters/sleep/Dorm_1
+	flags = RAD_SHIELDED | BLUE_SHIELDED | TEMPERATURE_SHIELDED | PHASE_SHIELDED | AREA_SOUNDPROOF | AREA_ALLOW_LARGE_SIZE | AREA_BLOCK_SUIT_SENSORS | AREA_BLOCK_TRACKING
+
+/area/crew_quarters/sleep/Dorm_2
+	flags = RAD_SHIELDED | BLUE_SHIELDED | TEMPERATURE_SHIELDED | PHASE_SHIELDED | AREA_SOUNDPROOF | AREA_ALLOW_LARGE_SIZE | AREA_BLOCK_SUIT_SENSORS | AREA_BLOCK_TRACKING
+
+/area/crew_quarters/sleep/Dorm_3
+	flags = RAD_SHIELDED | BLUE_SHIELDED | TEMPERATURE_SHIELDED | PHASE_SHIELDED | AREA_SOUNDPROOF | AREA_ALLOW_LARGE_SIZE | AREA_BLOCK_SUIT_SENSORS | AREA_BLOCK_TRACKING
+
+/area/crew_quarters/sleep/Dorm_4
+	flags = RAD_SHIELDED | BLUE_SHIELDED | TEMPERATURE_SHIELDED | PHASE_SHIELDED | AREA_SOUNDPROOF | AREA_ALLOW_LARGE_SIZE | AREA_BLOCK_SUIT_SENSORS | AREA_BLOCK_TRACKING
+
+/area/crew_quarters/sleep/Dorm_5
+	flags = RAD_SHIELDED | BLUE_SHIELDED | TEMPERATURE_SHIELDED | PHASE_SHIELDED | AREA_SOUNDPROOF | AREA_ALLOW_LARGE_SIZE | AREA_BLOCK_SUIT_SENSORS | AREA_BLOCK_TRACKING
+
+/area/crew_quarters/sleep/Dorm_6
+	flags = RAD_SHIELDED | BLUE_SHIELDED | TEMPERATURE_SHIELDED | PHASE_SHIELDED | AREA_SOUNDPROOF | AREA_ALLOW_LARGE_SIZE | AREA_BLOCK_SUIT_SENSORS | AREA_BLOCK_TRACKING
+
+/area/crew_quarters/sleep/Dorm_7
+	flags = RAD_SHIELDED | BLUE_SHIELDED | TEMPERATURE_SHIELDED | PHASE_SHIELDED | AREA_SOUNDPROOF | AREA_ALLOW_LARGE_SIZE | AREA_BLOCK_SUIT_SENSORS | AREA_BLOCK_TRACKING
+
+/area/crew_quarters/sleep/Dorm_8
+	flags = RAD_SHIELDED | BLUE_SHIELDED | TEMPERATURE_SHIELDED | PHASE_SHIELDED | AREA_SOUNDPROOF | AREA_ALLOW_LARGE_SIZE | AREA_BLOCK_SUIT_SENSORS | AREA_BLOCK_TRACKING
+
+/area/crew_quarters/sleep/Dorm_9
+	flags = RAD_SHIELDED | BLUE_SHIELDED | TEMPERATURE_SHIELDED | PHASE_SHIELDED | AREA_SOUNDPROOF | AREA_ALLOW_LARGE_SIZE | AREA_BLOCK_SUIT_SENSORS | AREA_BLOCK_TRACKING
+
+/area/crew_quarters/sleep/Dorm_10
+	flags = RAD_SHIELDED | BLUE_SHIELDED | TEMPERATURE_SHIELDED | PHASE_SHIELDED | AREA_SOUNDPROOF | AREA_ALLOW_LARGE_SIZE | AREA_BLOCK_SUIT_SENSORS | AREA_BLOCK_TRACKING
+
+//Outdoors Area
+
 /area/borealis2
 	icon = 'icons/turf/areas_vr.dmi'
-/area/borealis2/elevator/medbasement
-	name = "Elevator shaft - Lower Medical"
-	flags = AREA_FLAG_IS_NOT_PERSISTENT
-/area/borealis2/elevator/medbay
-	name = "Elevator shaft - Main Medical"
-	flags = AREA_FLAG_IS_NOT_PERSISTENT
-/area/borealis2/elevator/medupper
-	name = "Elevator shaft - Upper Medical"
-	flags = AREA_FLAG_IS_NOT_PERSISTENT
-/area/borealis2/elevator/dorms
-	name = "Elevator shaft - Dorms"
-/area/borealis2/elevator/scicargo
-	name = "Elevator shaft - Sci-Cargo"
-/area/borealis2/elevator/scimining
-	name = "Elevator shaft - Sci-Mining"
-/area/borealis2/elevator/sciminingtransit
-	name = "Elevator shaft - Depth tranist"
-/area/borealis2/elevator/uppermining
-	name = "Elevator shaft - Upper Level"
 /area/borealis2/outdoors
 	name = "Outside - Surface"
 	icon_state = "outside1"
-	sound_env = MOUNTAINS
-
-/area/crew_quarters/meeting
-	name = "\improper Public Conference"
-	icon_state = "courtroom"
-
-/area/borealis2/outdoors/grounds
-	name = "\The outpost grounds"
-	flags = AREA_FLAG_IS_NOT_PERSISTENT
-
-/area/borealis2/outdoors/grounds/upper
-	name = "\The outpost grounds"
-	base_turf = /turf/simulated/open/cryogaia
-	icon_state = "outside2"
-
-/area/borealis2/outdoors/grounds/wall
-	name = "Perimeter Wall"
-	icon = 'icons/turf/areas.dmi'
-	icon_state = "submap_hostile_area"
-
-/area/borealis2/outdoors/grounds/walkway
-	name = "Perimeter Wall Walkway"
-	icon = 'icons/turf/areas.dmi'
-	icon_state = "submap_trespass_area"
-
-/area/borealis2/outdoors/grounds/walkway/exploration
-	name = "Exploration - Exterior Rooftop"
-
-/area/borealis2/outdoors/grounds/checkpoint
-	name = "Perimeter Checkpoint"
-	icon = 'icons/turf/areas.dmi'
-	icon_state = "submap_trespass_alt"
-
-/area/borealis2/outdoors/grounds/tower
-	name = "Perimeter Tower"
-	sound_env = SMALL_ENCLOSED
-	forbid_events = TRUE
-
-/area/borealis2/outdoors/grounds/tower/north
-	name = "Perimeter Tower - N"
-	icon = 'icons/turf/areas.dmi'
-	icon_state = "north"
-
-/area/borealis2/outdoors/grounds/tower/northeast
-	name = "Perimeter Tower - NE"
-	icon = 'icons/turf/areas.dmi'
-	icon_state = "northeast"
-
-/area/borealis2/outdoors/grounds/tower/east
-	name = "Perimeter Tower - E"
-	icon = 'icons/turf/areas.dmi'
-	icon_state = "east"
-
-/area/borealis2/outdoors/grounds/tower/southeast
-	name = "Perimeter Tower - SE"
-	icon = 'icons/turf/areas.dmi'
-	icon_state = "southeast"
-
-/area/borealis2/outdoors/grounds/tower/south
-	name = "Perimeter Tower - S"
-	icon = 'icons/turf/areas.dmi'
-	icon_state = "south"
-
-/area/borealis2/outdoors/grounds/tower/southwest
-	name = "Perimeter Tower - SW"
-	icon = 'icons/turf/areas.dmi'
-	icon_state = "southwest"
-
-/area/borealis2/outdoors/grounds/tower/west
-	name = "Perimeter Tower - W"
-	icon = 'icons/turf/areas.dmi'
-	icon_state = "west"
-
-/area/borealis2/outdoors/grounds/tower/northwest
-	name = "Perimeter Tower - NW"
-	icon = 'icons/turf/areas.dmi'
-	icon_state = "northwest"
+	sound_env = SOUND_ENVIRONMENT_MOUNTAINS
+	outdoors = OUTDOORS_YES
 
 /area/borealis2/outdoors/exterior
 	name = "\The wilderness"
 	icon_state = "outside1unex"
 	flags = AREA_FLAG_IS_NOT_PERSISTENT
 
-
 /area/borealis2/outdoors/exterior/upper
 	name = "\The wilderness"
 	icon_state = "outside2unex"
 
-/area/borealis2/outdoors/exterior/lake
-	name = "The Ice Lake"
+//Outdoors Area - Wilderness
+/area/borealis2/outdoors/exterior/traderpad
+	name = "\improper Cryogaia Commerce Pad"
+	icon = 'icons/turf/areas_yw.dmi'
+	icon_state = "landingpad"
+
+/area/borealis2/outdoors/exterior/traderpad/interior
+	name = "\improper Cryogaia Commerce Pad"
+	icon = 'icons/turf/areas_yw.dmi'
+	icon_state = "landingpad"
+	outdoors = OUTDOORS_NO
 
 /area/borealis2/outdoors/exterior/explore1
 	name = "Abandoned building"
 	icon_state = "outside1"
+
+/area/borealis2/outdoors/exterior/explore1/interior
+	name = "Abandoned building"
+	icon_state = "outside1"
+	outdoors = OUTDOORS_NO
 
 /area/borealis2/outdoors/exterior/explore2
 	name = "Unexplored Area"
@@ -126,24 +77,127 @@
 	name = "Unexplored Caves"
 	icon_state = "outside3"
 
-/area/borealis2/outdoors/grounds/power
-	name = "\The Exterior Powerline"
-	icon = 'icons/turf/areas.dmi'
-	icon_state = "yellow"
+/area/borealis2/outdoors/exterior/lake
+	name = "The Ice Lake"
 
-/area/borealis2/outdoors/grounds/traderpad
-	name = "\improper Cryogaia Commerce Pad"
-	icon = 'icons/turf/areas_yw.dmi'
-	icon_state = "landingpad"
+// Outdoors Area - grounds
+/area/borealis2/outdoors/grounds
+	name = "\The outpost grounds"
+	flags = AREA_FLAG_IS_NOT_PERSISTENT
 
-/area/borealis2/outdoors/grounds/entrance
-	name = "\improper Cryogaia Compound Gate"
+/area/borealis2/outdoors/grounds/upper
+	name = "\The outpost grounds"
+	base_turf = /turf/simulated/open/cryogaia
+	icon_state = "outside2"
 
 /area/borealis2/outdoors/grounds/upper/solars
 	name = "\The solar array"
 	icon = 'icons/turf/areas.dmi'
 	icon_state = "panelsA"
+
+/area/borealis2/outdoors/grounds/power
+	name = "\The Exterior Powerline"
+	icon = 'icons/turf/areas.dmi'
+	icon_state = "yellow"
+
+/area/borealis2/outdoors/grounds/walkway
+	name = "Perimeter Wall Walkway"
+	icon = 'icons/turf/areas.dmi'
+	icon_state = "submap_trespass_area"
+
+/area/borealis2/outdoors/grounds/walkway/exploration
+	name = "Exploration - Exterior Rooftop"
+
+//Outpost Area
+
+/area/cryogaia/outpost/bonfire
+	name = "Bonfire Room"
+	icon = 'icons/turf/areas.dmi'
+	icon_state = "red"
+
+/area/cryogaia/outpost/checkpoint
+	name = "Perimeter Checkpoint"
+	icon = 'icons/turf/areas.dmi'
+	icon_state = "submap_trespass_alt"
+
+/area/cryogaia/outpost/wall
+	name = "Perimeter Wall"
+	icon = 'icons/turf/areas.dmi'
+	icon_state = "submap_hostile_area"
+
+/area/cryogaia/outpost/tower
+	name = "Perimeter Tower"
+	sound_env = SMALL_ENCLOSED
+	flags = AREA_FORBID_EVENTS
+
+/area/cryogaia/outpost/tower/north
+	name = "Perimeter Tower - N"
+	icon = 'icons/turf/areas.dmi'
+	icon_state = "north"
+
+/area/cryogaia/outpost/tower/northeast
+	name = "Perimeter Tower - NE"
+	icon = 'icons/turf/areas.dmi'
+	icon_state = "northeast"
+
+/area/cryogaia/outpost/tower/east
+	name = "Perimeter Tower - E"
+	icon = 'icons/turf/areas.dmi'
+	icon_state = "east"
+
+/area/cryogaia/outpost/tower/southeast
+	name = "Perimeter Tower - SE"
+	icon = 'icons/turf/areas.dmi'
+	icon_state = "southeast"
+
+/area/cryogaia/outpost/tower/south
+	name = "Perimeter Tower - S"
+	icon = 'icons/turf/areas.dmi'
+	icon_state = "south"
+
+/area/cryogaia/outpost/tower/southwest
+	name = "Perimeter Tower - SW"
+	icon = 'icons/turf/areas.dmi'
+	icon_state = "southwest"
+
+/area/cryogaia/outpost/tower/west
+	name = "Perimeter Tower - W"
+	icon = 'icons/turf/areas.dmi'
+	icon_state = "west"
+
+/area/cryogaia/outpost/tower/northwest
+	name = "Perimeter Tower - NW"
+	icon = 'icons/turf/areas.dmi'
+	icon_state = "northwest"
+
+
+// Elevators
+/area/cryogaia/outpost/elevator/medbasement
+	name = "Elevator shaft - Lower Medical"
+	flags = AREA_FLAG_IS_NOT_PERSISTENT
+/area/cryogaia/outpost/elevator/medbay
+	name = "Elevator shaft - Main Medical"
+	flags = AREA_FLAG_IS_NOT_PERSISTENT
+/area/cryogaia/outpost/elevator/medupper
+	name = "Elevator shaft - Upper Medical"
+	flags = AREA_FLAG_IS_NOT_PERSISTENT
+/area/cryogaia/outpost/elevator/dorms
+	name = "Elevator shaft - Dorms"
+/area/cryogaia/outpost/elevator/scicargo
+	name = "Elevator shaft - Sci-Cargo"
+/area/cryogaia/outpost/elevator/scimining
+	name = "Elevator shaft - Sci-Mining"
+/area/cryogaia/outpost/elevator/sciminingtransit
+	name = "Elevator shaft - Depth tranist"
+/area/cryogaia/outpost/elevator/uppermining
+	name = "Elevator shaft - Upper Level"
+
 //crew quarters-dorms
+
+/area/crew_quarters/meeting
+	name = "\improper Public Conference"
+	icon_state = "courtroom"
+
 /area/crew_quarters/showers
 	name = "\improper Unisex Showers"
 	icon_state = "recreation_area_restroom"
@@ -151,54 +205,42 @@
 /area/crew_quarters/sleep/maintDorm1
 	name = "\improper Construction Dorm 1"
 	icon_state = "Sleep"
-	flags = RAD_SHIELDED
-	block_suit_sensors = FALSE
+	flags = RAD_SHIELDED | AREA_BLOCK_SUIT_SENSORS
 
 /area/crew_quarters/sleep/maintDorm2
 	name = "\improper Construction Dorm 2"
 	icon_state = "Sleep"
-	flags = RAD_SHIELDED
-	block_suit_sensors = FALSE
+	flags = RAD_SHIELDED | AREA_BLOCK_SUIT_SENSORS
 
 /area/crew_quarters/sleep/maintDorm3
 	name = "\improper Construction Dorm 3"
 	icon_state = "Sleep"
-	flags = RAD_SHIELDED
-	block_suit_sensors = FALSE
+	flags = RAD_SHIELDED | AREA_BLOCK_SUIT_SENSORS
 
 /area/crew_quarters/sleep/maintDorm4
 	name = "\improper Construction Dorm 4"
 	icon_state = "Sleep"
-	flags = RAD_SHIELDED
-	block_suit_sensors = FALSE
+	flags = RAD_SHIELDED | AREA_BLOCK_SUIT_SENSORS
 
 /area/crew_quarters/sleep/Dorm_1/holo
 	name = "\improper Dorm 1 Holodeck"
 	icon_state = "dk_yellow"
-	flags = RAD_SHIELDED | BLUE_SHIELDED
-	limit_mob_size = FALSE
-	block_suit_sensors = FALSE
+	flags = RAD_SHIELDED | BLUE_SHIELDED | TEMPERATURE_SHIELDED | PHASE_SHIELDED | AREA_ALLOW_LARGE_SIZE | AREA_BLOCK_SUIT_SENSORS
 
 /area/crew_quarters/sleep/Dorm_3/holo
 	name = "\improper Dorm 3 Holodeck"
 	icon_state = "dk_yellow"
-	flags = RAD_SHIELDED | BLUE_SHIELDED
-	limit_mob_size = FALSE
-	block_suit_sensors = FALSE
+	flags = RAD_SHIELDED | BLUE_SHIELDED | TEMPERATURE_SHIELDED | PHASE_SHIELDED | AREA_ALLOW_LARGE_SIZE | AREA_BLOCK_SUIT_SENSORS
 
 /area/crew_quarters/sleep/Dorm_5/holo
 	name = "\improper Dorm 5 Holodeck"
 	icon_state = "dk_yellow"
-	flags = RAD_SHIELDED | BLUE_SHIELDED
-	limit_mob_size = FALSE
-	block_suit_sensors = FALSE
+	flags = RAD_SHIELDED | BLUE_SHIELDED | TEMPERATURE_SHIELDED | PHASE_SHIELDED | AREA_ALLOW_LARGE_SIZE | AREA_BLOCK_SUIT_SENSORS
 
 /area/crew_quarters/sleep/Dorm_7/holo
 	name = "\improper Dorm 7 Holodeck"
 	icon_state = "dk_yellow"
-	flags = RAD_SHIELDED | BLUE_SHIELDED
-	limit_mob_size = FALSE
-	block_suit_sensors = FALSE
+	flags = RAD_SHIELDED | BLUE_SHIELDED | TEMPERATURE_SHIELDED | PHASE_SHIELDED | AREA_ALLOW_LARGE_SIZE | AREA_BLOCK_SUIT_SENSORS
 
 //
 /area/chapel/monastery
@@ -226,40 +268,31 @@
 //holodorms
 /area/holodeck/holodorm/source_basic
 	name = "\improper Holodeck Source"
-	flags = RAD_SHIELDED | BLUE_SHIELDED
-	limit_mob_size = FALSE
+	flags = RAD_SHIELDED | BLUE_SHIELDED | AREA_ALLOW_LARGE_SIZE
 /area/holodeck/holodorm/source_desert
 	name = "\improper Holodeck Source"
-	flags = RAD_SHIELDED | BLUE_SHIELDED
-	limit_mob_size = FALSE
+	flags = RAD_SHIELDED | BLUE_SHIELDED | AREA_ALLOW_LARGE_SIZE
 /area/holodeck/holodorm/source_seating
 	name = "\improper Holodeck Source"
-	flags = RAD_SHIELDED | BLUE_SHIELDED
-	limit_mob_size = FALSE
+	flags = RAD_SHIELDED | BLUE_SHIELDED | AREA_ALLOW_LARGE_SIZE
 /area/holodeck/holodorm/source_beach
 	name = "\improper Holodeck Source"
-	flags = RAD_SHIELDED | BLUE_SHIELDED
-	limit_mob_size = FALSE
+	flags = RAD_SHIELDED | BLUE_SHIELDED | AREA_ALLOW_LARGE_SIZE
 /area/holodeck/holodorm/source_garden
 	name = "\improper Holodeck Source"
-	flags = RAD_SHIELDED | BLUE_SHIELDED
-	limit_mob_size = FALSE
+	flags = RAD_SHIELDED | BLUE_SHIELDED | AREA_ALLOW_LARGE_SIZE
 /area/holodeck/holodorm/source_boxing
 	name = "\improper Holodeck Source"
-	flags = RAD_SHIELDED | BLUE_SHIELDED
-	limit_mob_size = FALSE
+	flags = RAD_SHIELDED | BLUE_SHIELDED | AREA_ALLOW_LARGE_SIZE
 /area/holodeck/holodorm/source_snow
 	name = "\improper Holodeck Source"
-	flags = RAD_SHIELDED | BLUE_SHIELDED
-	limit_mob_size = FALSE
+	flags = RAD_SHIELDED | BLUE_SHIELDED | AREA_ALLOW_LARGE_SIZE
 /area/holodeck/holodorm/source_space
 	name = "\improper Holodeck Source"
-	flags = RAD_SHIELDED | BLUE_SHIELDED
-	limit_mob_size = FALSE
+	flags = RAD_SHIELDED | BLUE_SHIELDED | AREA_ALLOW_LARGE_SIZE
 /area/holodeck/holodorm/source_off
 	name = "\improper Holodeck Source"
-	flags = RAD_SHIELDED | BLUE_SHIELDED
-	limit_mob_size = FALSE
+	flags = RAD_SHIELDED | BLUE_SHIELDED | AREA_ALLOW_LARGE_SIZE
 
 // Mining Underdark < does this name really apply anymoore?
 
@@ -410,9 +443,11 @@
 /area/security/brig/visitation
 	name = "\improper Visitation"
 	icon_state = "security"
+	flags = PHASE_SHIELDED
 /area/security/brig/bathroom
 	name = "\improper Brig Bathroom"
 	icon_state = "security"
+	flags = PHASE_SHIELDED
 /area/security/armory/blue
 	name = "\improper Armory - Blue"
 	icon_state = "armory"
@@ -451,6 +486,7 @@
 /area/security/sorting
 	name = "\improper Security disposals processing"
 	icon_state = "security"
+	flags = PHASE_SHIELDED // YW Addition adds phase shielding to tcoms
 
 /area/maintenance/security
 	name = "Security Maintenance"
@@ -514,10 +550,14 @@
 	icon_state = "medbay_triage"
 	flags = AREA_FLAG_IS_NOT_PERSISTENT
 /area/medical/scanning
-	name = "Medical Diagnostics Center"
+	name = "\improper Medical Diagnostics Center"
 	icon_state = "medbay"
 	flags = AREA_FLAG_IS_NOT_PERSISTENT
 
+/area/medical/autoresleeving
+	name = "\improper Medical Auto Resleeving"
+	icon_state = "medbay"
+	flags = AREA_FLAG_IS_NOT_PERSISTENT
 
 //Science outpost
 /area/rnd/xenobiology/xenoflora/lab_atmos
@@ -612,14 +652,3 @@
 /area/hallway/secondary/exit_link
 	name = "\improper Docking Area link"
 	icon_state = "escape"
-
-
-
-
-
-// SPECIAL AREAS
-/area/vrworld
-	name = "VR World"
-	icon = 'icons/turf/areas_yw.dmi'
-	icon_state = "vr"
-	requires_power = 0

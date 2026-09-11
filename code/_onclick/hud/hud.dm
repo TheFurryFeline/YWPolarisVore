@@ -1,3 +1,4 @@
+#define MAX_AMMO_HUD_POSSIBLE 4 // Cap the amount of HUDs at 4.
 /*
 	The global hud:
 	Uses the same visual objects for all players.
@@ -40,9 +41,9 @@ var/list/global_huds = list(
 
 /datum/global_hud/proc/setup_overlay(var/icon_state)
 	var/obj/screen/screen = new /obj/screen()
-	screen.alpha = 40 // Adjut this if you want goggle overlays to be thinner or thicker.
+	screen.alpha = 30 // Adjut this if you want goggle overlays to be thinner or thicker. //VOREStation Edit
 	screen.screen_loc = "SOUTHWEST to NORTHEAST" // Will tile up to the whole screen, scaling beyond 15x15 if needed.
-	screen.icon = 'icons/obj/hud_tiled.dmi'
+	screen.icon = 'icons/obj/hud_tiled_vr.dmi'	//VOREStation Edit
 	screen.icon_state = icon_state
 	screen.layer = SCREEN_LAYER
 	screen.plane = PLANE_FULLSCREEN
@@ -175,30 +176,55 @@ var/list/global_huds = list(
 	var/obj/screen/l_hand_hud_object
 	var/obj/screen/action_intent
 	var/obj/screen/move_intent
+	var/obj/screen/control_vtec
 
 	var/list/adding
+	/// Misc hud elements that are hidden when the hud is minimized
 	var/list/other
+	/// Same, but always shown even when the hud is minimized
+	var/list/other_important
 	var/list/miniobjs
 	var/list/obj/screen/hotkeybuttons
 
-	var/obj/screen/movable/action_button/hide_toggle/hide_actions_toggle
-	var/action_buttons_hidden = 0
+	var/obj/screen/button_palette/toggle_palette
+	var/obj/screen/palette_scroll/down/palette_down
+	var/obj/screen/palette_scroll/up/palette_up
+
+	var/datum/action_group/palette/palette_actions
+	var/datum/action_group/listed/listed_actions
+	var/list/floating_actions
+
+
 	var/list/slot_info
 
 	var/icon/ui_style
 	var/ui_color
 	var/ui_alpha
 
+	// TGMC Ammo HUD Port
+	var/list/obj/screen/ammo_hud_list = list()
+
 	var/list/minihuds = list()
 
-datum/hud/New(mob/owner)
+/datum/hud/New(mob/owner)
 	mymob = owner
 	instantiate()
 	..()
 
 /datum/hud/Destroy()
-	. = ..()
-	qdel_null(minihuds)
+	if(mymob.hud_used == src)
+		mymob.hud_used = null
+
+	QDEL_NULL_LIST(minihuds)
+
+	// Actions
+	QDEL_NULL(toggle_palette)
+	QDEL_NULL(palette_down)
+	QDEL_NULL(palette_up)
+	QDEL_NULL(palette_actions)
+	QDEL_NULL(listed_actions)
+	QDEL_LIST(floating_actions)
+
 	grab_intent = null
 	hurt_intent = null
 	disarm_intent = null
@@ -212,11 +238,18 @@ datum/hud/New(mob/owner)
 	l_hand_hud_object = null
 	action_intent = null
 	move_intent = null
+	control_vtec = null
 	adding = null
 	other = null
+	other_important = null
 	hotkeybuttons = null
 //	item_action_list = null // ?
+	for (var/x in ammo_hud_list)
+		remove_ammo_hud(mymob, x)
+	ammo_hud_list = null
 	mymob = null
+
+	return ..()
 
 /datum/hud/proc/hidden_inventory_update()
 	if(!mymob) return
@@ -310,9 +343,18 @@ datum/hud/New(mob/owner)
 
 	mymob.create_mob_hud(src)
 
+	// Past this point, mymob.hud_used is set
+
+	toggle_palette = new()
+	toggle_palette.set_hud(src)
+	palette_down = new()
+	palette_down.set_hud(src)
+	palette_up = new()
+	palette_up.set_hud(src)
+
 	persistant_inventory_update()
 	mymob.reload_fullscreen() // Reload any fullscreen overlays this mob has.
-	mymob.update_action_buttons()
+	mymob.update_action_buttons(TRUE)
 	reorganize_alerts()
 
 /mob/proc/create_mob_hud(datum/hud/HUD, apply_to_client = TRUE)
@@ -322,6 +364,11 @@ datum/hud/New(mob/owner)
 	HUD.ui_style = ui_style2icon(client?.prefs?.UI_style)
 	HUD.ui_color = client?.prefs?.UI_style_color
 	HUD.ui_alpha = client?.prefs?.UI_style_alpha
+	set_hud_used(HUD)
+
+/mob/proc/set_hud_used(datum/hud/new_hud)
+	hud_used = new_hud
+	new_hud.build_action_groups()
 
 /datum/hud/proc/apply_minihud(var/datum/mini_hud/MH)
 	if(MH in minihuds)
@@ -349,7 +396,7 @@ datum/hud/New(mob/owner)
 	set hidden = 1
 
 	if(!hud_used)
-		to_chat(usr, "<span class='warning'>This mob type does not use a HUD.</span>")
+		to_chat(src, span_warning("This mob type does not use a HUD."))
 		return FALSE
 	if(!client)
 		return FALSE
@@ -359,6 +406,9 @@ datum/hud/New(mob/owner)
 	toggle_hud_vis(full)
 
 /mob/proc/toggle_hud_vis(full)
+	if(!client)
+		return FALSE
+
 	if(hud_used.hud_shown)
 		hud_used.hud_shown = 0
 		if(hud_used.adding)
@@ -367,12 +417,16 @@ datum/hud/New(mob/owner)
 			client.screen -= hud_used.other
 		if(hud_used.hotkeybuttons)
 			client.screen -= hud_used.hotkeybuttons
+		if(hud_used.other_important)
+			client.screen -= hud_used.other_important
 	else
 		hud_used.hud_shown = 1
 		if(hud_used.adding)
 			client.screen += hud_used.adding
 		if(hud_used.other && hud_used.inventory_shown)
 			client.screen += hud_used.other
+		if(hud_used.other_important)
+			client.screen += hud_used.other_important
 		if(hud_used.hotkeybuttons && !hud_used.hotkey_ui_hidden)
 			client.screen += hud_used.hotkeybuttons
 		if(healths)
@@ -384,15 +438,17 @@ datum/hud/New(mob/owner)
 
 		hud_used?.action_intent.screen_loc = ui_acti //Restore intent selection to the original position
 		client.screen += zone_sel				//This one is a special snowflake
+		client.screen += hud_used.toggle_palette
 
 	hud_used.hidden_inventory_update()
 	hud_used.persistant_inventory_update()
-	update_action_buttons()
+	update_action_buttons(TRUE)
 	hud_used.reorganize_alerts()
 	return TRUE
 
 /mob/living/carbon/human/toggle_hud_vis(full)
-	..()
+	if(!(. = ..()))
+		return FALSE
 
 	// Prevents humans from hiding a few hud elements
 	if(!hud_used.hud_shown) // transitioning to hidden
@@ -446,10 +502,45 @@ datum/hud/New(mob/owner)
 
 	hud_used.hidden_inventory_update()
 	hud_used.persistant_inventory_update()
-	update_action_buttons()
+	update_action_buttons(TRUE)
 
 /mob/proc/add_click_catcher()
 	client.screen += client.void
 
 /mob/new_player/add_click_catcher()
 	return
+
+/* TGMC Ammo HUD Port
+ * These procs call to screen_objects.dm's respective procs.
+ * All these do is manage the amount of huds on screen and set the HUD.
+*/
+///Add an ammo hud to the user informing of the ammo count of G
+/datum/hud/proc/add_ammo_hud(mob/living/user, obj/item/gun/G)
+	if(length(ammo_hud_list) >= MAX_AMMO_HUD_POSSIBLE)
+		return
+	var/obj/screen/ammo/ammo_hud = new
+	ammo_hud_list[G] = ammo_hud
+	ammo_hud.screen_loc = ammo_hud.ammo_screen_loc_list[length(ammo_hud_list)]
+	ammo_hud.add_hud(user, G)
+	ammo_hud.update_hud(user, G)
+
+///Remove the ammo hud related to the gun G from the user
+/datum/hud/proc/remove_ammo_hud(mob/living/user, obj/item/gun/G)
+	var/obj/screen/ammo/ammo_hud = ammo_hud_list[G]
+	if(isnull(ammo_hud))
+		return
+	ammo_hud.remove_hud(user, G)
+	qdel(ammo_hud)
+	ammo_hud_list -= G
+	var/i = 1
+	for(var/key in ammo_hud_list)
+		ammo_hud = ammo_hud_list[key]
+		ammo_hud.screen_loc = ammo_hud.ammo_screen_loc_list[i]
+		i++
+
+///Update the ammo hud related to the gun G
+/datum/hud/proc/update_ammo_hud(mob/living/user, obj/item/gun/G)
+	var/obj/screen/ammo/ammo_hud = ammo_hud_list[G]
+	ammo_hud?.update_hud(user, G)
+
+#undef MAX_AMMO_HUD_POSSIBLE

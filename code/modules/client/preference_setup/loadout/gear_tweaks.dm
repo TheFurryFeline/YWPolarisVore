@@ -34,13 +34,54 @@
 
 /datum/gear_tweak/color/get_metadata(var/user, var/metadata, var/title = "Character Preference")
 	if(valid_colors)
-		return input(user, "Choose a color.", title, metadata) as null|anything in valid_colors
+		return tgui_input_list(user, "Choose a color.", title, valid_colors, metadata)
 	return input(user, "Choose a color.", title, metadata) as color|null
 
 /datum/gear_tweak/color/tweak_item(var/obj/item/I, var/metadata)
 	if(valid_colors && !(metadata in valid_colors))
 		return
-	I.color = metadata
+	if(!metadata || (metadata == "#ffffff"))
+		return
+	if(istype(I))
+		I.add_atom_colour(metadata, FIXED_COLOUR_PRIORITY)
+	else
+		I.color = metadata
+
+GLOBAL_DATUM_INIT(gear_tweak_free_matrix_recolor, /datum/gear_tweak/matrix_recolor, new)
+
+/datum/gear_tweak/matrix_recolor
+
+/datum/gear_tweak/matrix_recolor/get_contents(var/metadata)
+	if(islist(metadata) && length(metadata))
+		return "Matrix Recolor: [english_list(metadata)]"
+	return "Matrix Recolor"
+
+/datum/gear_tweak/matrix_recolor/get_default()
+	return null
+
+/datum/gear_tweak/matrix_recolor/get_metadata(user, metadata)
+	var/list/returned = color_matrix_picker(user, "Pick a color matrix for this item", "Matrix Recolor", "Ok", "Erase", "Cancel", TRUE, 10 MINUTES, islist(metadata) && metadata)
+	var/list/L = returned["matrix"]
+	if(returned["button"] == 3)
+		return metadata
+	if((returned["button"] == 2) || !islist(L) || !ISINRANGE(L.len, 9, 20))
+		return list()
+	var/identity = TRUE
+	var/static/list/ones = list(1, 5, 9)
+	for(var/i in 1 to L.len)
+		if(L[i] != ((i in ones)? 1 : 0))
+			identity = FALSE
+			break
+	return identity? list() : L
+
+/datum/gear_tweak/matrix_recolor/tweak_item(obj/item/I, metadata)
+	. = ..()
+	if(!islist(metadata) || (length(metadata) < 12))
+		return
+	if(istype(I))
+		I.add_atom_colour(metadata, FIXED_COLOUR_PRIORITY)
+	else
+		I.color = metadata
 
 /*
 * Path adjustment
@@ -60,7 +101,7 @@
 	return valid_paths[1]
 
 /datum/gear_tweak/path/get_metadata(var/user, var/metadata)
-	return input(user, "Choose a type.", "Character Preference", metadata) as null|anything in valid_paths
+	return tgui_input_list(user, "Choose a type.", "Character Preference", valid_paths, metadata)
 
 /datum/gear_tweak/path/tweak_gear_data(var/metadata, var/datum/gear_data/gear_data)
 	if(!(metadata in valid_paths))
@@ -91,7 +132,7 @@
 	for(var/i = metadata.len to valid_contents.len)
 		metadata += "Random"
 	for(var/i = 1 to valid_contents.len)
-		var/entry = input(user, "Choose an entry.", "Character Preference", metadata[i]) as null|anything in (valid_contents[i] + list("Random", "None"))
+		var/entry = tgui_input_list(user, "Choose an entry.", "Character Preference", valid_contents[i] + list("Random", "None"), metadata[i])
 		if(entry)
 			. += entry
 		else
@@ -110,6 +151,11 @@
 			continue
 		else
 			path = 	contents[metadata[i]]
+		if(!path)
+			var/mob/user = ismob(I.loc) ? I.loc : I.loc?.loc
+			if(istype(user))
+				to_chat(user, span_warning("The content \"[metadata[i]]\" from \"[I]\" does no longer exist and has not been loaded. Please replace it in the character setup."))
+			continue
 		new path(I)
 
 /*
@@ -130,7 +176,7 @@
 	return "Random"
 
 /datum/gear_tweak/reagents/get_metadata(var/user, var/list/metadata)
-	. = input(user, "Choose an entry.", "Character Preference", metadata) as null|anything in (valid_reagents + list("Random", "None"))
+	. = tgui_input_list(user, "Choose an entry.", "Character Preference", valid_reagents + list("Random", "None"), metadata)
 	if(!.)
 		return metadata
 
@@ -168,11 +214,12 @@ var/datum/gear_tweak/custom_name/gear_tweak_free_name = new()
 
 /datum/gear_tweak/custom_name/get_metadata(var/user, var/metadata)
 	if(jobban_isbanned(user, LOADOUT_BAN_STRING))
-		to_chat(user, SPAN_WARNING("You are banned from using custom loadout names/descriptions."))
+		to_chat(user, span_warning("You are banned from using custom loadout names/descriptions."))
 		return
 	if(valid_custom_names)
-		return input(user, "Choose an item name.", "Character Preference", metadata) as null|anything in valid_custom_names
-	return sanitize(input(user, "Choose the item's name. Leave it blank to use the default name.", "Item Name", metadata) as text|null, MAX_LNAME_LEN, extra = 0)
+		return tgui_input_list(user, "Choose an item name.", "Character Preference", valid_custom_names, metadata)
+	var/san_input = sanitize(tgui_input_text(user, "Choose the item's name. Leave it blank to use the default name.", "Item Name", metadata, MAX_LNAME_LEN), MAX_LNAME_LEN, extra = 0)
+	return san_input ? san_input : get_default()
 
 /datum/gear_tweak/custom_name/tweak_item(var/obj/item/I, var/metadata)
 	if(!metadata)
@@ -199,11 +246,12 @@ var/datum/gear_tweak/custom_desc/gear_tweak_free_desc = new()
 
 /datum/gear_tweak/custom_desc/get_metadata(var/user, var/metadata)
 	if(jobban_isbanned(user, LOADOUT_BAN_STRING))
-		to_chat(user, SPAN_WARNING("You are banned from using custom loadout names/descriptions."))
+		to_chat(user, span_warning("You are banned from using custom loadout names/descriptions."))
 		return
 	if(valid_custom_desc)
-		return input(user, "Choose an item description.", "Character Preference", metadata) as null|anything in valid_custom_desc
-	return sanitize(input(user, "Choose the item's description. Leave it blank to use the default description.", "Item Description", metadata) as message|null, extra = 0)
+		return tgui_input_list(user, "Choose an item description.", "Character Preference",valid_custom_desc, metadata)
+	var/san_input = sanitize(tgui_input_text(user, "Choose the item's description. Leave it blank to use the default description.", "Item Description", metadata, multiline = TRUE, prevent_enter = TRUE), extra = 0)
+	return san_input ? san_input : get_default()
 
 /datum/gear_tweak/custom_desc/tweak_item(var/obj/item/I, var/metadata)
 	if(!metadata)
@@ -213,13 +261,13 @@ var/datum/gear_tweak/custom_desc/gear_tweak_free_desc = new()
 //end of custom description
 
 /datum/gear_tweak/tablet
-	var/list/ValidProcessors = list(/obj/item/weapon/computer_hardware/processor_unit/small)
-	var/list/ValidBatteries = list(/obj/item/weapon/computer_hardware/battery_module/nano, /obj/item/weapon/computer_hardware/battery_module/micro, /obj/item/weapon/computer_hardware/battery_module)
-	var/list/ValidHardDrives = list(/obj/item/weapon/computer_hardware/hard_drive/micro, /obj/item/weapon/computer_hardware/hard_drive/small, /obj/item/weapon/computer_hardware/hard_drive)
-	var/list/ValidNetworkCards = list(/obj/item/weapon/computer_hardware/network_card, /obj/item/weapon/computer_hardware/network_card/advanced)
-	var/list/ValidNanoPrinters = list(null, /obj/item/weapon/computer_hardware/nano_printer)
-	var/list/ValidCardSlots = list(null, /obj/item/weapon/computer_hardware/card_slot)
-	var/list/ValidTeslaLinks = list(null, /obj/item/weapon/computer_hardware/tesla_link)
+	var/list/ValidProcessors = list(/obj/item/computer_hardware/processor_unit/small)
+	var/list/ValidBatteries = list(/obj/item/computer_hardware/battery_module/nano, /obj/item/computer_hardware/battery_module/micro, /obj/item/computer_hardware/battery_module)
+	var/list/ValidHardDrives = list(/obj/item/computer_hardware/hard_drive/micro, /obj/item/computer_hardware/hard_drive/small, /obj/item/computer_hardware/hard_drive)
+	var/list/ValidNetworkCards = list(/obj/item/computer_hardware/network_card, /obj/item/computer_hardware/network_card/advanced)
+	var/list/ValidNanoPrinters = list(null, /obj/item/computer_hardware/nano_printer)
+	var/list/ValidCardSlots = list(null, /obj/item/computer_hardware/card_slot)
+	var/list/ValidTeslaLinks = list(null, /obj/item/computer_hardware/tesla_link)
 
 /datum/gear_tweak/tablet/get_contents(var/list/metadata)
 	var/list/names = list()
@@ -258,7 +306,7 @@ var/datum/gear_tweak/custom_desc/gear_tweak_free_desc = new()
 		else
 			names["None"] = counter++
 
-	var/entry = input(user, "Choose a processor.", "Character Preference") in names
+	var/entry = tgui_input_list(user, "Choose a processor:", "Tablet Gear", names)
 	. += names[entry]
 
 	names = list()
@@ -270,7 +318,7 @@ var/datum/gear_tweak/custom_desc/gear_tweak_free_desc = new()
 		else
 			names["None"] = counter++
 
-	entry = input(user, "Choose a battery.", "Character Preference") in names
+	entry = tgui_input_list(user, "Choose a battery:", "Tablet Gear", names)
 	. += names[entry]
 
 	names = list()
@@ -282,7 +330,7 @@ var/datum/gear_tweak/custom_desc/gear_tweak_free_desc = new()
 		else
 			names["None"] = counter++
 
-	entry = input(user, "Choose a hard drive.", "Character Preference") in names
+	entry = tgui_input_list(user, "Choose a hard drive:", "Tablet Gear", names)
 	. += names[entry]
 
 	names = list()
@@ -294,7 +342,7 @@ var/datum/gear_tweak/custom_desc/gear_tweak_free_desc = new()
 		else
 			names["None"] = counter++
 
-	entry = input(user, "Choose a network card.", "Character Preference") in names
+	entry = tgui_input_list(user, "Choose a network card:", "Tablet Gear", names)
 	. += names[entry]
 
 	names = list()
@@ -306,7 +354,7 @@ var/datum/gear_tweak/custom_desc/gear_tweak_free_desc = new()
 		else
 			names["None"] = counter++
 
-	entry = input(user, "Choose a nanoprinter.", "Character Preference") in names
+	entry = tgui_input_list(user, "Choose a nanoprinter:", "Tablet Gear", names)
 	. += names[entry]
 
 	names = list()
@@ -318,7 +366,7 @@ var/datum/gear_tweak/custom_desc/gear_tweak_free_desc = new()
 		else
 			names["None"] = counter++
 
-	entry = input(user, "Choose a card slot.", "Character Preference") in names
+	entry = tgui_input_list(user, "Choose a card slot:", "Tablet Gear", names)
 	. += names[entry]
 
 	names = list()
@@ -330,7 +378,7 @@ var/datum/gear_tweak/custom_desc/gear_tweak_free_desc = new()
 		else
 			names["None"] = counter++
 
-	entry = input(user, "Choose a tesla link.", "Character Preference") in names
+	entry = tgui_input_list(user, "Choose a tesla link:", "Tablet Gear", names)
 	. += names[entry]
 
 /datum/gear_tweak/tablet/get_default()
@@ -362,13 +410,13 @@ var/datum/gear_tweak/custom_desc/gear_tweak_free_desc = new()
 	I.update_verbs()
 
 /datum/gear_tweak/laptop
-	var/list/ValidProcessors = list(/obj/item/weapon/computer_hardware/processor_unit/small, /obj/item/weapon/computer_hardware/processor_unit)
-	var/list/ValidBatteries = list(/obj/item/weapon/computer_hardware/battery_module, /obj/item/weapon/computer_hardware/battery_module/advanced, /obj/item/weapon/computer_hardware/battery_module/super)
-	var/list/ValidHardDrives = list(/obj/item/weapon/computer_hardware/hard_drive, /obj/item/weapon/computer_hardware/hard_drive/advanced, /obj/item/weapon/computer_hardware/hard_drive/super)
-	var/list/ValidNetworkCards = list(/obj/item/weapon/computer_hardware/network_card, /obj/item/weapon/computer_hardware/network_card/advanced)
-	var/list/ValidNanoPrinters = list(null, /obj/item/weapon/computer_hardware/nano_printer)
-	var/list/ValidCardSlots = list(null, /obj/item/weapon/computer_hardware/card_slot)
-	var/list/ValidTeslaLinks = list(null, /obj/item/weapon/computer_hardware/tesla_link)
+	var/list/ValidProcessors = list(/obj/item/computer_hardware/processor_unit/small, /obj/item/computer_hardware/processor_unit)
+	var/list/ValidBatteries = list(/obj/item/computer_hardware/battery_module, /obj/item/computer_hardware/battery_module/advanced, /obj/item/computer_hardware/battery_module/super)
+	var/list/ValidHardDrives = list(/obj/item/computer_hardware/hard_drive, /obj/item/computer_hardware/hard_drive/advanced, /obj/item/computer_hardware/hard_drive/super)
+	var/list/ValidNetworkCards = list(/obj/item/computer_hardware/network_card, /obj/item/computer_hardware/network_card/advanced)
+	var/list/ValidNanoPrinters = list(null, /obj/item/computer_hardware/nano_printer)
+	var/list/ValidCardSlots = list(null, /obj/item/computer_hardware/card_slot)
+	var/list/ValidTeslaLinks = list(null, /obj/item/computer_hardware/tesla_link)
 
 /datum/gear_tweak/laptop/get_contents(var/list/metadata)
 	var/list/names = list()
@@ -407,7 +455,7 @@ var/datum/gear_tweak/custom_desc/gear_tweak_free_desc = new()
 		else
 			names["None"] = counter++
 
-	var/entry = input(user, "Choose a processor.", "Character Preference") in names
+	var/entry = tgui_input_list(user, "Choose a processor:", "Laptop Gear", names)
 	. += names[entry]
 
 	names = list()
@@ -419,7 +467,7 @@ var/datum/gear_tweak/custom_desc/gear_tweak_free_desc = new()
 		else
 			names["None"] = counter++
 
-	entry = input(user, "Choose a battery.", "Character Preference") in names
+	entry = tgui_input_list(user, "Choose a battery:", "Laptop Gear", names)
 	. += names[entry]
 
 	names = list()
@@ -431,7 +479,7 @@ var/datum/gear_tweak/custom_desc/gear_tweak_free_desc = new()
 		else
 			names["None"] = counter++
 
-	entry = input(user, "Choose a hard drive.", "Character Preference") in names
+	entry = tgui_input_list(user, "Choose a hard drive:", "Laptop Gear", names)
 	. += names[entry]
 
 	names = list()
@@ -443,7 +491,7 @@ var/datum/gear_tweak/custom_desc/gear_tweak_free_desc = new()
 		else
 			names["None"] = counter++
 
-	entry = input(user, "Choose a network card.", "Character Preference") in names
+	entry = tgui_input_list(user, "Choose a network card:", "Laptop Gear", names)
 	. += names[entry]
 
 	names = list()
@@ -455,7 +503,7 @@ var/datum/gear_tweak/custom_desc/gear_tweak_free_desc = new()
 		else
 			names["None"] = counter++
 
-	entry = input(user, "Choose a nanoprinter.", "Character Preference") in names
+	entry = tgui_input_list(user, "Choose a nanoprinter:", "Laptop Gear", names)
 	. += names[entry]
 
 	names = list()
@@ -467,7 +515,7 @@ var/datum/gear_tweak/custom_desc/gear_tweak_free_desc = new()
 		else
 			names["None"] = counter++
 
-	entry = input(user, "Choose a card slot.", "Character Preference") in names
+	entry = tgui_input_list(user, "Choose a card slot:", "Laptop Gear", names)
 	. += names[entry]
 
 	names = list()
@@ -479,7 +527,7 @@ var/datum/gear_tweak/custom_desc/gear_tweak_free_desc = new()
 		else
 			names["None"] = counter++
 
-	entry = input(user, "Choose a tesla link.", "Character Preference") in names
+	entry = tgui_input_list(user, "Choose a tesla link:", "Laptop Gear", names)
 	. += names[entry]
 
 /datum/gear_tweak/laptop/get_default()
@@ -541,7 +589,7 @@ var/datum/gear_tweak/custom_desc/gear_tweak_free_desc = new()
 /datum/gear_tweak/implant_location/get_default()
 	return bodypart_names_to_tokens[1]
 
-/datum/gear_tweak/implant_location/tweak_item(var/obj/item/weapon/implant/I, var/metadata)
+/datum/gear_tweak/implant_location/tweak_item(var/obj/item/implant/I, var/metadata)
 	if(istype(I))
 		I.initialize_loc = bodypart_names_to_tokens[metadata] || BP_TORSO
 
@@ -549,6 +597,6 @@ var/datum/gear_tweak/custom_desc/gear_tweak_free_desc = new()
 	return "Location: [metadata]"
 
 /datum/gear_tweak/implant_location/get_metadata(var/user, var/metadata)
-	return (input(user, "Select a bodypart for the implant to be implanted inside.", "Implant Location", metadata || "upper body") as null|anything in bodypart_names_to_tokens) || bodypart_tokens_to_names[BP_TORSO]
+	return (tgui_input_list(user, "Select a bodypart for the implant to be implanted inside.", "Implant Location", bodypart_names_to_tokens || bodypart_tokens_to_names[BP_TORSO]))
 
 #undef LOADOUT_BAN_STRING

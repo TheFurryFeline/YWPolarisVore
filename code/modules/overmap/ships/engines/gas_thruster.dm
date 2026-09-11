@@ -58,13 +58,13 @@
 	icon = 'icons/turf/shuttle_parts.dmi'
 	icon_state = "nozzle"
 	opacity = 1
-	density = 1
+	density = TRUE
 	can_atmos_pass = ATMOS_PASS_NO
 	connect_types = CONNECT_TYPE_REGULAR|CONNECT_TYPE_FUEL
 
 	// construct_state = /decl/machine_construction/default/panel_closed
-	// maximum_component_parts = list(/obj/item/weapon/stock_parts = 6)//don't want too many, let upgraded component shine
-	// uncreated_component_parts = list(/obj/item/weapon/stock_parts/power/apc/buildable = 1)
+	// maximum_component_parts = list(/obj/item/stock_parts = 6)//don't want too many, let upgraded component shine
+	// uncreated_component_parts = list(/obj/item/stock_parts/power/apc/buildable = 1)
 
 	use_power = USE_POWER_OFF
 	power_channel = EQUIP
@@ -86,8 +86,7 @@
 	controller = new(src)
 	update_nearby_tiles(need_rebuild=1)
 
-	for(var/ship in SSshuttles.ships)
-		var/obj/effect/overmap/visitable/ship/S = ship
+	for(var/obj/effect/overmap/visitable/ship/S as anything in SSshuttles.ships)
 		if(S.check_ownership(src))
 			S.engines |= controller
 			if(dir != S.fore_dir)
@@ -150,7 +149,7 @@
 	if(!is_on())
 		return 0
 	if(!check_fuel() || (use_power_oneoff(charge_per_burn) < charge_per_burn) || check_blockage())
-		audible_message(src,"<span class='warning'>[src] coughs once and goes silent!</span>", runemessage = "sputtercough")
+		audible_message(src,span_warning("[src] coughs once and goes silent!"), runemessage = "sputtercough")
 		update_use_power(USE_POWER_OFF)
 		return 0
 
@@ -174,11 +173,11 @@
 /obj/machinery/atmospherics/unary/engine/RefreshParts()
 	..()
 	//allows them to upgrade the max limit of fuel intake (which only gives diminishing returns) for increase in max thrust but massive reduction in fuel economy
-	var/bin_upgrade = 5 * CLAMP(total_component_rating_of_type(/obj/item/weapon/stock_parts/matter_bin), 0, 6)//5 litre per rank
+	var/bin_upgrade = 5 * CLAMP(total_component_rating_of_type(/obj/item/stock_parts/matter_bin), 0, 6)//5 litre per rank
 	volume_per_burn = bin_upgrade ? initial(volume_per_burn) + bin_upgrade : 2 //Penalty missing part: 10% fuel use, no thrust
 	boot_time = bin_upgrade ? initial(boot_time) - bin_upgrade : initial(boot_time) * 2
 	//energy cost - thb all of this is to limit the use of back up batteries
-	var/energy_upgrade = CLAMP(total_component_rating_of_type(/obj/item/weapon/stock_parts/capacitor), 0.1, 6)
+	var/energy_upgrade = CLAMP(total_component_rating_of_type(/obj/item/stock_parts/capacitor), 0.1, 6)
 	charge_per_burn = initial(charge_per_burn) / energy_upgrade
 	change_power_consumption(initial(idle_power_usage) / energy_upgrade, USE_POWER_IDLE)
 
@@ -188,7 +187,7 @@
 	icon = 'icons/effects/effects.dmi'
 	icon_state = "smoke"
 	light_color = "#ed9200"
-	anchored = 1
+	anchored = TRUE
 
 /obj/effect/engine_exhaust/New(var/turf/nloc, var/ndir, var/flame)
 	..(nloc)
@@ -199,7 +198,7 @@
 	set_dir(ndir)
 	QDEL_IN(src, 20)
 
-/obj/item/weapon/circuitboard/unary_atmos/engine //why don't we move this elsewhere?
+/obj/item/circuitboard/unary_atmos/engine //why don't we move this elsewhere?
 	name = T_BOARD("gas thruster")
 	icon_state = "mcontroller"
 	build_path = /obj/machinery/atmospherics/unary/engine
@@ -207,11 +206,11 @@
 	req_components = list(
 		/obj/item/stack/cable_coil = 30,
 		/obj/item/pipe = 2,
-		/obj/item/weapon/stock_parts/matter_bin = 1,
-		/obj/item/weapon/stock_parts/capacitor = 2)
+		/obj/item/stock_parts/matter_bin = 1,
+		/obj/item/stock_parts/capacitor = 2)
 
 // Not Implemented - Variant that pulls power from cables.  Too complicated without bay's power components.
 // /obj/machinery/atmospherics/unary/engine/terminal
 // 	base_type = /obj/machinery/atmospherics/unary/engine
 // 	stock_part_presets = list(/decl/stock_part_preset/terminal_setup)
-// 	uncreated_component_parts = list(/obj/item/weapon/stock_parts/power/terminal/buildable = 1)
+// 	uncreated_component_parts = list(/obj/item/stock_parts/power/terminal/buildable = 1)

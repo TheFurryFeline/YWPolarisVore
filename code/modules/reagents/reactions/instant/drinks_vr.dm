@@ -14,6 +14,13 @@
 	required_reagents = list("antifreeze" = 1, "gargleblaster" = 1, "syndicatebomb" =1)
 	result_amount = 3
 
+/decl/chemical_reaction/instant/drinks/burnout
+	name = "Burnout"
+	id = "burnout"
+	result = "burnout"
+	required_reagents = list("antifreeze" = 1, "deathbell" = 1, "lovemaker" =1)
+	result_amount = 3
+
 /decl/chemical_reaction/instant/drinks/monstertamer
 	name = "Monster Tamer"
 	id = "monstertamer"
@@ -60,7 +67,7 @@
 	name = "Negroni Sbagliato"
 	id = "sbagliato"
 	result = "sbagliato"
-	required_reagents = list("wine" = 1, "vermouth" = 1, "sodawater" =1)
+	required_reagents = list("redwine" = 1, "vermouth" = 1, "sodawater" =1)
 	result_amount = 3
 
 /decl/chemical_reaction/instant/drinks/italiancrisis
@@ -137,6 +144,7 @@
 	name = "Choccy Milk"
 	id = "choccymilk"
 	result = "choccymilk"
+	inhibitors = list("enzyme" = 1)
 	required_reagents = list("milk" = 3, "coco" = 1)
 	result_amount = 4
 
@@ -161,10 +169,10 @@
 	required_reagents = list("monstertamer" = 2, "nutriment" = 1)
 	result_amount = 3
 
-/decl/chemical_reaction/instant/drinks/pink_moo
-	name = "Pink Moo"
-	id = "pinkmoo"
-	result = "pinkmoo"
+/decl/chemical_reaction/instant/drinks/pink_russian
+	name = "Pink Russian"
+	id = "pinkrussian"
+	result = "pinkrussian"
 	required_reagents = list("blackrussian" = 2, "berryshake" = 1)
 	result_amount = 3
 
@@ -187,7 +195,7 @@
 	name = "New York Sour"
 	id = "newyorksour"
 	result = "newyorksour"
-	required_reagents = list("whiskeysour" = 3, "wine" = 2, "egg" = 1)
+	required_reagents = list("whiskeysour" = 3, "redwine" = 2, "egg" = 1)
 	result_amount = 6
 
 /decl/chemical_reaction/instant/drinks/mudslide
@@ -196,3 +204,38 @@
 	result = "mudslide"
 	required_reagents = list("blackrussian" = 1, "irishcream" = 1)
 	result_amount = 2
+
+/decl/chemical_reaction/instant/drinks/protein_shake
+	name = "Protein Shake"
+	id = "protein_shake"
+	result = "protein_shake"
+	required_reagents = list("water" = 5, "protein_powder" = 1)
+	result_amount = 5
+
+/decl/chemical_reaction/instant/drinks/protein_shake/vanilla
+	name = "Vanilla Protein Shake"
+	id = "vanilla_protein_shake"
+	result = "vanilla_protein_shake"
+	required_reagents = list("water" = 5, "vanilla_protein_powder" = 1)
+	result_amount = 5
+
+/decl/chemical_reaction/instant/drinks/protein_shake/banana
+	name = "Banana Protein Shake"
+	id = "banana_protein_shake"
+	result = "banana_protein_shake"
+	required_reagents = list("water" = 5, "banana_protein_powder" = 1)
+	result_amount = 5
+
+/decl/chemical_reaction/instant/drinks/protein_shake/strawberry
+	name = "Strawberry Protein Shake"
+	id = "strawberry_protein_shake"
+	result = "strawberry_protein_shake"
+	required_reagents = list("water" = 5, "strawberry_protein_powder" = 1)
+	result_amount = 5
+
+/decl/chemical_reaction/instant/drinks/manager_summoner
+	name = "Manager Summoner"
+	id = "manager_summoner"
+	result = "manager_summoner"
+	required_reagents = list("margarita" = 1, "redwine" = 1, "essential_oil" = 1)
+	result_amount = 3

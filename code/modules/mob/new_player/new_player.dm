@@ -6,22 +6,36 @@
 	var/totalPlayers = 0		//Player counts for the Lobby tab
 	var/totalPlayersReady = 0
 	var/show_hidden_jobs = 0	//Show jobs that are set to "Never" in preferences
+	var/has_respawned = FALSE	//Determines if we're using RESPAWN_MESSAGE
 	var/datum/browser/panel
+	var/datum/tgui_module/crew_manifest/new_player/manifest_dialog = null
+	var/datum/tgui_module/late_choices/late_choices_dialog = null
 	universal_speak = 1
 
 	invisibility = 101
 
-	density = 0
+	density = FALSE
 	stat = 2
 	canmove = 0
 
-	anchored = 1	//  don't get pushed around
+	anchored = TRUE	//  don't get pushed around
 
 	var/created_for
 
 /mob/new_player/New()
 	mob_list += src
+	add_verb(src, /mob/proc/insidePanel)
 	initialized = TRUE // Explicitly don't use Initialize().  New players join super early and use New()
+
+
+/mob/new_player/Destroy()
+	if(panel)
+		QDEL_NULL(panel)
+	if(manifest_dialog)
+		QDEL_NULL(manifest_dialog)
+	if(late_choices_dialog)
+		QDEL_NULL(late_choices_dialog)
+	. = ..()
 
 /mob/new_player/verb/new_player_panel()
 	set src = usr
@@ -30,17 +44,23 @@
 
 /mob/new_player/proc/new_player_panel_proc()
 	var/output = "<div align='center'>"
-	/* VOREStation Removal
-	output += "[using_map.get_map_info()]"
-	output +="<hr>"
-	VOREStation Removal End */
+
+	output += span_bold("Map:") + " [using_map.full_name]<br>"
+	output += span_bold("Station Time:") + " [stationtime2text()]<br>"
+
+	if(!ticker || ticker.current_state <= GAME_STATE_PREGAME)
+		output += span_bold("Server Initializing!")
+	else
+		output += span_bold("Round Duration:") + " [roundduration2text()]<br>"
+	output += "<hr>"
+
 	output += "<p><a href='byond://?src=\ref[src];show_preferences=1'>Character Setup</A></p>"
 
 	if(!ticker || ticker.current_state <= GAME_STATE_PREGAME)
 		if(ready)
-			output += "<p>\[ <span class='linkOn'><b>Ready</b></span> | <a href='byond://?src=\ref[src];ready=0'>Not Ready</a> \]</p>"
+			output += "<p>\[ " + span_linkOn(span_bold("Ready")) + " | <a href='byond://?src=\ref[src];ready=0'>Not Ready</a> \]</p>"
 		else
-			output += "<p>\[ <a href='byond://?src=\ref[src];ready=1'>Ready</a> | <span class='linkOn'><b>Not Ready</b></span> \]</p>"
+			output += "<p>\[ <a href='byond://?src=\ref[src];ready=1'>Ready</a> | " + span_linkOn(span_bold("Not Ready")) + " \]</p>"
 
 	else
 		output += "<a href='byond://?src=\ref[src];manifest=1'>View the Crew Manifest</A><br><br>"
@@ -48,6 +68,8 @@
 
 	output += "<p><a href='byond://?src=\ref[src];observe=1'>Observe</A></p>"
 
+	/*
+	//nobody uses this feature
 	if(!IsGuestKey(src.key))
 		establish_db_connection()
 
@@ -66,52 +88,66 @@
 				output += "<p><b><a href='byond://?src=\ref[src];showpoll=1'>Show Player Polls</A> (NEW!)</b></p>"
 			else
 				output += "<p><a href='byond://?src=\ref[src];showpoll=1'>Show Player Polls</A></p>"
+	*/
 
-	if(client.check_for_new_server_news())
-		output += "<p><b><a href='byond://?src=\ref[src];shownews=1'>Show Game Updates</A> (NEW!)</b></p>"
-	else
-		output += "<p><a href='byond://?src=\ref[src];shownews=1'>Show Game Updates</A></p>"
+	output += "<p><a href='byond://?src=\ref[src];open_changelog=1'>View Changelog</A></p>"
 
 	if(SSsqlite.can_submit_feedback(client))
 		output += "<p>[href(src, list("give_feedback" = 1), "Give Feedback")]</p>"
 
 	if(GLOB.news_data.station_newspaper)
-		output += "<a href='byond://?src=\ref[src];open_station_news=1'>Show [using_map.station_name] News</A>"
+		if(client.prefs.lastlorenews == GLOB.news_data.newsindex)
+			output += "<p><a href='byond://?src=\ref[src];open_station_news=1'>Show [using_map.station_name] News</A></p>"
+		else
+			output += "<p><b><a href='byond://?src=\ref[src];open_station_news=1'>Show [using_map.station_name] News (NEW!)</A></b></p>"
 
 	output += "</div>"
 
-	if(GLOB.news_data.station_newspaper && !client.seen_news)
-		show_latest_news(GLOB.news_data.station_newspaper)
+	if (client.prefs.lastlorenews == GLOB.news_data.newsindex)
+		client.seen_news = 1
 
-	panel = new(src, "Welcome","Welcome", 210, 300, src) // VOREStation Edit
+	if(GLOB.news_data.station_newspaper && !client.seen_news && client.prefs?.read_preference(/datum/preference/toggle/show_lore_news))
+		show_latest_news(GLOB.news_data.station_newspaper)
+		client.prefs.lastlorenews = GLOB.news_data.newsindex
+		SScharacter_setup.queue_preferences_save(client.prefs)
+
+	panel = new(src, "Welcome","Welcome", 210, 320, src) // VOREStation Edit
 	panel.set_window_options("can_close=0")
 	panel.set_content(output)
 	panel.open()
 	return
 
-/mob/new_player/Stat()
-	..()
+/mob/new_player/get_status_tab_items()
+	. = ..()
+	. += ""
 
-	if(statpanel("Lobby") && SSticker)
-		stat("Game Mode:", SSticker.hide_mode ? "Secret" : "[config.mode_names[master_mode]]")
+	. += "Game Mode: [SSticker.hide_mode ? "Secret" : "[config.mode_names[master_mode]]"]"
 
-		if(SSvote.mode)
-			stat("Vote: [capitalize(SSvote.mode)]", "Time Left: [SSvote.time_remaining] s")
+	// if(SSvote.mode)
+	// 	. += "Vote: [capitalize(SSvote.mode)] Time Left: [SSvote.time_remaining] s"
 
-		if(SSticker.current_state == GAME_STATE_INIT)
-			stat("Time To Start:", "Server Initializing")
+	if(SSticker.current_state == GAME_STATE_INIT)
+		. += "Time To Start: Server Initializing"
 
-		else if(SSticker.current_state == GAME_STATE_PREGAME)
-			stat("Time To Start:", "[round(SSticker.pregame_timeleft,1)][round_progressing ? "" : " (DELAYED)"]")
-			stat("Players: [totalPlayers]", "Players Ready: [totalPlayersReady]")
-			totalPlayers = 0
-			totalPlayersReady = 0
-			var/datum/job/refJob = null
-			for(var/mob/new_player/player in player_list)
-				refJob = player.client.prefs.get_highest_job()
-				stat("[player.key]", (player.ready)?("(Playing as: [(refJob)?(refJob.title):("Unknown")])"):(null))
-				totalPlayers++
-				if(player.ready)totalPlayersReady++
+	else if(SSticker.current_state == GAME_STATE_PREGAME)
+		. += "Time To Start: [round(SSticker.pregame_timeleft,1)][round_progressing ? "" : " (DELAYED)"]"
+		. += "Players: [totalPlayers]"
+		. += "Players Ready: [totalPlayersReady]"
+		totalPlayers = 0
+		totalPlayersReady = 0
+		var/datum/job/refJob = null
+		for(var/mob/new_player/player in player_list)
+			refJob = player.client.prefs.get_highest_job()
+			if(player.client.prefs.obfuscate_key && player.client.prefs.obfuscate_job)
+				. += "Anonymous User [player.ready ? "Ready!" : null]"
+			else if(player.client.prefs.obfuscate_key)
+				. += "Anonymous User [player.ready ? "(Playing as: [refJob ? refJob.title : "Unknown"])" : null]"
+			else if(player.client.prefs.obfuscate_job)
+				. += "[player.key] [player.ready ? "Ready!" : null]"
+			else
+				. += "[player.key] [player.ready ? "(Playing as: [refJob ? refJob.title : "Unknown"])" : null]"
+			totalPlayers++
+			if(player.ready)totalPlayersReady++
 
 /mob/new_player/Topic(href, href_list[])
 	if(!client)	return 0
@@ -132,17 +168,15 @@
 		new_player_panel_proc()
 
 	if(href_list["observe"])
-		var/alert_time = ticker?.current_state <= GAME_STATE_SETTING_UP ? 1 : round(config.respawn_time/10/60)
-
-		if(alert(src,"Are you sure you wish to observe? You will have to wait up to [alert_time] minute\s before being able to spawn into the game!","Player Setup","Yes","No") == "Yes")
+		if(tgui_alert(src,"Are you sure you wish to observe? If you do, make sure to not use any knowledge gained from observing if you decide to join later.","Observe Round?",list("Yes","No")) == "Yes")
 			if(!client)	return 1
 
 			//Make a new mannequin quickly, and allow the observer to take the appearance
-			var/mob/living/carbon/human/dummy/mannequin = new()
+			var/mob/living/carbon/human/dummy/mannequin = get_mannequin(client.ckey)
 			client.prefs.dress_preview_mob(mannequin)
 			var/mob/observer/dead/observer = new(mannequin)
 			observer.moveToNullspace() //Let's not stay in our doomed mannequin
-			qdel(mannequin)
+			//qdel(mannequin)
 
 			spawning = 1
 			if(client.media)
@@ -152,10 +186,10 @@
 			close_spawn_windows()
 			var/obj/O = locate("landmark*Observer-Start")
 			if(istype(O))
-				to_chat(src, "<span class='notice'>Now teleporting.</span>")
+				to_chat(src, span_notice("Now teleporting."))
 				observer.forceMove(O.loc)
 			else
-				to_chat(src, "<span class='danger'>Could not locate an observer spawn point. Use the Teleport verb to jump to the station map.</span>")
+				to_chat(src, span_danger("Could not locate an observer spawn point. Use the Teleport verb to jump to the station map."))
 
 			announce_ghost_joinleave(src)
 
@@ -163,10 +197,11 @@
 				client.prefs.real_name = random_name(client.prefs.identifying_gender)
 			observer.real_name = client.prefs.real_name
 			observer.name = observer.real_name
-			if(!client.holder && !config.antag_hud_allowed)           // For new ghosts we remove the verb from even showing up if it's not allowed.
-				observer.verbs -= /mob/observer/dead/verb/toggle_antagHUD        // Poor guys, don't know what they are missing!
+			if(!client.holder && !CONFIG_GET(flag/antag_hud_allowed))           // For new ghosts we remove the verb from even showing up if it's not allowed.
+				remove_verb(observer, /mob/observer/dead/verb/toggle_antagHUD)        // Poor guys, don't know what they are missing!
 			observer.key = key
 			observer.set_respawn_timer(time_till_respawn()) // Will keep their existing time if any, or return 0 and pass 0 into set_respawn_timer which will use the defaults
+			observer.client.init_verbs()
 			qdel(src)
 
 			return 1
@@ -174,57 +209,26 @@
 	if(href_list["late_join"])
 
 		if(!ticker || ticker.current_state != GAME_STATE_PLAYING)
-			to_chat(usr, "<font color='red'>The round is either not ready, or has already finished...</font>")
+			to_chat(usr, span_red("The round is either not ready, or has already finished..."))
 			return
-		
+
 		var/time_till_respawn = time_till_respawn()
 		if(time_till_respawn == -1) // Special case, never allowed to respawn
-			to_chat(usr, "<span class='warning'>Respawning is not allowed!</span>")
+			to_chat(usr, span_warning("Respawning is not allowed!"))
 		else if(time_till_respawn) // Nonzero time to respawn
-			to_chat(usr, "<span class='warning'>You can't respawn yet! You need to wait another [round(time_till_respawn/10/60, 0.1)] minutes.</span>")
+			to_chat(usr, span_warning("You can't respawn yet! You need to wait another [round(time_till_respawn/10/60, 0.1)] minutes."))
 			return
 /*
 		if(client.prefs.species != "Human" && !check_rights(R_ADMIN, 0)) //VORESTATION EDITS: THE COMMENTED OUT AREAS FROM LINE 154 TO 178
 			if (config.usealienwhitelist)
 				if(!is_alien_whitelisted(src, client.prefs.species))
-					alert(src, "You are currently not whitelisted to Play [client.prefs.species].")
+					tgui_alert(src, "You are currently not whitelisted to Play [client.prefs.species].")
 					return 0
 */
 		LateChoices()
 
 	if(href_list["manifest"])
 		ViewManifest()
-
-	if(href_list["SelectedJob"])
-
-		/* Vorestation Removal Start
-		//Prevents people rejoining as same character.
-		for (var/mob/living/carbon/human/C in mob_list)
-			var/char_name = client.prefs.real_name
-			if(char_name == C.real_name)
-				to_chat(usr, "<span class='notice'>There is a character that already exists with the same name - <b>[C.real_name]</b>, please join with a different one, or use Quit the Round with the previous character.</span>") //VOREStation Edit
-				return
-		*/ //Vorestation Removal End
-
-		if(!config.enter_allowed)
-			to_chat(usr, "<span class='notice'>There is an administrative lock on entering the game!</span>")
-			return
-		else if(ticker && ticker.mode && ticker.mode.explosion_in_progress)
-			to_chat(usr, "<span class='danger'>The station is currently exploding. Joining would go poorly.</span>")
-			return
-
-		if(!is_alien_whitelisted(src, GLOB.all_species[client.prefs.species]))
-			alert(src, "You are currently not whitelisted to play [client.prefs.species].")
-			return 0
-
-		var/datum/species/S = GLOB.all_species[client.prefs.species]
-		
-		if(!(S.spawn_flags & SPECIES_CAN_JOIN))
-			alert(src,"Your current species, [client.prefs.species], is not available for play on the station.")
-			return 0
-
-		AttemptLateSpawn(href_list["SelectedJob"],client.prefs.spawnpoint)
-		return
 
 	if(href_list["privacy_poll"])
 		establish_db_connection()
@@ -261,7 +265,7 @@
 			var/sql = "INSERT INTO erro_privacy VALUES (null, Now(), '[src.ckey]', '[option]')"
 			var/DBQuery/query_insert = dbcon.NewQuery(sql)
 			query_insert.Execute()
-			to_chat(usr, "<b>Thank you for your vote!</b>")
+			to_chat(usr, span_bold("Thank you for your vote!"))
 			usr << browse(null,"window=privacypoll")
 
 	if(!ready && href_list["preference"])
@@ -342,6 +346,9 @@
 		else
 			client.feedback_form = new(client)
 
+	if(href_list["open_changelog"])
+		src << link("https://wiki.vore-station.net/Changelog")
+
 /mob/new_player/proc/handle_server_news()
 	if(!client)
 		return
@@ -355,13 +362,13 @@
 		dat += "<br>"
 		dat += "[F["body"]]"
 		dat += "<br>"
-		dat += "<font size='2'><i>Last written by [F["author"]], on [F["timestamp"]].</i></font>"
+		dat += span_normal(span_italics("Last written by [F["author"]], on [F["timestamp"]]."))
 		dat += "</center></body></html>"
 		var/datum/browser/popup = new(src, "Server News", "Server News", 450, 300, src)
 		popup.set_content(dat)
 		popup.open()
 
-/mob/new_player/proc/time_till_respawn()
+/mob/proc/time_till_respawn()
 	if(!ckey)
 		return -1 // What?
 
@@ -381,14 +388,21 @@
 
 /mob/new_player/proc/IsJobAvailable(rank)
 	var/datum/job/job = job_master.GetJob(rank)
-	if(!job)	return 0
-	if(!job.is_position_available()) return 0
-	if(jobban_isbanned(src,rank))	return 0
-	if(!job.player_old_enough(src.client))	return 0
+	if(!job)
+		return 0
+	if(!job.is_position_available())
+		return 0
+	if(jobban_isbanned(src,rank))
+		return 0
+	if(!job.player_old_enough(src.client))
+		return 0
 	//VOREStation Add
-	if(!job.player_has_enough_playtime(src.client))	return 0
-	if(!is_job_whitelisted(src,rank))	return 0
-	if(!job.player_has_enough_pto(src.client)) return 0
+	if(!job.player_has_enough_playtime(src.client))
+		return 0
+	if(!is_job_whitelisted(src,rank))
+		return 0
+	if(!job.player_has_enough_pto(src.client))
+		return 0
 	//VOREStation Add End
 	return 1
 
@@ -397,13 +411,13 @@
 	if (src != usr)
 		return 0
 	if(!ticker || ticker.current_state != GAME_STATE_PLAYING)
-		to_chat(usr, "<font color='red'>The round is either not ready, or has already finished...</font>")
+		to_chat(usr, span_red("The round is either not ready, or has already finished..."))
 		return 0
-	if(!config.enter_allowed)
-		to_chat(usr, "<span class='notice'>There is an administrative lock on entering the game!</span>")
+	if(!CONFIG_GET(flag/enter_allowed))
+		to_chat(usr, span_notice("There is an administrative lock on entering the game!"))
 		return 0
 	if(!IsJobAvailable(rank))
-		alert(src,"[rank] is not available. Please try another.")
+		tgui_alert_async(src,"[rank] is not available. Please try another.")
 		return 0
 	if(!spawn_checks_vr(rank)) return 0 // VOREStation Insert
 	if(!client)
@@ -473,7 +487,14 @@
 		AnnounceArrival(character, rank, join_message, announce_channel, character.z)
 		data_core.manifest_inject(character)
 		ticker.minds += character.mind//Cyborgs and AIs handle this in the transform proc.	//TODO!!!!! ~Carn
+	if(ishuman(character))
+		if(character.client.prefs.auto_backup_implant)
+			var/obj/item/implant/backup/imp = new(src)
 
+			if(imp.handle_implant(character,character.zone_sel.selecting))
+				imp.post_implant(character)
+
+	character.client.init_verbs()
 	qdel(src) // Delete new_player mob
 
 /mob/new_player/proc/AnnounceCyborg(var/mob/living/character, var/rank, var/join_message, var/channel, var/zlevel)
@@ -485,53 +506,9 @@
 		global_announcer.autosay("A new[rank ? " [rank]" : " visitor" ] [join_message ? join_message : "has arrived on the station"].", "Arrivals Announcement Computer", channel, zlevels)
 
 /mob/new_player/proc/LateChoices()
-	var/name = client.prefs.be_random_name ? "friend" : client.prefs.real_name
-
-	var/dat = "<html><body><center>"
-	dat += "<b>Welcome, [name].<br></b>"
-	dat += "Round Duration: [roundduration2text()]<br>"
-
-	if(emergency_shuttle) //In case NanoTrasen decides reposess CentCom's shuttles.
-		if(emergency_shuttle.going_to_centcom()) //Shuttle is going to CentCom, not recalled
-			dat += "<font color='red'><b>The station has been evacuated.</b></font><br>"
-		if(emergency_shuttle.online())
-			if (emergency_shuttle.evac)	// Emergency shuttle is past the point of no recall
-				dat += "<font color='red'>The station is currently undergoing evacuation procedures.</font><br>"
-			else						// Crew transfer initiated
-				dat += "<font color='red'>The station is currently undergoing crew transfer procedures.</font><br>"
-
-	dat += "Choose from the following open/valid positions:<br>"
-	dat += "<a href='byond://?src=\ref[src];hidden_jobs=1'>[show_hidden_jobs ? "Hide":"Show"] Hidden Jobs.</a><br>"
-
-	var/deferred = ""
-	for(var/datum/job/job in job_master.occupations)
-		if(job && IsJobAvailable(job.title))
-			// Checks for jobs with minimum age requirements
-			if(job.minimum_character_age && (client.prefs.age < job.minimum_character_age))
-				continue
-			// Checks for jobs set to "Never" in preferences	//TODO: Figure out a better way to check for this
-			if(!(client.prefs.GetJobDepartment(job, 1) & job.flag))
-				if(!(client.prefs.GetJobDepartment(job, 2) & job.flag))
-					if(!(client.prefs.GetJobDepartment(job, 3) & job.flag))
-						if(!show_hidden_jobs && job.title != "Assistant")	// Assistant is always an option
-							continue
-			var/active = 0
-			// Only players with the job assigned and AFK for less than 10 minutes count as active
-			for(var/mob/M in player_list) if(M.mind && M.client && M.mind.assigned_role == job.title && M.client.inactivity <= 10 MINUTES)
-				active++
-
-			var/string = "<a href='byond://?src=\ref[src];SelectedJob=[job.title]'>[job.title] ([job.current_positions]) (Active: [active])</a><br>"
-
-			if(job.offmap_spawn) //At the bottom
-				deferred += string
-			else
-				dat += string
-
-	dat += deferred
-
-	dat += "</center>"
-	src << browse(dat, "window=latechoices;size=300x640;can_close=1")
-
+	if(!late_choices_dialog)
+		late_choices_dialog = new(src)
+	late_choices_dialog.tgui_interact(src)
 
 /mob/new_player/proc/create_character(var/turf/T)
 	spawning = 1
@@ -566,7 +543,7 @@
 	if(mind)
 		mind.active = 0					//we wish to transfer the key manually
 		// VOREStation edit to disable the destructive forced renaming for our responsible whitelist clowns.
-		//if(mind.assigned_role == "Clown")				//give them a clownname if they are a clown
+		//if(mind.assigned_role == JOB_CLOWN)				//give them a clownname if they are a clown
 		//	new_character.real_name = pick(clown_names)	//I hate this being here of all places but unfortunately dna is based on real_name!
 		//	new_character.rename_self("clown")
 		mind.original = new_character
@@ -578,6 +555,7 @@
 		mind.transfer_to(new_character)					//won't transfer key since the mind is not active
 
 	new_character.name = real_name
+	client.init_verbs()
 	new_character.dna.ready_dna(new_character)
 	new_character.dna.b_type = client.prefs.b_type
 	new_character.sync_organ_dna()
@@ -591,6 +569,17 @@
 		if(chosen_language)
 			if(is_lang_whitelisted(src,chosen_language) || (new_character.species && (chosen_language.name in new_character.species.secondary_langs)))
 				new_character.add_language(lang)
+	for(var/key in client.prefs.language_custom_keys)
+		if(client.prefs.language_custom_keys[key])
+			var/datum/language/keylang = GLOB.all_languages[client.prefs.language_custom_keys[key]]
+			if(keylang)
+				new_character.language_keys[key] = keylang
+	// VOREStation Add: Preferred Language Setting;
+	if(client.prefs.preferred_language) // Do we have a preferred language?
+		var/datum/language/def_lang = GLOB.all_languages[client.prefs.preferred_language]
+		if(def_lang)
+			new_character.default_language = def_lang
+	// VOREStation Add End
 	// And uncomment this, too.
 	//new_character.dna.UpdateSE()
 
@@ -604,18 +593,16 @@
 	return new_character
 
 /mob/new_player/proc/ViewManifest()
-	var/dat = "<div align='center'>"
-	dat += data_core.get_manifest(OOC = 1)
-
-	//src << browse(dat, "window=manifest;size=370x420;can_close=1")
-	var/datum/browser/popup = new(src, "Crew Manifest", "Crew Manifest", 370, 420, src)
-	popup.set_content(dat)
-	popup.open()
+	if(!manifest_dialog)
+		manifest_dialog = new(src)
+	manifest_dialog.tgui_interact(src)
 
 /mob/new_player/Move()
 	return 0
 
 /mob/new_player/proc/close_spawn_windows()
+	manifest_dialog?.close_ui()
+	late_choices_dialog?.close_ui()
 
 	src << browse(null, "window=latechoices") //closes late choices window
 	src << browse(null, "window=preferences_window") //VOREStation Edit?

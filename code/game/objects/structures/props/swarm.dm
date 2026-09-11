@@ -14,11 +14,11 @@
 /obj/structure/cult/pylon/swarm/CanPass(atom/movable/mover, turf/target)
 	if(istype(mover, /mob/living))
 		var/mob/living/L = mover
-		if(L.faction == "swarmer")
+		if(L.faction == FACTION_SWARMER)
 			return TRUE
 	else if(istype(mover, /obj/item/projectile))
 		var/obj/item/projectile/P = mover
-		if(istype(P.firer) && P.firer.faction == "swarmer")
+		if(istype(P.firer) && P.firer.faction == FACTION_SWARMER)
 			return TRUE
 	return ..()
 
@@ -35,11 +35,11 @@
 /obj/structure/cult/pylon/swarm/pylonhit(var/damage)
 	if(!isbroken)
 		if(prob(1 + damage * 3))
-			visible_message("<span class='danger'>[shatter_message]</span>")
+			visible_message(span_danger("[shatter_message]"))
 			STOP_PROCESSING(SSobj, src)
 			playsound(src,shatter_sound, 75, 1)
 			isbroken = 1
-			density = 0
+			density = FALSE
 			icon_state = "[initial(icon_state)]-broken"
 			set_light(0)
 
@@ -47,15 +47,15 @@
 	if(!isbroken)
 		if(prob(1 + damage * 3))
 			user.visible_message(
-				"<span class='danger'>[user] smashed \the [src]!</span>",
-				"<span class='warning'>You hit \the [src], and its crystal breaks apart!</span>",
+				span_danger("[user] smashed \the [src]!"),
+				span_warning("You hit \the [src], and its crystal breaks apart!"),
 				"You hear a tinkle of crystalline shards."
 				)
 			STOP_PROCESSING(SSobj, src)
 			user.do_attack_animation(src)
 			playsound(src,shatter_sound, 75, 1)
 			isbroken = 1
-			density = 0
+			density = FALSE
 			icon_state = "[initial(icon_state)]-broken"
 			set_light(0)
 		else
@@ -115,11 +115,11 @@
 /obj/structure/cult/pylon/swarm/defender/pylonhit(var/damage)
 	if(!isbroken)
 		if(prob(1 + damage * 3) && damage >= 25)
-			visible_message("<span class='danger'>[shatter_message]</span>")
+			visible_message(span_danger("[shatter_message]"))
 			STOP_PROCESSING(SSobj, src)
 			playsound(src,shatter_sound, 75, 1)
 			isbroken = 1
-			density = 0
+			density = FALSE
 			icon_state = "[initial(icon_state)]-broken"
 			set_light(0)
 
@@ -127,15 +127,15 @@
 	if(!isbroken)
 		if(prob(1 + damage * 2) && damage >= 15)
 			user.visible_message(
-				"<span class='danger'>[user] smashed \the [src]!</span>",
-				"<span class='warning'>You hit \the [src], and its crystal breaks apart!</span>",
+				span_danger("[user] smashed \the [src]!"),
+				span_warning("You hit \the [src], and its crystal breaks apart!"),
 				"You hear a tinkle of crystalline shards."
 				)
 			STOP_PROCESSING(SSobj, src)
 			user.do_attack_animation(src)
 			playsound(src,shatter_sound, 75, 1)
 			isbroken = 1
-			density = 0
+			density = FALSE
 			icon_state = "[initial(icon_state)]-broken"
 			set_light(0)
 		else

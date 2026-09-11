@@ -17,7 +17,7 @@
 /mob/new_player/proc/privacy_poll()
 	var/output = "<div align='center'><B>Player poll</B>"
 	output +="<hr>"
-	output += "<b>We would like to expand our stats gathering.</b>"
+	output += span_bold("We would like to expand our stats gathering.")
 	output += "<br>This however involves gathering data about player behavior, play styles, unique player numbers, play times, etc. Data like that cannot be gathered fully anonymously, which is why we're asking you how you'd feel if player-specific data was gathered. Prior to any of this actually happening, a privacy policy will be discussed, but before that can begin, we'd preliminarily like to know how you feel about the concept."
 	output +="<hr>"
 	output += "How do you feel about the game gathering player-specific statistics? This includes statistics about individual players as well as in-game polling/opinion requests."
@@ -103,7 +103,7 @@
 			break
 
 		if(!found)
-			to_chat(usr, "<font color='red'>Poll question details not found.</font>")
+			to_chat(usr, span_red("Poll question details not found."))
 			return
 
 		switch(polltype)
@@ -131,7 +131,7 @@
 
 				var/output = "<div align='center'><B>Player poll</B>"
 				output +="<hr>"
-				output += "<b>Question: [pollquestion]</b><br>"
+				output += span_bold("Question: [pollquestion]") + "<br>"
 				output += "<font size='2'>Poll runs from <b>[pollstarttime]</b> until <b>[pollendtime]</b></font><p>"
 
 				if(!voted)	//Only make this a form if we have not voted yet
@@ -145,7 +145,7 @@
 					if(O.optionid && O.optiontext)
 						if(voted)
 							if(votedoptionid == O.optionid)
-								output += "<b>[O.optiontext]</b><br>"
+								output += span_bold("[O.optiontext]") + "<br>"
 							else
 								output += "[O.optiontext]<br>"
 						else
@@ -175,7 +175,7 @@
 
 				var/output = "<div align='center'><B>Player poll</B>"
 				output +="<hr>"
-				output += "<b>Question: [pollquestion]</b><br>"
+				output += span_bold("Question: [pollquestion]") + "<br>"
 				output += "<font size='2'>Feedback gathering runs from <b>[pollstarttime]</b> until <b>[pollendtime]</b></font><p>"
 
 				if(!voted)	//Only make this a form if we have not voted yet
@@ -209,7 +209,7 @@
 
 				var/output = "<div align='center'><B>Player poll</B>"
 				output +="<hr>"
-				output += "<b>Question: [pollquestion]</b><br>"
+				output += span_bold("Question: [pollquestion]") + "<br>"
 				output += "<font size='2'>Poll runs from <b>[pollstarttime]</b> until <b>[pollendtime]</b></font><p>"
 
 				var/voted = 0
@@ -304,7 +304,7 @@
 
 				var/output = "<div align='center'><B>Player poll</B>"
 				output +="<hr>"
-				output += "<b>Question: [pollquestion]</b><br>You can select up to [multiplechoiceoptions] options. If you select more, the first [multiplechoiceoptions] will be saved.<br>"
+				output += span_bold("Question: [pollquestion]") + "<br>You can select up to [multiplechoiceoptions] options. If you select more, the first [multiplechoiceoptions] will be saved.<br>"
 				output += "<font size='2'>Poll runs from <b>[pollstarttime]</b> until <b>[pollendtime]</b></font><p>"
 
 				if(!voted)	//Only make this a form if we have not voted yet
@@ -320,7 +320,7 @@
 					if(O.optionid && O.optiontext)
 						if(voted)
 							if(O.optionid in votedfor)
-								output += "<b>[O.optiontext]</b><br>"
+								output += span_bold("[O.optiontext]") + "<br>"
 							else
 								output += "[O.optiontext]<br>"
 						else
@@ -360,7 +360,7 @@
 			break
 
 		if(!validpoll)
-			to_chat(usr, "<font color='red'>Poll is not valid.</font>")
+			to_chat(usr, span_red("Poll is not valid."))
 			return
 
 		var/DBQuery/select_query2 = dbcon.NewQuery("SELECT id FROM erro_poll_option WHERE id = [optionid] AND pollid = [pollid]")
@@ -373,7 +373,7 @@
 			break
 
 		if(!validoption)
-			to_chat(usr, "<font color='red'>Poll option is not valid.</font>")
+			to_chat(usr, span_red("Poll option is not valid."))
 			return
 
 		var/alreadyvoted = 0
@@ -387,11 +387,11 @@
 				break
 
 		if(!multichoice && alreadyvoted)
-			to_chat(usr, "<font color='red'>You already voted in this poll.</font>")
+			to_chat(usr, span_red("You already voted in this poll."))
 			return
 
 		if(multichoice && (alreadyvoted >= multiplechoiceoptions))
-			to_chat(usr, "<font color='red'>You already have more than [multiplechoiceoptions] logged votes on this poll. Enough is enough. Contact the database admin if this is an error.</font>")
+			to_chat(usr, span_red("You already have more than [multiplechoiceoptions] logged votes on this poll. Enough is enough. Contact the database admin if this is an error."))
 			return
 
 		var/adminrank = "Player"
@@ -402,7 +402,7 @@
 		var/DBQuery/insert_query = dbcon.NewQuery("INSERT INTO erro_poll_vote (id ,datetime ,pollid ,optionid ,ckey ,ip ,adminrank) VALUES (null, Now(), [pollid], [optionid], '[usr.ckey]', '[usr.client.address]', '[adminrank]')")
 		insert_query.Execute()
 
-		to_chat(usr, "<font color='blue'>Vote successful.</font>")
+		to_chat(usr, span_blue("Vote successful."))
 		usr << browse(null,"window=playerpoll")
 
 
@@ -427,7 +427,7 @@
 			break
 
 		if(!validpoll)
-			to_chat(usr, "<font color='red'>Poll is not valid.</font>")
+			to_chat(usr, span_red("Poll is not valid."))
 			return
 
 		var/alreadyvoted = 0
@@ -440,7 +440,7 @@
 			break
 
 		if(alreadyvoted)
-			to_chat(usr, "<font color='red'>You already sent your feedback for this poll.</font>")
+			to_chat(usr, span_red("You already sent your feedback for this poll."))
 			return
 
 		var/adminrank = "Player"
@@ -460,7 +460,7 @@
 		var/DBQuery/insert_query = dbcon.NewQuery("INSERT INTO erro_poll_textreply (id ,datetime ,pollid ,ckey ,ip ,replytext ,adminrank) VALUES (null, Now(), [pollid], '[usr.ckey]', '[usr.client.address]', '[replytext]', '[adminrank]')")
 		insert_query.Execute()
 
-		to_chat(usr, "<font color='blue'>Feedback logging successful.</font>")
+		to_chat(usr, span_blue("Feedback logging successful."))
 		usr << browse(null,"window=playerpoll")
 
 
@@ -485,7 +485,7 @@
 			break
 
 		if(!validpoll)
-			to_chat(usr, "<font color='red'>Poll is not valid.</font>")
+			to_chat(usr, span_red("Poll is not valid."))
 			return
 
 		var/DBQuery/select_query2 = dbcon.NewQuery("SELECT id FROM erro_poll_option WHERE id = [optionid] AND pollid = [pollid]")
@@ -498,7 +498,7 @@
 			break
 
 		if(!validoption)
-			to_chat(usr, "<font color='red'>Poll option is not valid.</font>")
+			to_chat(usr, span_red("Poll option is not valid."))
 			return
 
 		var/alreadyvoted = 0
@@ -511,7 +511,7 @@
 			break
 
 		if(alreadyvoted)
-			to_chat(usr, "<font color='red'>You already voted in this poll.</font>")
+			to_chat(usr, span_red("You already voted in this poll."))
 			return
 
 		var/adminrank = "Player"
@@ -522,5 +522,5 @@
 		var/DBQuery/insert_query = dbcon.NewQuery("INSERT INTO erro_poll_vote (id ,datetime ,pollid ,optionid ,ckey ,ip ,adminrank, rating) VALUES (null, Now(), [pollid], [optionid], '[usr.ckey]', '[usr.client.address]', '[adminrank]', [(isnull(rating)) ? "null" : rating])")
 		insert_query.Execute()
 
-		to_chat(usr, "<font color='blue'>Vote successful.</font>")
+		to_chat(usr, span_blue("Vote successful."))
 		usr << browse(null,"window=playerpoll")

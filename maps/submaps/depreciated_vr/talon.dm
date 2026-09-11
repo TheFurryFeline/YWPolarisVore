@@ -11,7 +11,7 @@ var/global/list/latejoin_talon = list()
 
 /datum/spawnpoint/talon
 	display_name = "ITV Talon Cryo"
-	restrict_job = list("Talon Captain", "Talon Pilot", "Talon Engineer", "Talon Doctor", "Talon Guard")
+	restrict_job = list(JOB_TALON_CAPTAIN, JOB_TALON_PILOT, JOB_TALON_ENGINEER, JOB_TALON_DOCTOR, JOB_TALON_GUARD)
 	msg = "has come out of cryostasis"
 	announce_channel = "Talon"
 
@@ -38,12 +38,12 @@ var/global/list/latejoin_talon = list()
 ///////////////////////////
 //// The Talon
 /obj/effect/overmap/visitable/ship/talon
-	scanner_name = "ITV Talon"
+	name = "ITV Talon"
+	icon_state = "talon_v2"
 	scanner_desc = @{"[i]Registration[/i]: ITV Talon
 [i]Class[/i]: Frigate
 [i]Transponder[/i]: Transmitting (CIV)
 [b]Notice[/b]: Independent trader vessel"}
-	color = "#aacccc"
 	vessel_mass = 10000
 	vessel_size = SHIP_SIZE_LARGE
 	initial_generic_waypoints = list("talon_fore", "talon_aft", "talon_port", "talon_starboard")
@@ -127,7 +127,7 @@ var/global/list/latejoin_talon = list()
 /obj/machinery/telecomms/allinone/talon
 	freq_listening = list(PUB_FREQ, TALON_FREQ)
 
-/obj/item/weapon/paper/talon_shields
+/obj/item/paper/talon_shields
 	name = "to whatever asshole"
 	info = {"to whatever <b>asshole</b> keeps resetting the shield generator,<br>\
 please stop fucking around before you get us all killed. thanks.<br>\
@@ -143,7 +143,7 @@ good luck<br>\
 <br>\
 <i>Harry Townes</i>"}
 
-/obj/item/weapon/paper/talon_lifeboat
+/obj/item/paper/talon_lifeboat
 	name = "Survival Directions"
 	info = {"<h3>Survival Directions</h3><br>
 <b>Only jettison lifeboat into space if no other means of survival available.</b><br>
@@ -162,16 +162,16 @@ Once in open space, consider disabling nonessential power-consuming electronics 
 
 /mob/living/silicon/robot/drone/talon
 	foreign_droid = TRUE
-	idcard_type = /obj/item/weapon/card/id/synthetic/talon
+	idcard_type = /obj/item/card/id/synthetic/talon
 
-/obj/item/weapon/card/id/synthetic/talon
+/obj/item/card/id/synthetic/talon
 	name = "\improper Talon synthetic ID"
 	desc = "Access module for Talon synthetics"
 	icon_state = "id-robot"
 	item_state = "tdgreen"
 	assignment = "Talon synthetic"
 
-/obj/item/weapon/card/id/synthetic/talon/Initialize()
+/obj/item/card/id/synthetic/talon/Initialize()
 	. = ..()
 	access = list(access_talon, access_synth)
 
@@ -188,7 +188,7 @@ Once in open space, consider disabling nonessential power-consuming electronics 
 	req_one_access = list(access_talon)
 
 /obj/machinery/power/apc/talon/hyper
-	cell_type = /obj/item/weapon/cell/hyper
+	cell_type = /obj/item/cell/hyper
 
 /obj/machinery/alarm/talon
 	req_access = list()
@@ -240,16 +240,24 @@ Once in open space, consider disabling nonessential power-consuming electronics 
 /obj/item/clothing/suit/space/void/pilot/talon
 	name = "talon pilot's voidsuit"
 
-/obj/item/device/gps/command/taloncap
+/obj/item/clothing/head/helmet/space/void/mining/talon
+	name = "talon miner's voidsuit helmet"
+	camera_networks = list(NETWORK_TALON_HELMETS)
+/obj/item/clothing/suit/space/void/mining/talon
+	name = "talon miner's voidsuit"
+
+/obj/item/gps/command/taloncap
 	gps_tag = "TALC"
-/obj/item/device/gps/security/talonguard
+/obj/item/gps/security/talonguard
 	gps_tag = "TALG"
-/obj/item/device/gps/medical/talonmed
+/obj/item/gps/medical/talonmed
 	gps_tag = "TALM"
-/obj/item/device/gps/engineering/taloneng
+/obj/item/gps/engineering/taloneng
 	gps_tag = "TALE"
-/obj/item/device/gps/explorer/talonpilot
+/obj/item/gps/explorer/talonpilot
 	gps_tag = "TALP"
+/obj/item/gps/mining/talonminer
+	gps_tag = "TALM"
 
 /obj/structure/closet/secure_closet/talon_captain
 	name = "talon captain's locker"
@@ -257,16 +265,16 @@ Once in open space, consider disabling nonessential power-consuming electronics 
 	closet_appearance = /decl/closet_appearance/secure_closet/talon/captain
 
 	starts_with = list(
-		/obj/item/weapon/storage/backpack/dufflebag/captain,
+		/obj/item/storage/backpack/dufflebag/captain,
 		/obj/item/clothing/suit/storage/vest,
-		/obj/item/weapon/melee/telebaton,
-		/obj/item/device/flash,
-		/obj/item/device/radio/headset/talon,
+		/obj/item/melee/telebaton,
+		/obj/item/flash,
+		/obj/item/radio/headset/talon,
 		/obj/item/clothing/head/helmet/space/void/refurb/officer/talon,
 		/obj/item/clothing/suit/space/void/refurb/officer/talon,
-		/obj/item/weapon/tank/oxygen,
-		/obj/item/device/suit_cooling_unit,
-		/obj/item/device/gps/command/taloncap
+		/obj/item/tank/oxygen,
+		/obj/item/suit_cooling_unit,
+		/obj/item/gps/command/taloncap
 	)
 
 /obj/structure/closet/secure_closet/talon_guard
@@ -279,21 +287,21 @@ Once in open space, consider disabling nonessential power-consuming electronics 
 		/obj/item/clothing/under/utility,
 		/obj/item/clothing/shoes/boots/jackboots,
 		/obj/item/clothing/shoes/boots/jackboots/toeless,
-		/obj/item/weapon/handcuffs = 2,
-		/obj/item/weapon/gun/energy/stunrevolver,
+		/obj/item/handcuffs = 2,
+		/obj/item/gun/energy/stunrevolver,
 		/obj/item/clothing/accessory/armor/tag/sec,
-		/obj/item/device/flash,
-		/obj/item/device/flashlight/maglight,
+		/obj/item/flash,
+		/obj/item/flashlight/maglight,
 		/obj/item/clothing/glasses/sunglasses,
-		/obj/item/weapon/storage/belt/security,
-		/obj/item/device/radio/headset/talon,
+		/obj/item/storage/belt/security,
+		/obj/item/radio/headset/talon,
 		/obj/item/clothing/accessory/solgov/department/security/army,
 		/obj/item/clothing/head/helmet/space/void/refurb/marine/talon,
 		/obj/item/clothing/suit/space/void/refurb/marine/talon,
-		/obj/item/weapon/tank/oxygen,
-		/obj/item/device/suit_cooling_unit,
-		/obj/item/device/gps/security/talonguard,
-		/obj/item/weapon/melee/baton
+		/obj/item/tank/oxygen,
+		/obj/item/suit_cooling_unit,
+		/obj/item/gps/security/talonguard,
+		/obj/item/melee/baton
 	)
 
 /obj/structure/closet/secure_closet/talon_doctor
@@ -308,12 +316,12 @@ Once in open space, consider disabling nonessential power-consuming electronics 
 		/obj/item/clothing/suit/storage/toggle/labcoat,
 		/obj/item/clothing/suit/storage/toggle/fr_jacket,
 		/obj/item/clothing/shoes/white,
-		/obj/item/device/radio/headset/talon,
+		/obj/item/radio/headset/talon,
 		/obj/item/clothing/head/helmet/space/void/refurb/medical/alt/talon,
 		/obj/item/clothing/suit/space/void/refurb/medical/talon,
-		/obj/item/weapon/tank/oxygen,
-		/obj/item/device/suit_cooling_unit,
-		/obj/item/device/gps/medical/talonmed
+		/obj/item/tank/oxygen,
+		/obj/item/suit_cooling_unit,
+		/obj/item/gps/medical/talonmed
 	)
 
 /obj/structure/closet/secure_closet/talon_engineer
@@ -323,19 +331,19 @@ Once in open space, consider disabling nonessential power-consuming electronics 
 
 	starts_with = list(
 		/obj/item/clothing/accessory/storage/brown_vest,
-		/obj/item/device/flashlight,
-		/obj/item/weapon/extinguisher,
+		/obj/item/flashlight,
+		/obj/item/extinguisher,
 		/obj/item/clamp,
-		/obj/item/device/radio/headset/talon,
+		/obj/item/radio/headset/talon,
 		/obj/item/clothing/suit/storage/hazardvest,
 		/obj/item/clothing/mask/gas,
 		/obj/item/taperoll/atmos,
-		/obj/item/weapon/tank/emergency/oxygen/engi,
+		/obj/item/tank/emergency/oxygen/engi,
 		/obj/item/clothing/head/helmet/space/void/refurb/engineering/talon,
 		/obj/item/clothing/suit/space/void/refurb/engineering/talon,
-		/obj/item/weapon/tank/oxygen,
-		/obj/item/device/suit_cooling_unit,
-		/obj/item/device/gps/engineering/taloneng
+		/obj/item/tank/oxygen,
+		/obj/item/suit_cooling_unit,
+		/obj/item/gps/engineering/taloneng
 	)
 
 /obj/structure/closet/secure_closet/talon_pilot
@@ -344,25 +352,48 @@ Once in open space, consider disabling nonessential power-consuming electronics 
 	closet_appearance = /decl/closet_appearance/secure_closet/talon/pilot
 
 	starts_with = list(
-		/obj/item/weapon/material/knife/tacknife/survival,
+		/obj/item/material/knife/tacknife/survival,
 		/obj/item/clothing/head/ompilot,
 		/obj/item/clothing/under/rank/pilot1,
 		/obj/item/clothing/suit/storage/toggle/bomber/pilot,
 		/obj/item/clothing/gloves/fingerless,
-		/obj/item/weapon/reagent_containers/food/snacks/liquidfood,
-		/obj/item/weapon/reagent_containers/food/drinks/cans/waterbottle,
-		/obj/item/device/radio,
+		/obj/item/reagent_containers/food/snacks/liquidfood,
+		/obj/item/reagent_containers/food/drinks/cans/waterbottle,
+		/obj/item/radio,
 		/obj/item/clothing/under/utility/blue,
 		/obj/item/clothing/accessory/solgov/specialty/pilot,
 		/obj/item/clothing/shoes/boots/jackboots,
 		/obj/item/clothing/shoes/boots/jackboots/toeless,
-		/obj/item/device/radio/headset/talon,
-		/obj/item/device/flashlight/color/orange,
+		/obj/item/radio/headset/talon,
+		/obj/item/flashlight/color/orange,
 		/obj/item/clothing/head/helmet/space/void/refurb/pilot/talon,
 		/obj/item/clothing/suit/space/void/refurb/pilot/talon,
-		/obj/item/weapon/tank/oxygen,
-		/obj/item/device/suit_cooling_unit,
-		/obj/item/device/gps/explorer/talonpilot
+		/obj/item/tank/oxygen,
+		/obj/item/suit_cooling_unit,
+		/obj/item/gps/explorer/talonpilot
+	)
+
+/obj/structure/closet/secure_closet/talon_miner
+	name = "talon miner's locker"
+	req_access = list(access_talon)
+	closet_appearance = /decl/closet_appearance/secure_closet/talon/miner
+
+	starts_with = list(
+		/obj/item/radio/headset/talon,
+		/obj/item/clothing/head/helmet/space/void/refurb/mining/talon,
+		/obj/item/clothing/suit/space/void/refurb/mining/talon,
+		/obj/item/tank/oxygen,
+		/obj/item/suit_cooling_unit,
+		/obj/item/gps/mining/talonminer,
+		/obj/item/clothing/gloves/black,
+		/obj/item/analyzer,
+		/obj/item/storage/bag/ore,
+		/obj/item/flashlight/lantern,
+		/obj/item/shovel,
+		/obj/item/pickaxe/drill,
+		/obj/item/mining_scanner,
+		/obj/item/clothing/glasses/material,
+		/obj/item/clothing/glasses/meson
 	)
 
 /obj/machinery/vending/medical_talon //Not a subtype for *reasons*
@@ -371,14 +402,14 @@ Once in open space, consider disabling nonessential power-consuming electronics 
 	icon_state = "med"
 	product_ads = "Go save some lives!;The best stuff for your medbay.;Only the finest tools.;Natural chemicals!;This stuff saves lives.;Don't you want some?;Ping!"
 	req_access = list(access_talon)
-	products = list(/obj/item/weapon/reagent_containers/glass/bottle/antitoxin = 4,/obj/item/weapon/reagent_containers/glass/bottle/inaprovaline = 4,
-					/obj/item/weapon/reagent_containers/glass/bottle/stoxin = 4,/obj/item/weapon/reagent_containers/glass/bottle/toxin = 4,
-					/obj/item/weapon/reagent_containers/syringe/antiviral = 4,/obj/item/weapon/reagent_containers/syringe = 12,
-					/obj/item/device/healthanalyzer = 5,/obj/item/weapon/reagent_containers/glass/beaker = 4, /obj/item/weapon/reagent_containers/dropper = 2,
+	products = list(/obj/item/reagent_containers/glass/bottle/antitoxin = 4,/obj/item/reagent_containers/glass/bottle/inaprovaline = 4,
+					/obj/item/reagent_containers/glass/bottle/stoxin = 4,/obj/item/reagent_containers/glass/bottle/toxin = 4,
+					/obj/item/reagent_containers/syringe/antiviral = 4,/obj/item/reagent_containers/syringe = 12,
+					/obj/item/healthanalyzer = 5,/obj/item/reagent_containers/glass/beaker = 4, /obj/item/reagent_containers/dropper = 2,
 					/obj/item/stack/medical/advanced/bruise_pack = 6, /obj/item/stack/medical/advanced/ointment = 6, /obj/item/stack/medical/splint = 4,
-					/obj/item/weapon/storage/pill_bottle/carbon = 2, /obj/item/weapon/storage/box/khcrystal = 4, /obj/item/clothing/glasses/omnihud/med = 4,
-					/obj/item/device/glasses_kit = 1,  /obj/item/weapon/storage/quickdraw/syringe_case = 4)
-	contraband = list(/obj/item/weapon/reagent_containers/pill/tox = 3,/obj/item/weapon/reagent_containers/pill/stox = 4,/obj/item/weapon/reagent_containers/pill/antitox = 6)
+					/obj/item/storage/pill_bottle/carbon = 2, /obj/item/storage/box/khcrystal = 4, /obj/item/clothing/glasses/omnihud/med = 4,
+					/obj/item/glasses_kit = 1,  /obj/item/storage/quickdraw/syringe_case = 4)
+	contraband = list(/obj/item/reagent_containers/pill/tox = 3,/obj/item/reagent_containers/pill/stox = 4,/obj/item/reagent_containers/pill/antitox = 6)
 	idle_power_usage = 211 //refrigerator - believe it or not, this is actually the average power consumption of a refrigerated vending machine according to NRCan.
 	req_log_access = access_talon
 	has_logs = 1
@@ -468,17 +499,24 @@ Once in open space, consider disabling nonessential power-consuming electronics 
 	hard_drive.store_file(new/datum/computer_file/program/camera_monitor/talon_helmet())
 	set_autorun("tsensormonitor")
 
+/obj/item/modular_computer/laptop/preset/custom_loadout/standard/talon/miner
+	name = "miner's laptop"
+
+/obj/item/modular_computer/laptop/preset/custom_loadout/standard/talon/miner/install_default_programs()
+	..()
+	hard_drive.store_file(new/datum/computer_file/program/ship_nav())
+
 //Generic modular consoles scattered around
 /obj/item/modular_computer/console/preset/talon
 	name = "talon modular computer"
 
 /obj/item/modular_computer/console/preset/talon/install_default_hardware()
 	..()
-	processor_unit = new/obj/item/weapon/computer_hardware/processor_unit(src)
-	tesla_link = new/obj/item/weapon/computer_hardware/tesla_link(src)
-	hard_drive = new/obj/item/weapon/computer_hardware/hard_drive/super(src)
-	network_card = new/obj/item/weapon/computer_hardware/network_card/wired(src)
-	nano_printer = new/obj/item/weapon/computer_hardware/nano_printer(src)
+	processor_unit = new/obj/item/computer_hardware/processor_unit(src)
+	tesla_link = new/obj/item/computer_hardware/tesla_link(src)
+	hard_drive = new/obj/item/computer_hardware/hard_drive/super(src)
+	network_card = new/obj/item/computer_hardware/network_card/wired(src)
+	nano_printer = new/obj/item/computer_hardware/nano_printer(src)
 
 /obj/item/modular_computer/console/preset/talon/install_default_programs()
 	..()

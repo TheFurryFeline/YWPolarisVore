@@ -19,13 +19,13 @@
 	if(!action_checks(src))
 		return inc_damage
 	if(prob(chassis.deflect_chance*deflect_coeff))
-		chassis.occupant_message("<span class='notice'>The armor deflects incoming projectile.</span>")
+		chassis.occupant_message(span_notice("The armor deflects incoming projectile."))
 		chassis.visible_message("The [chassis.name] armor deflects the projectile.")
 		chassis.log_append_to_last("Armor saved.")
 		inc_damage = 0
 	else
 		inc_damage *= src.damage_coeff
-	set_ready_state(0)
+	set_ready_state(FALSE)
 	chassis.use_power(energy_drain)
 	spawn()
 		do_after_cooldown()
@@ -35,13 +35,13 @@
 	if(!action_checks(A))
 		return inc_damage
 	if(prob(chassis.deflect_chance*deflect_coeff))
-		chassis.occupant_message("<span class='notice'>The [A] bounces off the armor.</span>")
+		chassis.occupant_message(span_notice("The [A] bounces off the armor."))
 		chassis.visible_message("The [A] bounces off \the [chassis]'s armor")
 		chassis.log_append_to_last("Armor saved.")
 		inc_damage = 0
 	else if(istype(A, /obj))
 		inc_damage *= damage_coeff
-	set_ready_state(0)
+	set_ready_state(FALSE)
 	chassis.use_power(energy_drain)
 	spawn()
 		do_after_cooldown()
@@ -49,7 +49,7 @@
 
 /obj/item/mecha_parts/mecha_equipment/antiproj_armor_booster/get_equip_info()
 	if(!chassis) return
-	return "<span style=\"color:[equip_ready?"#0f0":"#f00"];\">*</span>&nbsp;[src.name]"
+	return (equip_ready ? span_green("*") : span_red("*")) + "&nbsp;[src.name]"
 
 /*
 /obj/item/mecha_parts/mecha_equipment/antiproj_armor_booster/can_attach(obj/mecha/M as obj)
@@ -76,14 +76,14 @@
 	if(!action_checks(src))
 		return chassis.dynbulletdamage(Proj)
 	if(prob(chassis.deflect_chance*deflect_coeff))
-		chassis.occupant_message("<span class='notice'>The armor deflects incoming projectile.</span>")
+		chassis.occupant_message(span_notice("The armor deflects incoming projectile."))
 		chassis.visible_message("The [chassis.name] armor deflects the projectile")
 		chassis.log_append_to_last("Armor saved.")
 	else
 		chassis.take_damage(round(Proj.damage*src.damage_coeff),Proj.check_armour)
 		chassis.check_for_internal_damage(list(MECHA_INT_FIRE,MECHA_INT_TEMP_CONTROL,MECHA_INT_TANK_BREACH,MECHA_INT_CONTROL_LOST))
 		Proj.on_hit(chassis)
-	set_ready_state(0)
+	set_ready_state(FALSE)
 	chassis.use_power(energy_drain)
 	do_after_cooldown()
 	return
@@ -92,7 +92,7 @@
 	if(!action_checks(A))
 		return chassis.dynhitby(A)
 	if(prob(chassis.deflect_chance*deflect_coeff) || istype(A, /mob/living) || istype(A, /obj/item/mecha_parts/mecha_tracking))
-		chassis.occupant_message("<span class='notice'>The [A] bounces off the armor.</span>")
+		chassis.occupant_message(span_notice("The [A] bounces off the armor."))
 		chassis.visible_message("The [A] bounces off the [chassis] armor")
 		chassis.log_append_to_last("Armor saved.")
 		if(istype(A, /mob/living))
@@ -103,7 +103,7 @@
 		if(O.throwforce)
 			chassis.take_damage(round(O.throwforce*damage_coeff))
 			chassis.check_for_internal_damage(list(MECHA_INT_TEMP_CONTROL,MECHA_INT_TANK_BREACH,MECHA_INT_CONTROL_LOST))
-	set_ready_state(0)
+	set_ready_state(FALSE)
 	chassis.use_power(energy_drain)
 	do_after_cooldown()
 	return

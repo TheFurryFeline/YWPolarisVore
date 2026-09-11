@@ -8,18 +8,21 @@
 #define INVISIBILITY_LIGHTING             20
 #define INVISIBILITY_LEVEL_ONE            35
 #define INVISIBILITY_LEVEL_TWO            45
+#define INVISIBILITY_SHADEKIN			  55
 #define INVISIBILITY_OBSERVER             60
 #define INVISIBILITY_EYE		          61
 
 #define SEE_INVISIBLE_LIVING              25
-#define SEE_INVISIBLE_NOLIGHTING 15
+#define SEE_INVISIBLE_NOLIGHTING		  15
 #define SEE_INVISIBLE_LEVEL_ONE           35
 #define SEE_INVISIBLE_LEVEL_TWO           45
+#define SEE_INVISIBILITY_SHADEKIN         55
 #define SEE_INVISIBLE_CULT		          60
 #define SEE_INVISIBLE_OBSERVER            61
 
 #define SEE_INVISIBLE_MINIMUM 5
 #define INVISIBILITY_MAXIMUM 100
+#define INVISIBILITY_ABSTRACT 101 //only used for abstract objects, things that are not really there.
 
 // Pseudo-Invis, like Ninja, Ling, Etc.
 #define EFFECTIVE_INVIS					  50		// Below this, can't be examined, may as well be invisible to the game
@@ -28,7 +31,6 @@
 #define MAX_CLIENT_FPS	200
 
 // Some arbitrary defines to be used by self-pruning global lists. (see master_controller)
-#define PROCESS_KILL 26 // Used to trigger removal from a processing list.
 #define MAX_GEAR_COST 15 // Used in chargen for accessory loadout limit.
 
 // For secHUDs and medHUDs and variants. The number is the location of the image on the list hud_list of humans.
@@ -45,10 +47,6 @@
 #define     TOTAL_HUDS 10 // Total number of HUDs. Like body layers, and other things, it comes up sometimes.
 
 #define CLIENT_FROM_VAR(I) (ismob(I) ? I:client : (isclient(I) ? I : null))
-
-
-//Persistence
-#define AREA_FLAG_IS_NOT_PERSISTENT 8 // SSpersistence will not track values from this area.
 
 //	Shuttles.
 
@@ -97,7 +95,21 @@
 #define DEFAULT_JOB_TYPE /datum/job/assistant
 
 //Area flags, possibly more to come
-#define RAD_SHIELDED 1 //shielded from radiation, clearly
+#define RAD_SHIELDED 				0x1		//shielded from radiation, clearly
+#define BLUE_SHIELDED				0x2		// Shield from bluespace teleportation (telescience)
+#define AREA_SECRET_NAME			0x4		// This tells certain things that display areas' names that they shouldn't display this area's name.
+#define AREA_FLAG_IS_NOT_PERSISTENT 0x8		// SSpersistence will not track values from this area.
+#define AREA_FORBID_EVENTS			0x10	// random events will not start inside this area.
+#define AREA_FORBID_SINGULO			0x20	// singulo will not move in.
+#define AREA_NO_SPOILERS			0x40	// makes it much more difficult to see what is inside an area with things like mesons.
+#define AREA_SOUNDPROOF				0x80	// blocks sounds from other areas and prevents hearers on other areas from hearing the sounds within.
+#define AREA_BLOCK_PHASE_SHIFT		0x100	// Stops phase shifted mobs from entering
+#define AREA_BLOCK_GHOSTS			0x200	// Stops ghosts from entering
+#define AREA_ALLOW_LARGE_SIZE		0x400	// If mob size is limited in the area.
+#define AREA_BLOCK_SUIT_SENSORS		0x800	// If suit sensors are blocked in the area.
+#define AREA_BLOCK_TRACKING			0x1000	// If camera tracking is blocked in the area.
+#define TEMPERATURE_SHIELDED 		0x2000 // YW Addition: Temperature change shielding
+#define PHASE_SHIELDED				0x4000 // YW Addition: Prevents shadekin phasing in/out in this area
 
 // OnTopic return values
 #define TOPIC_NOACTION 0
@@ -148,9 +160,24 @@
 #define PROGRAM_STATE_BACKGROUND 1
 #define PROGRAM_STATE_ACTIVE 2
 
+#define PROG_MISC  		"Miscellaneous"
+#define PROG_ENG  		"Engineering"
+#define PROG_OFFICE  	"Office Work"
+#define PROG_COMMAND  	"Command"
+#define PROG_SUPPLY  	"Supply and Shuttles"
+#define PROG_ADMIN  	"NTNet Administration"
+#define PROG_UTIL 		"Utility"
+#define PROG_SEC 		"Security"
+#define PROG_MONITOR	"Monitoring"
+
 // Caps for NTNet logging. Less than 10 would make logging useless anyway, more than 500 may make the log browser too laggy. Defaults to 100 unless user changes it.
 #define MAX_NTNET_LOGS 500
 #define MIN_NTNET_LOGS 10
+
+//Built-in email accounts
+#define EMAIL_DOCUMENTS "document.server@virgo.local"
+#define EMAIL_SYSADMIN  "admin@virgo.local"
+#define EMAIL_BROADCAST "broadcast@virgo.local"
 
 
 // Special return values from bullet_act(). Positive return values are already used to indicate the blocked level of the projectile.
@@ -196,8 +223,6 @@
 
 #define MIDNIGHT_ROLLOVER		864000	//number of deciseconds in a day
 
-#define WORLD_ICON_SIZE 32 //Needed for the R-UST port
-#define PIXEL_MULTIPLIER WORLD_ICON_SIZE/32 //Needed for the R-UST port
 #define MAX_CLIENT_VIEW	34  // Maximum effective value of client.view (According to DM references)
 
 // Maploader bounds indices
@@ -264,6 +289,7 @@ GLOBAL_LIST_EMPTY(##LIST_NAME);\
 #define IS_CROWBAR			"crowbar"
 #define IS_WIRECUTTER		"wirecutter"
 #define IS_WRENCH			"wrench"
+#define IS_WELDER			"welder"
 
 
 // Diagonal movement
@@ -292,11 +318,6 @@ GLOBAL_LIST_EMPTY(##LIST_NAME);\
 // Calculation modes for effective radiation
 #define RAD_RESIST_CALC_DIV 0 // Each turf absorbs some fraction of the working radiation level
 #define RAD_RESIST_CALC_SUB 1 // Each turf absorbs a fixed amount of radiation
-
-//https://secure.byond.com/docs/ref/info.html#/atom/var/mouse_opacity
-#define MOUSE_OPACITY_TRANSPARENT 0
-#define MOUSE_OPACITY_ICON 1
-#define MOUSE_OPACITY_OPAQUE 2
 
 // Used by radios to indicate that they have sent a message via something other than subspace
 #define RADIO_CONNECTION_FAIL 0
@@ -398,24 +419,6 @@ GLOBAL_LIST_EMPTY(##LIST_NAME);\
 
 #define send_link(target, url) target << link(url)
 
-#define SPAN_NOTICE(X) "<span class='notice'>[X]</span>"
-
-#define SPAN_WARNING(X) "<span class='warning'>[X]</span>"
-
-#define SPAN_DANGER(X) "<span class='danger'>[X]</span>"
-
-#define SPAN_OCCULT(X) "<span class='cult'>[X]</span>"
-
-#define FONT_SMALL(X) "<font size='1'>[X]</font>"
-
-#define FONT_NORMAL(X) "<font size='2'>[X]</font>"
-
-#define FONT_LARGE(X) "<font size='3'>[X]</font>"
-
-#define FONT_HUGE(X) "<font size='4'>[X]</font>"
-
-#define FONT_GIANT(X) "<font size='5'>[X]</font>"
-
 // Volume Channel Defines
 
 #define VOLUME_CHANNEL_MASTER "Master"
@@ -423,6 +426,7 @@ GLOBAL_LIST_EMPTY(##LIST_NAME);\
 #define VOLUME_CHANNEL_ALARMS "Alarms"
 #define VOLUME_CHANNEL_VORE "Vore"
 #define VOLUME_CHANNEL_DOORS "Doors"
+#define VOLUME_CHANNEL_INSTRUMENTS "Instruments"
 
 // Make sure you update this or clients won't be able to adjust the channel
 GLOBAL_LIST_INIT(all_volume_channels, list(
@@ -431,6 +435,7 @@ GLOBAL_LIST_INIT(all_volume_channels, list(
 	VOLUME_CHANNEL_ALARMS,
 	VOLUME_CHANNEL_VORE,
 	VOLUME_CHANNEL_DOORS,
+	VOLUME_CHANNEL_INSTRUMENTS
 ))
 
 #define APPEARANCECHANGER_CHANGED_RACE "Race"
@@ -462,3 +467,21 @@ GLOBAL_LIST_INIT(all_volume_channels, list(
 #ifndef HTTP_POST_DLL_LOCATION
 #define HTTP_POST_DLL_LOCATION (world.system_type == MS_WINDOWS ? WINDOWS_HTTP_POST_DLL_LOCATION : UNIX_HTTP_POST_DLL_LOCATION)
 #endif
+
+#define DOCK_ATTEMPT_TIMEOUT 200	//how long in ticks we wait before assuming the docking controller is broken or blown up.
+
+#define SMES_TGUI_INPUT 1
+#define SMES_TGUI_OUTPUT 2
+
+#define TRAIT_SORT_NORMAL 1
+#define TRAIT_SORT_BODYTYPE 2
+#define TRAIT_SORT_SPECIES 3
+
+#define SPECIES_SORT_NORMAL 1
+#define SPECIES_SORT_WHITELISTED 2
+#define SPECIES_SORT_RESTRICTED 3
+#define SPECIES_SORT_CUSTOM 4
+
+// Vote Types
+#define VOTE_RESULT_TYPE_MAJORITY	"Majority"
+#define VOTE_RESULT_TYPE_SKEWED		"Seventy"

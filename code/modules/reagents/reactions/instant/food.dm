@@ -23,7 +23,7 @@
 /decl/chemical_reaction/instant/food/tofu/on_reaction(var/datum/reagents/holder, var/created_volume)
 	var/location = get_turf(holder.my_atom)
 	for(var/i = 1, i <= created_volume, i++)
-		new /obj/item/weapon/reagent_containers/food/snacks/tofu(location)
+		new /obj/item/reagent_containers/food/snacks/tofu(location)
 	return
 
 /decl/chemical_reaction/instant/food/chocolate_bar
@@ -31,12 +31,13 @@
 	id = "chocolate_bar"
 	result = null
 	required_reagents = list("soymilk" = 2, "coco" = 2, "sugar" = 2)
+	catalysts = list("enzyme" = 5)
 	result_amount = 1
 
 /decl/chemical_reaction/instant/food/chocolate_bar/on_reaction(var/datum/reagents/holder, var/created_volume)
 	var/location = get_turf(holder.my_atom)
 	for(var/i = 1, i <= created_volume, i++)
-		new /obj/item/weapon/reagent_containers/food/snacks/chocolatebar(location)
+		new /obj/item/reagent_containers/food/snacks/chocolatebar(location)
 	return
 
 /decl/chemical_reaction/instant/food/chocolate_bar2
@@ -44,13 +45,31 @@
 	id = "chocolate_bar"
 	result = null
 	required_reagents = list("milk" = 2, "coco" = 2, "sugar" = 2)
+	catalysts = list("enzyme" = 5)
 	result_amount = 1
 
 /decl/chemical_reaction/instant/food/chocolate_bar2/on_reaction(var/datum/reagents/holder, var/created_volume)
 	var/location = get_turf(holder.my_atom)
 	for(var/i = 1, i <= created_volume, i++)
-		new /obj/item/weapon/reagent_containers/food/snacks/chocolatebar(location)
+		new /obj/item/reagent_containers/food/snacks/chocolatebar(location)
 	return
+
+/decl/chemical_reaction/instant/food/cookingoilcorn
+	name = "Cooking Oil"
+	id = "cookingoilcorn"
+	result = "cookingoil"
+	required_reagents = list("cornoil" = 10)
+	catalysts = list("enzyme" = 5)
+	result_amount = 10
+
+/decl/chemical_reaction/instant/food/cookingoilpeanut
+	name = "Cooking Oil"
+	id = "cookingoilpeanut"
+	result = "cookingoil"
+	required_reagents = list("peanutoil" = 10)
+	inhibitors = list("sugar" = 1, "sodiumchloride" = 1)
+	catalysts = list("enzyme" = 5)
+	result_amount = 10
 
 /decl/chemical_reaction/instant/food/soysauce
 	name = "Soy Sauce"
@@ -85,7 +104,7 @@
 	name = "mayonnaise"
 	id = "mayo"
 	result = "mayo"
-	required_reagents = list("egg" = 9, "cornoil" = 5, "lemonjuice" = 5, "sodiumchloride" = 1)
+	required_reagents = list("egg" = 9, "cookingoil" = 5, "lemonjuice" = 5, "sodiumchloride" = 1)
 	result_amount = 15
 
 /decl/chemical_reaction/instant/food/cheesewheel
@@ -99,7 +118,7 @@
 /decl/chemical_reaction/instant/food/cheesewheel/on_reaction(var/datum/reagents/holder, var/created_volume)
 	var/location = get_turf(holder.my_atom)
 	for(var/i = 1, i <= created_volume, i++)
-		new /obj/item/weapon/reagent_containers/food/snacks/sliceable/cheesewheel(location)
+		new /obj/item/reagent_containers/food/snacks/sliceable/cheesewheel(location)
 	return
 
 /decl/chemical_reaction/instant/food/meatball
@@ -107,12 +126,13 @@
 	id = "meatball"
 	result = null
 	required_reagents = list("protein" = 3, "flour" = 5)
+	catalysts = list("enzyme" = 5)
 	result_amount = 3
 
 /decl/chemical_reaction/instant/food/meatball/on_reaction(var/datum/reagents/holder, var/created_volume)
 	var/location = get_turf(holder.my_atom)
 	for(var/i = 1, i <= created_volume, i++)
-		new /obj/item/weapon/reagent_containers/food/snacks/meatball(location)
+		new /obj/item/reagent_containers/food/snacks/meatball(location)
 	return
 
 /decl/chemical_reaction/instant/food/dough
@@ -120,13 +140,13 @@
 	id = "dough"
 	result = null
 	required_reagents = list("egg" = 3, "flour" = 10)
-	inhibitors = list("water" = 1, "beer" = 1) //To prevent it messing with batter recipes
+	inhibitors = list("water" = 1, "beer" = 1, "sugar" = 1) //To prevent it messing with batter recipes
 	result_amount = 1
 
 /decl/chemical_reaction/instant/food/dough/on_reaction(var/datum/reagents/holder, var/created_volume)
 	var/location = get_turf(holder.my_atom)
 	for(var/i = 1, i <= created_volume, i++)
-		new /obj/item/weapon/reagent_containers/food/snacks/dough(location)
+		new /obj/item/reagent_containers/food/snacks/dough(location)
 	return
 
 /decl/chemical_reaction/instant/food/syntiflesh
@@ -139,7 +159,7 @@
 /decl/chemical_reaction/instant/food/syntiflesh/on_reaction(var/datum/reagents/holder, var/created_volume)
 	var/location = get_turf(holder.my_atom)
 	for(var/i = 1, i <= created_volume, i++)
-		new /obj/item/weapon/reagent_containers/food/snacks/meat/syntiflesh(location)
+		new /obj/item/reagent_containers/food/snacks/meat/syntiflesh(location)
 	return
 
 /*
@@ -169,6 +189,13 @@
 	required_reagents = list("flour" = 5, "coco" = 5, "sugar" = 5)
 	result_amount = 15
 
+/decl/chemical_reaction/instant/food/cakebatter
+	name = "Cake Batter"
+	id = "cakebatter"
+	result = "cakebatter"
+	required_reagents = list("flour" = 15, "milk" = 10, "sugar" = 15, "egg" = 3)
+	result_amount = 60
+
 /decl/chemical_reaction/instant/food/butter
 	name = "Butter"
 	id = "butter"
@@ -179,5 +206,5 @@
 /decl/chemical_reaction/instant/food/butter/on_reaction(var/datum/reagents/holder, var/created_volume)
 	var/location = get_turf(holder.my_atom)
 	for(var/i = 1, i <= created_volume, i++)
-		new /obj/item/weapon/reagent_containers/food/snacks/spreads/butter(location)
+		new /obj/item/reagent_containers/food/snacks/spreads/butter(location)
 	return

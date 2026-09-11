@@ -14,7 +14,7 @@
 	icon_rest = "rabbit_brown_rest"
 	icon = 'icons/mob/vore.dmi'
 
-	faction = "rabbit"
+	faction = FACTION_RABBIT
 	maxHealth = 30
 	health = 30
 
@@ -27,10 +27,13 @@
 	melee_damage_upper = 3
 	attacktext = list("nipped")
 
-	movement_cooldown = 3
+	movement_cooldown = 0
 
 	say_list_type = /datum/say_list/rabbit
 	ai_holder_type = /datum/ai_holder/simple_mob/passive
+
+	meat_amount = 3
+	meat_type = /obj/item/reagent_containers/food/snacks/meat
 
 	// Vore vars
 	vore_active = 1
@@ -39,6 +42,8 @@
 	vore_pounce_maxhealth = 100 // They won't pounce by default, as they're passive. This is just so the nom check succeeds. :u
 	vore_default_mode = DM_HOLD
 	vore_icons = SA_ICON_LIVING
+
+	allow_mind_transfer = TRUE
 
 	var/body_color 				//brown, black and white, leave blank for random
 
@@ -91,7 +96,7 @@
 /datum/say_list/rabbit
 	speak = list("chrrrs.")
 	emote_hear = list("screms.")
-	emote_see = list("earflicks","wiggles it's tail", "wiggles its nose")
+	emote_see = list("earflicks","wiggles its tail", "wiggles its nose")
 
 /mob/living/simple_mob/vore/rabbit/black
 	icon_state = "rabbit_black"
@@ -137,7 +142,7 @@
 	melee_damage_upper = 3
 	attacktext = list("nipped")
 
-	movement_cooldown = 0.5 // very fast bunbun.
+	movement_cooldown = -2 // very fast bunbun.
 
 	vore_bump_chance = 10
 	vore_pounce_chance = 100

@@ -2,17 +2,22 @@
 /obj/effect/overmap/visitable/sector/temporary
 	name = "Deep Space"
 	invisibility = 101
-	known = 0
+	known = FALSE
 	in_space = TRUE
 
-/obj/effect/overmap/visitable/sector/temporary/New(var/nx, var/ny)
-	loc = locate(nx, ny, global.using_map.overmap_z)
-	x = nx
-	y = ny
-	var/emptyz = global.using_map.get_empty_zlevel()
-	map_z += emptyz
-	map_sectors["[emptyz]"] = src
-	testing("Temporary sector at [x],[y] was created, corresponding zlevel is [emptyz].")
+/obj/effect/overmap/visitable/sector/temporary/Initialize()
+	if(!istype(loc, /turf/unsimulated/map))
+		CRASH("Attempt to create deepspace which is not on overmap: [log_info_line(loc)]")
+	// Tell sector initializer where are is where we want to be.
+	start_x = loc.x
+	start_y = loc.y
+	// But pick an empty z level to use
+	map_z += global.using_map.get_empty_zlevel()
+	. = ..()
+	if(!map_z[1])
+		log_and_message_admins("Could not create empty sector at [x], [y]. No available z levels to allocate.")
+		return INITIALIZE_HINT_QDEL
+	testing("Temporary sector at [x],[y],[z] was created, corresponding zlevel is [english_list(map_z)].")
 
 /obj/effect/overmap/visitable/sector/temporary/Destroy()
 	for(var/zlevel in map_z)
@@ -20,26 +25,35 @@
 	testing("Temporary sector at [x],[y] was destroyed, returning empty zlevel [map_z[1]] to map datum.")
 	return ..()
 
-/obj/effect/overmap/visitable/sector/temporary/proc/can_die(var/mob/observer)
-	testing("Checking if sector at [map_z[1]] can die.")
+/obj/effect/overmap/visitable/sector/temporary/find_z_levels()
+	LAZYADD(map_z, global.using_map.get_empty_zlevel())
+
+/obj/effect/overmap/visitable/sector/temporary/proc/is_empty(var/mob/observer)
+	if(!LAZYLEN(map_z))
+		log_and_message_admins("CANARY: [src] tried to check is_empty, but map_z is `[map_z || "null"]`")
+		return TRUE
+	testing("Checking if sector at [map_z[1]] has no players.")
 	for(var/mob/M in global.player_list)
 		if(M != observer && (M.z in map_z))
 			testing("There are people on it.")
-			return 0
-	return 1
+			return FALSE
+	return TRUE
 
 /obj/effect/overmap/visitable/sector/temporary/cleanup()
-	if(can_die())
+	if(is_empty())
 		qdel(src)
 
-proc/get_deepspace(x,y)
+/proc/get_deepspace(x,y)
 	var/turf/unsimulated/map/overmap_turf = locate(x,y,global.using_map.overmap_z)
 	if(!istype(overmap_turf))
 		CRASH("Attempt to get deepspace at ([x],[y]) which is not on overmap: [overmap_turf]")
 	var/obj/effect/overmap/visitable/sector/temporary/res = locate() in overmap_turf
 	if(istype(res))
 		return res
-	return new /obj/effect/overmap/visitable/sector/temporary(x, y)
+	res = new /obj/effect/overmap/visitable/sector/temporary(overmap_turf)
+	if(QDELETED(res))
+		res = null
+	return res
 
 /atom/movable/proc/lost_in_space()
 	for(var/atom/movable/AM in contents)
@@ -52,7 +66,7 @@ proc/get_deepspace(x,y)
 
 	return TRUE
 
-/obj/item/device/uav/lost_in_space()
+/obj/item/uav/lost_in_space()
 	if(state == 1)
 		return FALSE
 	return ..()
@@ -75,7 +89,7 @@ proc/get_deepspace(x,y)
 	return FALSE
 	// return isnull(client) && !key && stat == DEAD // Allows bodies that players have ghosted from to be deleted - Ater
 
-proc/overmap_spacetravel(var/turf/space/T, var/atom/movable/A)
+/proc/overmap_spacetravel(var/turf/space/T, var/atom/movable/A)
 	if (!T || !A)
 		return
 
@@ -125,9 +139,13 @@ proc/overmap_spacetravel(var/turf/space/T, var/atom/movable/A)
 		if(O != M && O.in_space && prob(50))
 			TM = O
 			break
-	if(!TM)
+	if(!istype(TM))
 		TM = get_deepspace(M.x,M.y)
+	if(!istype(TM))
+		return
 	nz = pick(TM.get_space_zlevels())
+
+	testing("spacetravel chose [nz],[ny],[nz] in sector [TM] @ ([TM.x],[TM.y],[TM.z])")
 
 	var/turf/dest = locate(nx,ny,nz)
 	if(istype(dest))
@@ -136,5 +154,7 @@ proc/overmap_spacetravel(var/turf/space/T, var/atom/movable/A)
 			var/mob/D = A
 			if(D.pulling)
 				D.pulling.forceMove(dest)
+	else
+		to_world("CANARY: Could not move [A] to [nx], [ny], [nz]: [dest ? "[dest]" : "null"]")
 
 	M.cleanup()

@@ -194,7 +194,7 @@
 	dir = 1
 	},
 /turf/simulated/floor/tiled/techfloor,
-/area/shuttle/salamander_q2)
+/area/shuttle/salamander_q1)
 "dj" = (
 /turf/simulated/floor/plating,
 /area/shuttle/salamander_engineering)
@@ -270,7 +270,7 @@
 "eG" = (
 /obj/machinery/atmospherics/unary/vent_pump/on,
 /turf/simulated/floor/tiled/techfloor,
-/area/shuttle/salamander_q2)
+/area/shuttle/salamander_q1)
 "eJ" = (
 /obj/effect/map_helper/airlock/sensor/int_sensor,
 /obj/machinery/airlock_sensor{
@@ -319,6 +319,16 @@
 	},
 /turf/simulated/floor/plating,
 /area/shuttle/salamander_engineering)
+"fu" = (
+/obj/structure/bed/pod,
+/obj/item/bedsheet/blue,
+/obj/machinery/light_switch{
+	dir = 4;
+	pixel_x = 22
+	},
+/obj/effect/landmark/late_antag/trader,
+/turf/simulated/floor/tiled/techfloor,
+/area/shuttle/salamander_q1)
 "fB" = (
 /obj/machinery/light,
 /turf/simulated/floor/plating,
@@ -378,8 +388,8 @@
 /turf/simulated/floor/tiled/techmaint,
 /area/shuttle/salamander)
 "fZ" = (
-/obj/item/device/suit_cooling_unit,
-/obj/item/weapon/tank/air,
+/obj/item/suit_cooling_unit,
+/obj/item/tank/air,
 /obj/item/clothing/suit/space/void/refurb,
 /obj/item/clothing/head/helmet/space/void/refurb,
 /obj/structure/handrail,
@@ -402,7 +412,7 @@
 	dir = 10
 	},
 /turf/simulated/floor/tiled/techfloor,
-/area/shuttle/salamander_q2)
+/area/shuttle/salamander_q1)
 "gv" = (
 /obj/machinery/power/apc{
 	dir = 8;
@@ -742,6 +752,10 @@
 	dir = 4;
 	pixel_x = 32
 	},
+/obj/structure/panic_button{
+	pixel_x = 32;
+	pixel_y = -32
+	},
 /turf/simulated/floor/tiled/techfloor,
 /area/shuttle/salamander_engineering)
 "kU" = (
@@ -863,14 +877,14 @@
 /obj/structure/railing/grey{
 	dir = 8
 	},
-/obj/item/weapon/tank/phoron/pressurized,
-/obj/item/weapon/tank/phoron/pressurized,
+/obj/item/tank/phoron/pressurized,
+/obj/item/tank/phoron/pressurized,
 /obj/structure/closet/walllocker{
 	dir = 1;
 	name = "Spare Fuel";
 	pixel_y = -32
 	},
-/obj/item/weapon/tool/crowbar/red,
+/obj/item/tool/crowbar/red,
 /obj/item/stack/material/tritium{
 	amount = 25
 	},
@@ -1021,8 +1035,8 @@
 /area/shuttle/salamander)
 "oi" = (
 /obj/structure/closet/secure_closet/freezer/fridge,
-/obj/item/weapon/storage/box/donkpockets,
-/obj/item/weapon/storage/box/donkpockets,
+/obj/item/storage/box/donkpockets,
+/obj/item/storage/box/donkpockets,
 /obj/random/snack,
 /obj/random/snack,
 /obj/random/snack,
@@ -1048,7 +1062,7 @@
 /area/shuttle/salamander_cockpit)
 "oF" = (
 /obj/structure/bed/pod,
-/obj/item/weapon/bedsheet/blue,
+/obj/item/bedsheet/blue,
 /obj/machinery/light_switch{
 	dir = 4;
 	pixel_x = 22
@@ -1319,6 +1333,9 @@
 /obj/structure/catwalk,
 /turf/simulated/floor/plating,
 /area/shuttle/salamander)
+"xj" = (
+/turf/simulated/wall/shull,
+/area/shuttle/salamander_q1)
 "xL" = (
 /obj/structure/cable{
 	d1 = 4;
@@ -1403,7 +1420,7 @@
 	pixel_x = -32
 	},
 /turf/simulated/floor/tiled/techfloor,
-/area/shuttle/salamander_q2)
+/area/shuttle/salamander_q1)
 "Bf" = (
 /obj/machinery/light{
 	dir = 1
@@ -1499,6 +1516,12 @@
 	},
 /turf/simulated/floor/tiled/techmaint,
 /area/shuttle/salamander)
+"FV" = (
+/obj/machinery/power/pointdefense{
+	id_tag = "salamander_pd"
+	},
+/turf/simulated/floor/plating,
+/area/shuttle/salamander_q1)
 "Gj" = (
 /obj/machinery/door/firedoor/glass,
 /obj/structure/grille,
@@ -1530,8 +1553,8 @@
 /turf/simulated/floor/plating,
 /area/shuttle/salamander_cockpit)
 "IL" = (
-/obj/item/device/suit_cooling_unit,
-/obj/item/weapon/tank/air,
+/obj/item/suit_cooling_unit,
+/obj/item/tank/air,
 /obj/item/clothing/suit/space/void/refurb,
 /obj/item/clothing/head/helmet/space/void/refurb,
 /obj/structure/handrail{
@@ -1620,6 +1643,22 @@
 	},
 /turf/simulated/floor/tiled/techfloor,
 /area/shuttle/salamander)
+"Lb" = (
+/obj/machinery/door/firedoor/glass,
+/obj/structure/cable{
+	d1 = 1;
+	d2 = 2;
+	icon_state = "1-2"
+	},
+/obj/machinery/atmospherics/pipe/simple/hidden/supply{
+	dir = 1
+	},
+/obj/machinery/atmospherics/pipe/simple/hidden/scrubbers,
+/obj/machinery/door/airlock/voidcraft{
+	req_one_access = list(160)
+	},
+/turf/simulated/floor/tiled/techmaint,
+/area/shuttle/salamander_q1)
 "Lf" = (
 /obj/effect/floor_decal/industrial/warning,
 /turf/simulated/floor/tiled/techfloor,
@@ -1749,9 +1788,29 @@
 	},
 /turf/simulated/floor/tiled/techfloor,
 /area/shuttle/salamander)
+"Rj" = (
+/obj/machinery/door/firedoor/glass,
+/obj/structure/grille,
+/obj/structure/window/reinforced/full,
+/obj/structure/window/reinforced,
+/obj/structure/window/reinforced{
+	dir = 1
+	},
+/turf/simulated/floor/plating,
+/area/shuttle/salamander_q1)
+"Rm" = (
+/obj/structure/bed/pod,
+/obj/item/bedsheet/blue,
+/obj/machinery/alarm/alarms_hidden{
+	dir = 8;
+	pixel_x = 26
+	},
+/obj/effect/landmark/late_antag/trader,
+/turf/simulated/floor/tiled/techfloor,
+/area/shuttle/salamander_q1)
 "RO" = (
 /obj/structure/bed/pod,
-/obj/item/weapon/bedsheet/blue,
+/obj/item/bedsheet/blue,
 /obj/machinery/alarm/alarms_hidden{
 	dir = 8;
 	pixel_x = 26
@@ -1816,8 +1875,8 @@
 /turf/simulated/wall/shull,
 /area/shuttle/salamander_head)
 "Tl" = (
-/obj/item/device/suit_cooling_unit,
-/obj/item/weapon/tank/air,
+/obj/item/suit_cooling_unit,
+/obj/item/tank/air,
 /obj/item/clothing/suit/space/void/refurb,
 /obj/item/clothing/head/helmet/space/void/refurb,
 /obj/structure/railing/grey{
@@ -1940,8 +1999,8 @@
 /turf/simulated/floor/plating,
 /area/shuttle/salamander)
 "Xc" = (
-/obj/item/device/suit_cooling_unit,
-/obj/item/weapon/tank/air,
+/obj/item/suit_cooling_unit,
+/obj/item/tank/air,
 /obj/item/clothing/suit/space/void/refurb,
 /obj/item/clothing/head/helmet/space/void/refurb,
 /obj/structure/railing/grey{
@@ -2491,11 +2550,11 @@ WP
 (26,1,1) = {"
 WP
 WP
-bk
-Vz
+FV
+xj
 cY
 AN
-Vz
+xj
 hn
 yv
 Vz
@@ -2510,10 +2569,10 @@ WP
 WP
 WP
 WP
-ci
+Rj
 eG
 gl
-ld
+Lb
 hp
 jT
 ld
@@ -2528,10 +2587,10 @@ WP
 WP
 WP
 WP
-Vz
-oF
-RO
-Vz
+xj
+fu
+Rm
+xj
 fh
 xL
 Vz
@@ -2546,10 +2605,10 @@ WP
 WP
 WP
 WP
-Vz
-Vz
-Vz
-Vz
+xj
+xj
+xj
+xj
 DB
 jV
 Vz

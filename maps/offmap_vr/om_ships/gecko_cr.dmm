@@ -79,7 +79,7 @@
 /area/shuttle/gecko_cr_cockpit)
 "bL" = (
 /obj/structure/bed/pod,
-/obj/item/weapon/bedsheet/blue,
+/obj/item/bedsheet/blue,
 /turf/simulated/floor/tiled/techfloor,
 /area/shuttle/gecko_cr_cockpit)
 "bN" = (
@@ -94,7 +94,7 @@
 	dir = 8
 	},
 /obj/structure/closet/crate,
-/obj/item/weapon/tank/air,
+/obj/item/tank/air,
 /obj/item/clothing/suit/space/void/refurb/marine,
 /obj/item/clothing/head/helmet/space/void/refurb/marine,
 /turf/simulated/floor/tiled/techfloor,
@@ -127,7 +127,7 @@
 	dir = 8
 	},
 /obj/structure/bed/pod,
-/obj/item/weapon/bedsheet/blue,
+/obj/item/bedsheet/blue,
 /turf/simulated/floor/tiled/techfloor,
 /area/shuttle/gecko_cr_cockpit)
 "dh" = (
@@ -157,8 +157,8 @@
 "dO" = (
 /obj/effect/floor_decal/industrial/warning,
 /obj/structure/closet/crate/engineering/electrical,
-/obj/item/weapon/tank/oxygen/yellow,
-/obj/item/weapon/tank/oxygen/yellow,
+/obj/item/tank/oxygen/yellow,
+/obj/item/tank/oxygen/yellow,
 /obj/item/clothing/suit/space/void/refurb/engineering,
 /obj/item/clothing/suit/space/void/refurb/engineering,
 /obj/item/clothing/head/helmet/space/void/refurb/engineering,
@@ -632,11 +632,11 @@
 /obj/structure/closet/crate{
 	dir = 1
 	},
-/obj/item/weapon/tank/air,
+/obj/item/tank/air,
 /obj/item/clothing/suit/space/void/refurb,
 /obj/item/clothing/head/helmet/space/void/refurb,
 /obj/effect/floor_decal/industrial/outline/grey,
-/obj/item/weapon/tank/air,
+/obj/item/tank/air,
 /obj/item/clothing/suit/space/void/refurb,
 /obj/item/clothing/head/helmet/space/void/refurb,
 /turf/simulated/floor/tiled/techfloor,
@@ -1079,7 +1079,7 @@
 	dir = 8
 	},
 /obj/structure/bed/pod,
-/obj/item/weapon/bedsheet/blue,
+/obj/item/bedsheet/blue,
 /obj/machinery/alarm/alarms_hidden{
 	pixel_y = 26
 	},
@@ -1125,7 +1125,7 @@
 	dir = 4
 	},
 /obj/structure/closet/crate,
-/obj/item/weapon/tank/air,
+/obj/item/tank/air,
 /obj/item/clothing/suit/space/void/refurb/marine,
 /obj/item/clothing/head/helmet/space/void/refurb/marine,
 /obj/structure/sign/directions/bridge{
@@ -1209,11 +1209,11 @@
 /obj/structure/closet/crate{
 	dir = 1
 	},
-/obj/item/weapon/tank/air,
+/obj/item/tank/air,
 /obj/item/clothing/suit/space/void/refurb,
 /obj/item/clothing/head/helmet/space/void/refurb,
 /obj/effect/floor_decal/industrial/outline/grey,
-/obj/item/weapon/tank/air,
+/obj/item/tank/air,
 /obj/item/clothing/suit/space/void/refurb,
 /obj/item/clothing/head/helmet/space/void/refurb,
 /turf/simulated/floor/tiled/techfloor,
@@ -1249,16 +1249,16 @@
 /turf/simulated/floor/plating,
 /area/shuttle/gecko_cr)
 "xT" = (
-/obj/item/weapon/tank/phoron/pressurized,
-/obj/item/weapon/tank/phoron/pressurized,
-/obj/item/weapon/tank/phoron/pressurized,
+/obj/item/tank/phoron/pressurized,
+/obj/item/tank/phoron/pressurized,
+/obj/item/tank/phoron/pressurized,
 /obj/structure/fuel_port/heavy{
 	pixel_y = 28
 	},
 /obj/structure/closet/crate{
 	dir = 2
 	},
-/obj/item/weapon/tool/crowbar/red,
+/obj/item/tool/crowbar/red,
 /obj/effect/floor_decal/industrial/outline/grey,
 /turf/simulated/floor/tiled/techfloor,
 /area/shuttle/gecko_cr_engineering)
@@ -1708,12 +1708,12 @@
 /obj/structure/closet/crate{
 	dir = 1
 	},
-/obj/item/weapon/tank/air,
+/obj/item/tank/air,
 /obj/item/clothing/suit/space/void/refurb,
 /obj/item/clothing/head/helmet/space/void/refurb,
 /obj/machinery/light,
 /obj/effect/floor_decal/industrial/outline/grey,
-/obj/item/weapon/tank/air,
+/obj/item/tank/air,
 /obj/item/clothing/suit/space/void/refurb,
 /obj/item/clothing/head/helmet/space/void/refurb,
 /turf/simulated/floor/tiled/techfloor,
@@ -1733,8 +1733,8 @@
 	dir = 4
 	},
 /obj/structure/closet/crate,
-/obj/item/device/suit_cooling_unit,
-/obj/item/device/suit_cooling_unit,
+/obj/item/suit_cooling_unit,
+/obj/item/suit_cooling_unit,
 /turf/simulated/floor/tiled/techfloor,
 /area/shuttle/gecko_cr_cockpit)
 "FL" = (
@@ -1848,16 +1848,16 @@
 /obj/effect/floor_decal/industrial/outline/grey,
 /obj/machinery/embedded_controller/radio/docking_port_multi{
 	child_names_txt = "Port Airlock Control;Starboard Airlock Control";
-	child_tags_txt = "geck_sh_docking_port;geck_sh_docking_star";
-	id_tag = "geck_sh_docking";
+	child_tags_txt = "geck_cr_docking_port;geck_cr_docking_star";
+	id_tag = "geck_cr_docking";
 	pixel_y = 22
 	},
 /obj/structure/railing/grey{
 	dir = 8
 	},
 /obj/structure/closet/crate,
-/obj/item/device/suit_cooling_unit,
-/obj/item/device/suit_cooling_unit,
+/obj/item/suit_cooling_unit,
+/obj/item/suit_cooling_unit,
 /turf/simulated/floor/tiled/techfloor,
 /area/shuttle/gecko_cr_cockpit)
 "HI" = (
@@ -2144,6 +2144,13 @@
 	},
 /turf/simulated/wall/rshull,
 /area/shuttle/gecko_cr)
+"Nl" = (
+/obj/structure/table/steel,
+/obj/structure/panic_button{
+	pixel_y = 32
+	},
+/turf/simulated/floor/tiled/techfloor,
+/area/shuttle/gecko_cr_cockpit)
 "Np" = (
 /obj/effect/floor_decal/industrial/warning{
 	dir = 6
@@ -2336,7 +2343,7 @@
 /obj/machinery/atmospherics/unary/vent_pump,
 /obj/structure/handrail,
 /obj/machinery/embedded_controller/radio/airlock/docking_port_multi{
-	id_tag = "geck_sh_docking_port";
+	id_tag = "geck_cr_docking_port";
 	name = "Port AIrlock Control";
 	pixel_y = 22
 	},
@@ -2398,13 +2405,13 @@
 "PI" = (
 /obj/effect/floor_decal/industrial/warning,
 /obj/structure/closet/crate/engineering,
-/obj/item/weapon/storage/toolbox/mechanical,
+/obj/item/storage/toolbox/mechanical,
 /obj/structure/cable{
 	d1 = 4;
 	d2 = 8;
 	icon_state = "4-8"
 	},
-/obj/item/weapon/storage/toolbox/electrical,
+/obj/item/storage/toolbox/electrical,
 /obj/effect/floor_decal/industrial/outline/grey,
 /turf/simulated/floor/tiled/techfloor,
 /area/shuttle/gecko_cr_engineering)
@@ -2506,11 +2513,11 @@
 /obj/structure/closet/crate{
 	dir = 1
 	},
-/obj/item/weapon/tank/air,
+/obj/item/tank/air,
 /obj/item/clothing/suit/space/void/refurb/pilot,
 /obj/item/clothing/head/helmet/space/void/refurb/pilot,
 /obj/effect/floor_decal/industrial/outline/grey,
-/obj/item/weapon/tank/air,
+/obj/item/tank/air,
 /obj/item/clothing/suit/space/void/refurb/pilot,
 /obj/item/clothing/head/helmet/space/void/refurb/pilot,
 /turf/simulated/floor/tiled/techfloor,
@@ -2652,7 +2659,7 @@
 	pixel_x = 27
 	},
 /obj/structure/bed/pod,
-/obj/item/weapon/bedsheet/blue,
+/obj/item/bedsheet/blue,
 /turf/simulated/floor/tiled/techfloor,
 /area/shuttle/gecko_cr_cockpit)
 "Tx" = (
@@ -2917,7 +2924,7 @@
 	dir = 8
 	},
 /obj/structure/table/steel,
-/obj/item/weapon/tool/wrench,
+/obj/item/tool/wrench,
 /obj/item/stack/material/tritium{
 	amount = 25
 	},
@@ -2981,7 +2988,7 @@
 /obj/machinery/atmospherics/unary/vent_pump,
 /obj/structure/handrail,
 /obj/machinery/embedded_controller/radio/airlock/docking_port_multi{
-	id_tag = "geck_sh_docking_star";
+	id_tag = "geck_cr_docking_star";
 	name = "Starboard Airlock Control";
 	pixel_y = 22
 	},
@@ -3720,7 +3727,7 @@ WP
 WP
 NC
 qL
-wG
+Nl
 ic
 Id
 qL

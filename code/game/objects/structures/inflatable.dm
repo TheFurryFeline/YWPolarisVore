@@ -23,8 +23,8 @@
 /obj/structure/inflatable
 	name = "inflatable wall"
 	desc = "An inflated membrane. Do not puncture."
-	density = 1
-	anchored = 1
+	density = TRUE
+	anchored = TRUE
 	opacity = 0
 	can_atmos_pass = ATMOS_PASS_DENSITY
 
@@ -72,11 +72,11 @@
 		add_fingerprint(user)
 		return
 
-/obj/structure/inflatable/attackby(obj/item/weapon/W as obj, mob/user as mob)
+/obj/structure/inflatable/attackby(obj/item/W as obj, mob/user as mob)
 	if(!istype(W)) return
 
 	if (can_puncture(W))
-		visible_message("<span class='danger'>[user] pierces [src] with [W]!</span>")
+		visible_message(span_danger("[user] pierces [src] with [W]!"))
 		puncture()
 	if(W.damtype == BRUTE || W.damtype == BURN)
 		hit(W.force)
@@ -95,7 +95,7 @@
 
 /obj/item/inflatable/proc/inflate(var/mob/user,var/location)
 	playsound(location, 'sound/items/zip.ogg', 75, 1)
-	to_chat(user, "<span class='notice'>You inflate [src].</span>")
+	to_chat(user, span_notice("You inflate [src]."))
 	var/obj/structure/inflatable/R = new deploy_path(location)
 	src.transfer_fingerprints_to(R)
 	R.add_fingerprint(user)
@@ -103,7 +103,7 @@
 
 /obj/structure/inflatable/proc/deflate()
 	playsound(src, 'sound/machines/hiss.ogg', 75, 1)
-	//to_chat(user, "<span class='notice'>You slowly deflate the inflatable wall.</span>")
+	//to_chat(user, span_notice("You slowly deflate the inflatable wall."))
 	visible_message("[src] slowly deflates.")
 	spawn(50)
 		var/obj/item/inflatable/R = new /obj/item/inflatable(loc)
@@ -132,16 +132,16 @@
 	health -= damage
 	user.do_attack_animation(src)
 	if(health <= 0)
-		user.visible_message("<span class='danger'>[user] [attack_verb] open the [src]!</span>")
+		user.visible_message(span_danger("[user] [attack_verb] open the [src]!"))
 		spawn(1) puncture()
 	else
-		user.visible_message("<span class='danger'>[user] [attack_verb] at [src]!</span>")
+		user.visible_message(span_danger("[user] [attack_verb] at [src]!"))
 	return 1
 
 /obj/structure/inflatable/take_damage(var/damage)
 	health -= damage
 	if(health <= 0)
-		visible_message("<span class='danger'>The [src] deflates!</span>")
+		visible_message(span_danger("The [src] deflates!"))
 		spawn(1) puncture()
 	return 1
 
@@ -154,8 +154,8 @@
 
 /obj/structure/inflatable/door //Based on mineral door code
 	name = "inflatable door"
-	density = 1
-	anchored = 1
+	density = TRUE
+	anchored = TRUE
 	opacity = 0
 
 	icon = 'icons/obj/inflatable.dmi'
@@ -204,7 +204,7 @@
 	isSwitchingStates = 1
 	flick("door_opening",src)
 	sleep(10)
-	density = 0
+	density = FALSE
 	opacity = 0
 	state = 1
 	update_icon()
@@ -214,7 +214,7 @@
 	isSwitchingStates = 1
 	flick("door_closing",src)
 	sleep(10)
-	density = 1
+	density = TRUE
 	opacity = 0
 	state = 0
 	update_icon()
@@ -247,9 +247,9 @@
 	icon = 'icons/obj/inflatable.dmi'
 	icon_state = "folded_wall_torn"
 
-	attack_self(mob/user)
-		to_chat(user, "<span class='notice'>The inflatable wall is too torn to be inflated!</span>")
-		add_fingerprint(user)
+/obj/item/inflatable/torn/attack_self(mob/user)
+	to_chat(user, span_notice("The inflatable wall is too torn to be inflated!"))
+	add_fingerprint(user)
 
 /obj/item/inflatable/door/torn
 	name = "torn inflatable door"
@@ -257,24 +257,15 @@
 	icon = 'icons/obj/inflatable.dmi'
 	icon_state = "folded_door_torn"
 
-	attack_self(mob/user)
-		to_chat(user, "<span class='notice'>The inflatable door is too torn to be inflated!</span>")
-		add_fingerprint(user)
+/obj/item/inflatable/door/torn/attack_self(mob/user)
+	to_chat(user, span_notice("The inflatable door is too torn to be inflated!"))
+	add_fingerprint(user)
 
-/obj/item/weapon/storage/briefcase/inflatable
+/obj/item/storage/briefcase/inflatable
 	name = "inflatable barrier box"
 	desc = "Contains inflatable walls and doors."
 	icon_state = "inf_box"
 	w_class = ITEMSIZE_NORMAL
 	max_storage_space = ITEMSIZE_COST_NORMAL * 7
 	can_hold = list(/obj/item/inflatable)
-
-	New()
-		..()
-		new /obj/item/inflatable/door(src)
-		new /obj/item/inflatable/door(src)
-		new /obj/item/inflatable/door(src)
-		new /obj/item/inflatable(src)
-		new /obj/item/inflatable(src)
-		new /obj/item/inflatable(src)
-		new /obj/item/inflatable(src)
+	starts_with = list(/obj/item/inflatable/door = 3, /obj/item/inflatable = 4)

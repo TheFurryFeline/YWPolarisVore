@@ -14,6 +14,15 @@
 	var/decal_icon = 'icons/obj/closets/decals/closet.dmi'
 	var/can_lock = FALSE
 
+	/// Length of time (ds) to animate the door transform
+	var/door_anim_time = 2.0
+	/// Amount to 'squish' the full width of the door by
+	var/door_anim_squish = 0.730
+	/// Virtual angle at which the door is opened to (136 by default, so not a full 180)
+	var/door_anim_angle = 136
+	/// Offset for the door hinge location from centerline
+	var/door_hinge = -6.5
+
 /decl/closet_appearance/New()
 	// Build our colour and decal lists.
 	if(LAZYLEN(extra_decals))
@@ -33,6 +42,8 @@
 	var/icon/closed_locked_welded_icon
 	var/icon/closed_unlocked_icon
 	var/icon/closed_unlocked_welded_icon
+	var/icon/door_front_icon
+	var/icon/door_back_icon
 
 	// Create open icon.
 	var/icon/new_icon = new
@@ -40,6 +51,10 @@
 	open_icon.Blend(icon(base_icon, "open"), ICON_OVERLAY)
 	open_icon.Blend(color, BLEND_ADD)
 	open_icon.Blend(icon(base_icon, "interior"), ICON_OVERLAY)
+
+	door_back_icon = icon(base_icon, "door_back")
+	door_back_icon.Blend(color, BLEND_ADD)
+
 	if(decal_icon)
 		for(var/thing in decals)
 			var/icon/this_decal_icon = icon(decal_icon, "[thing]_open")
@@ -47,6 +62,8 @@
 			open_icon.Blend(this_decal_icon, ICON_OVERLAY)
 
 	// Generate basic closed icons.
+	door_front_icon = icon(base_icon, "door_front")
+	door_front_icon.Blend(color, BLEND_ADD)
 	closed_emagged_icon = icon(base_icon, "base")
 	if(can_lock)
 		closed_emagged_icon.Blend(icon(base_icon, "lock"), ICON_OVERLAY)
@@ -56,6 +73,10 @@
 			var/icon/this_decal_icon = icon(decal_icon, thing)
 			this_decal_icon.Blend(decals[thing], BLEND_ADD)
 			closed_emagged_icon.Blend(this_decal_icon, ICON_OVERLAY)
+			door_front_icon.Blend(this_decal_icon, ICON_OVERLAY)
+
+	door_front_icon.AddAlphaMask(icon(base_icon, "door_front")) // Remove pesky 'more than just door' decals
+
 	closed_locked_icon =   icon(closed_emagged_icon)
 	closed_unlocked_icon = icon(closed_emagged_icon)
 
@@ -83,13 +104,15 @@
 	closed_emagged_welded_icon.Blend(sparks, ICON_OVERLAY)
 
 	// Insert our bevy of icons into the final icon file.
-	new_icon.Insert(open_icon,                   "open")
-	new_icon.Insert(closed_emagged_icon,         "closed_emagged")
-	new_icon.Insert(closed_emagged_welded_icon,  "closed_emagged_welded")
-	new_icon.Insert(closed_locked_icon,          "closed_locked")
-	new_icon.Insert(closed_locked_welded_icon,   "closed_locked_welded")
-	new_icon.Insert(closed_unlocked_icon,        "closed_unlocked")
-	new_icon.Insert(closed_unlocked_welded_icon, "closed_unlocked_welded")
+	new_icon.Insert(open_icon,						"open")
+	new_icon.Insert(closed_emagged_icon,			"closed_emagged")
+	new_icon.Insert(closed_emagged_welded_icon,		"closed_emagged_welded")
+	new_icon.Insert(closed_locked_icon,				"closed_locked")
+	new_icon.Insert(closed_locked_welded_icon,		"closed_locked_welded")
+	new_icon.Insert(closed_unlocked_icon,			"closed_unlocked")
+	new_icon.Insert(closed_unlocked_welded_icon,	"closed_unlocked_welded")
+	new_icon.Insert(door_front_icon,				"door_front")
+	new_icon.Insert(door_back_icon,					"door_back")
 
 	// Set icon!
 	icon = new_icon
@@ -599,6 +622,13 @@
 		"vertical_stripe_simple" = COLOR_OFF_WHITE,
 	)
 
+/decl/closet_appearance/oxygen/fire/atmos
+	color = COLOR_YELLOW_GRAY
+	extra_decals = list(
+		"extinguisher" = COLOR_TEAL,
+		"vertical_stripe_simple" = COLOR_TEAL,
+	)
+
 /decl/closet_appearance/alien
 	color = COLOR_PURPLE
 
@@ -711,6 +741,7 @@
 	base_icon =  'icons/obj/closets/bases/crate.dmi'
 	decal_icon = 'icons/obj/closets/decals/crate.dmi'
 	color = COLOR_GRAY40
+	door_anim_time = 0
 
 /decl/closet_appearance/crate/plastic
 	color = COLOR_GRAY80
@@ -776,6 +807,19 @@
 	color = COLOR_BABY_BLUE
 	extra_decals = list(
 		"nano" = COLOR_OFF_WHITE
+	)
+
+/decl/closet_appearance/crate/freezer/veymed
+	color = COLOR_BABY_BLUE
+	extra_decals = list(
+		"lid_stripes" = COLOR_RED,
+		"crate_cross" = COLOR_GREEN
+	)
+
+/decl/closet_appearance/crate/freezer/zenghu
+	color = COLOR_BABY_BLUE
+	extra_decals = list(
+		"zenghu" = COLOR_OFF_WHITE
 	)
 
 // Corporate Branding
@@ -1223,6 +1267,7 @@
 	decal_icon = 'icons/obj/closets/decals/large_crate.dmi'
 	decals = null
 	extra_decals = null
+	door_anim_time = 0
 
 /decl/closet_appearance/large_crate/critter
 	color = COLOR_BEIGE
@@ -1335,6 +1380,7 @@
 	color = WOOD_COLOR_RICH
 	decals = null
 	extra_decals = null
+	door_anim_time = 0
 
 /decl/closet_appearance/cabinet/secure
 	can_lock = TRUE
@@ -1347,6 +1393,7 @@
 		"vent"
 	)
 	extra_decals = null
+	door_anim_time = 0
 
 /decl/closet_appearance/wall/emergency
 	color = COLOR_LIGHT_CYAN
@@ -1388,10 +1435,15 @@
 		"vent"
 	)
 	extra_decals = null
+	door_anim_time = 0
 
 /decl/closet_appearance/wall_double/kitchen
 	decals = null
 	color = COLOR_OFF_WHITE
+
+/decl/closet_appearance/wall_double/wooden
+	decals = null
+	color = WOOD_COLOR_RICH
 
 /decl/closet_appearance/wall_double/medical
 	decals = null
@@ -1410,6 +1462,135 @@
 		"glass" = COLOR_WHITE
 	)
 
+/decl/closet_appearance/wall_double/survival
+	color = COLOR_CYAN_BLUE
+	decals = null
+	extra_decals = list(
+		"stripe_outer" = COLOR_WHITE
+	)
+
+/decl/closet_appearance/wall_double/emergency_engi
+	color = COLOR_YELLOW_GRAY
+	decals = null
+	extra_decals = list(
+		"stripe_inner" = COLOR_ORANGE,
+		"stripe_outer" = COLOR_OFF_WHITE,
+		"glass" = COLOR_WHITE
+	)
+
+/decl/closet_appearance/wall_double/security
+	color = COLOR_NT_RED
+	decals = null
+	extra_decals = list(
+		"vertical_stripe_left_l" = COLOR_WARM_YELLOW,
+		"vertical_stripe_left_m" = COLOR_WARM_YELLOW
+	)
+
+/decl/closet_appearance/wall_double/cargo
+	color = COLOR_WARM_YELLOW
+
+/decl/closet_appearance/wall_double/gaming
+	color = COLOR_DARK_BLUE_GRAY
+	decals = null
+	extra_decals = list(
+		"stripe_outer" = COLOR_PALE_PINK,
+		"glass" = COLOR_WHITE
+	)
+
+/decl/closet_appearance/wall_double/science
+	decals = list(
+		"holes"
+	)
+	color = COLOR_OFF_WHITE
+	extra_decals = list(
+		"stripe_inner_lower" = COLOR_PURPLE,
+		"stripe_inner_middle" = COLOR_PURPLE
+	)
+
+/decl/closet_appearance/wall_double/command
+	decals = list(
+		"holes_right"
+	)
+	color = COLOR_BLUE_GRAY
+	extra_decals = list(
+		"vertical_stripe_left_l" = COLOR_GOLD,
+		"vertical_stripe_left_m" = COLOR_GOLD,
+		"vertical_stripe_left_r" = COLOR_GOLD
+	)
+
+/decl/closet_appearance/wall_double/ce
+	decals = list(
+		"holes_right"
+	)
+	color = COLOR_OFF_WHITE
+	extra_decals = list(
+		"vertical_stripe_left_l" = COLOR_DARK_GOLD,
+		"vertical_stripe_left_m" = COLOR_DARK_GOLD,
+		"vertical_stripe_left_r" = COLOR_DARK_GOLD
+	)
+
+/decl/closet_appearance/wall_double/rd
+	decals = list(
+		"holes_right"
+	)
+	color = COLOR_OFF_WHITE
+	extra_decals = list(
+		"vertical_stripe_left_l" = COLOR_PURPLE,
+		"vertical_stripe_left_m" = COLOR_GOLD,
+		"vertical_stripe_left_r" = COLOR_PURPLE
+	)
+
+/decl/closet_appearance/wall_double/cmo
+	decals = list(
+		"holes_right"
+	)
+	color = COLOR_BABY_BLUE
+	extra_decals = list(
+		"vertical_stripe_left_l" = COLOR_GOLD,
+		"vertical_stripe_left_m" = COLOR_GOLD,
+		"vertical_stripe_left_r" = COLOR_GOLD
+	)
+
+/decl/closet_appearance/wall_double/hos
+	decals = list(
+		"holes_right"
+	)
+	color = COLOR_NT_RED
+	extra_decals = list(
+		"vertical_stripe_left_l" = COLOR_GOLD,
+		"vertical_stripe_left_m" = COLOR_WARM_YELLOW,
+		"vertical_stripe_left_r" = COLOR_GOLD
+	)
+
+/decl/closet_appearance/wall_double/iaa
+	decals = list(
+		"holes_right"
+	)
+	color = COLOR_DARK_BLUE_GRAY
+	extra_decals = list(
+		"vertical_stripe_left_l" = COLOR_GOLD,
+		"vertical_stripe_left_m" = COLOR_GOLD,
+		"vertical_stripe_left_r" = COLOR_GOLD
+	)
+
+/decl/closet_appearance/wall_double/engineering
+	decals = list(
+		"holes"
+	)
+	color = COLOR_YELLOW_GRAY
+
+/decl/closet_appearance/wall_double/generic_civ
+	color = COLOR_DARK_BLUE_GRAY
+
+/decl/closet_appearance/wall_double/casino
+	color = COLOR_GRAY20
+	decals = null
+	extra_decals = list(
+		"stripe_outer" = COLOR_GOLD,
+		"stripe_inner" = COLOR_ORANGE,
+		"thaler" = COLOR_GREEN
+	)
+
 // Carts
 /decl/closet_appearance/cart
 	color = COLOR_GRAY20
@@ -1417,6 +1598,7 @@
 	decal_icon = 'icons/obj/closets/decals/cart.dmi'
 	decals = null
 	extra_decals = null
+	door_anim_time = 0
 
 /decl/closet_appearance/cart/trash
 	color = COLOR_BOTTLE_GREEN
@@ -1628,4 +1810,136 @@
 		"stripe_vertical_left_full" = COLOR_BEASTY_BROWN,
 		"stripe_vertical_right_full" = COLOR_BEASTY_BROWN,
 		"cargo_upper" = COLOR_CLOSET_GOLD
+	)
+
+/decl/closet_appearance/wall_double/autolok
+	color = COLOR_GRAY20
+	decals = null
+	extra_decals = list(
+		"stripe_outer" = COLOR_BLUE_GRAY,
+		"stripe_inner" = COLOR_OFF_WHITE
+	)
+
+//TALON
+
+/decl/closet_appearance/secure_closet/talon
+	color = COLOR_GRAY80
+	decals = list(
+		"lower_holes"
+	)
+
+/decl/closet_appearance/secure_closet/talon/engineer
+	extra_decals = list(
+		"stripes_horizontal" = COLOR_BEASTY_BROWN
+	)
+
+/decl/closet_appearance/secure_closet/talon/guard
+	extra_decals = list(
+		"stripes_horizontal" = COLOR_NT_RED
+	)
+
+/decl/closet_appearance/secure_closet/talon/pilot
+	extra_decals = list(
+		"stripes_horizontal" = COLOR_PURPLE
+	)
+
+/decl/closet_appearance/secure_closet/talon/doctor
+	extra_decals = list(
+		"stripes_horizontal" = COLOR_SKY_BLUE
+	)
+
+/decl/closet_appearance/secure_closet/talon/miner
+	extra_decals = list(
+		"stripes_horizontal" = COLOR_BEASTY_BROWN
+	)
+
+/decl/closet_appearance/secure_closet/talon/captain
+	extra_decals = list(
+		"stripes_horizontal" = COLOR_GOLD
+	)
+
+//END TALON
+
+/decl/closet_appearance/secure_closet/nanotrasen
+	color = COLOR_BOTTLE_GREEN
+	decals = list(
+		"lower_holes"
+	)
+
+/decl/closet_appearance/secure_closet/nanotrasen/security
+	extra_decals = list(
+		"stripe_vertical_mid_full" = COLOR_NAVY_BLUE,
+		"nanotrasen" = COLOR_GOLD
+	)
+
+/decl/closet_appearance/secure_closet/nanotrasen/warden
+	extra_decals = list(
+		"stripe_vertical_left_full" = COLOR_NAVY_BLUE,
+		"stripe_vertical_right_full" = COLOR_NAVY_BLUE,
+		"nanotrasen" = COLOR_GOLD
+	)
+
+/decl/closet_appearance/secure_closet/nanotrasen/commander
+	extra_decals = list(
+		"stripe_vertical_left_full" = COLOR_NAVY_BLUE,
+		"stripe_vertical_mid_full" = COLOR_GOLD,
+		"stripe_vertical_right_full" = COLOR_NAVY_BLUE,
+		"nanotrasen" = COLOR_GOLD
+	)
+
+/decl/closet_appearance/secure_closet/expedition
+	color = COLOR_OLIVE
+	decals = list(
+		"lower_side_vent"
+	)
+
+/decl/closet_appearance/secure_closet/expedition/pilot
+	extra_decals = list(
+		"stripe_vertical_mid_full" = COLOR_DARK_ORANGE,
+		"exped" = COLOR_DARK_ORANGE
+	)
+
+/decl/closet_appearance/secure_closet/expedition/sar
+	extra_decals = list(
+		"stripe_vertical_mid_full" = COLOR_SAN_MARINO_BLUE,
+		"exped" = COLOR_SAN_MARINO_BLUE
+	)
+
+/decl/closet_appearance/secure_closet/expedition/explorer
+	extra_decals = list(
+		"stripe_vertical_mid_full" = COLOR_GRAY40,
+		"exped" = COLOR_GRAY40
+	)
+
+/decl/closet_appearance/secure_closet/expedition/pathfinder
+	extra_decals = list(
+		"stripe_vertical_left_full" = COLOR_GRAY20,
+		"stripe_vertical_right_full" = COLOR_GRAY20,
+		"exped" = COLOR_GRAY20
+	)
+
+/decl/closet_appearance/crate/fennec
+	base_icon =  'icons/obj/closets/bases/fencrate_vr.dmi'
+	decal_icon = 'icons/obj/closets/decals/crate.dmi'
+	color = "#ffffff"
+
+/decl/closet_appearance/crate/coyotesalvage
+	color = COLOR_GOLD
+	extra_decals = list(
+		"full_lid" = COLOR_BLACK,
+		"crate_stripe_left" = COLOR_WALL_GUNMETAL,
+		"crate_stripe_right" = COLOR_WALL_GUNMETAL
+	)
+
+/decl/closet_appearance/crate/nukies
+	color = COLOR_NUKIES_GREEN
+	extra_decals = list(
+		"lid_stripes" = COLOR_NUKIES_YELLOW,
+		"hazard" = COLOR_NUKIES_YELLOW
+	)
+
+/decl/closet_appearance/crate/desatti
+	color = COLOR_DESATTI_PRPLOW
+	extra_decals = list(
+		"lid_stripes" = COLOR_DESATTI_PRPHI
 	)

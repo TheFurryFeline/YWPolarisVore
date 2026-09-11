@@ -10,8 +10,8 @@
 	desc = "an ultra rare hat. It commands a certain respect."
 	icon_state = "petehat"
 	sprite_sheets = list(
-		SPECIES_TESHARI = 'icons/mob/species/teshari/head.dmi',
-		SPECIES_VOX = 'icons/mob/species/vox/head.dmi'
+		SPECIES_TESHARI = 'icons/inventory/head/mob_teshari.dmi',
+		SPECIES_VOX = 'icons/inventory/head/mob_vox.dmi'
 		)
 
 /obj/item/clothing/head/collectable/slime
@@ -29,7 +29,7 @@
 
 /obj/item/clothing/head/collectable/chef
 	name = "collectable chef's hat"
-	desc = "A rare Chef's Hat meant for hat collectors!"
+	desc = "A rare " + JOB_CHEF + "'s Hat meant for hat collectors!"
 	icon_state = "chefhat"
 
 /obj/item/clothing/head/collectable/paper
@@ -108,7 +108,7 @@
 /obj/item/clothing/head/collectable/hardhat
 	name = "collectable hard hat"
 	desc = "WARNING! Offers no real protection, or luminosity, but it is damn fancy!"
-	icon_state = "hardhat0_yellow"
+	icon_state = "hardhat0_old_yellow"
 	body_parts_covered = 0
 
 /obj/item/clothing/head/collectable/HoS

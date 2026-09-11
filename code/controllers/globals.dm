@@ -20,7 +20,7 @@ GLOBAL_REAL(GLOB, /datum/controller/global_vars)
 	Initialize(exclude_these)
 
 /datum/controller/global_vars/Destroy(force)
-	crash_with("There was an attempt to qdel the global vars holder!")
+	stack_trace("There was an attempt to qdel the global vars holder!")
 	if(!force)
 		return QDEL_HINT_LETMELIVE
 
@@ -32,11 +32,12 @@ GLOBAL_REAL(GLOB, /datum/controller/global_vars)
 
 	return ..()
 
-/datum/controller/global_vars/stat_entry()
+/datum/controller/global_vars/stat_entry(msg)
 	if(!statclick)
 		statclick = new/obj/effect/statclick/debug(null, "Initializing...", src)
 
-	stat("GLOB:", statclick.update("Edit"))
+	msg = "GLOB: [statclick.update("Edit")]"
+	return msg
 
 /datum/controller/global_vars/vv_edit_var(var_name, var_value)
 	if(gvars_datum_protected_varlist[var_name])
@@ -62,3 +63,5 @@ GLOBAL_REAL(GLOB, /datum/controller/global_vars)
 		var/end_tick = world.time
 		if(end_tick - start_tick)
 			warning("Global [replacetext("[I]", "InitGlobal", "")] slept during initialization!")
+
+	populate_legacy_globals()

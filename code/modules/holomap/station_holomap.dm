@@ -7,12 +7,13 @@
 	icon = 'icons/obj/machines/stationmap.dmi'
 	icon_state = "station_map"
 	layer = ABOVE_WINDOW_LAYER
-	anchored = 1
-	density = 0
+	anchored = TRUE
+	density = FALSE
 	use_power = USE_POWER_IDLE
 	idle_power_usage = 10
 	active_power_usage = 500
-	circuit = /obj/item/weapon/circuitboard/station_map
+	circuit = /obj/item/circuitboard/station_map
+	vis_flags = VIS_HIDE // They have an emissive that looks bad in openspace due to their wall-mounted nature
 
 	// TODO - Port use_auto_lights from /vg - for now declare here
 	var/use_auto_lights = 1
@@ -69,10 +70,10 @@
 
 /obj/machinery/station_map/attack_hand(var/mob/user)
 	if(watching_mob && (watching_mob != user))
-		to_chat(user, "<span class='warning'>Someone else is currently watching the holomap.</span>")
+		to_chat(user, span_warning("Someone else is currently watching the holomap."))
 		return
 	if(user.loc != loc)
-		to_chat(user, "<span class='warning'>You need to stand in front of \the [src].</span>")
+		to_chat(user, span_warning("You need to stand in front of \the [src]."))
 		return
 	startWatching(user)
 
@@ -81,16 +82,10 @@
 	if(!watching_mob && isliving(AM) && AM.loc == loc)
 		startWatching(AM)
 
-// In order to actually get Bumped() we need to block movement.  We're (visually) on a wall, so people
-// couldn't really walk into us anyway.  But in reality we are on the turf in front of the wall, so bumping
-// against where we seem is actually trying to *exit* our real loc
-/obj/machinery/station_map/CheckExit(atom/movable/mover as mob|obj, turf/target as turf)
-	// log_debug("[src] (dir=[dir]) CheckExit([mover], [target])  get_dir() = [get_dir(target, loc)]")
-	if(get_dir(target, loc) == dir) // Opposite of "normal" since we are visually in the next turf over
+/obj/machinery/station_map/Uncross(atom/movable/mover, turf/target)
+	if(get_dir(mover, target) == reverse_dir[dir])
 		return FALSE
-	else
-		return TRUE
-
+	return TRUE
 /obj/machinery/station_map/proc/startWatching(var/mob/user)
 	// Okay, does this belong on a screen thing or what?
 	// One argument is that this is an "in game" object becuase its in the world.
@@ -117,15 +112,16 @@
 			user.client.images |= holomap_datum.station_map
 
 			watching_mob = user
-			GLOB.moved_event.register(watching_mob, src, /obj/machinery/station_map/proc/checkPosition)
-			GLOB.dir_set_event.register(watching_mob, src, /obj/machinery/station_map/proc/checkPosition)
-			GLOB.destroyed_event.register(watching_mob, src, /obj/machinery/station_map/proc/stopWatching)
+			watching_mob.AddComponent(/datum/component/recursive_move)
+			RegisterSignal(watching_mob, COMSIG_OBSERVER_MOVED, /obj/machinery/station_map/proc/checkPosition)
+			//GLOB.dir_set_event.register(watching_mob, src, /obj/machinery/station_map/proc/checkPosition)
+			RegisterSignal(watching_mob, COMSIG_OBSERVER_DESTROYED, /obj/machinery/station_map/proc/stopWatching)
 			update_use_power(USE_POWER_ACTIVE)
 
 			if(bogus)
-				to_chat(user, "<span class='warning'>The holomap failed to initialize. This area of space cannot be mapped.</span>")
+				to_chat(user, span_warning("The holomap failed to initialize. This area of space cannot be mapped."))
 			else
-				to_chat(user, "<span class='notice'>A hologram of the station appears before your eyes.</span>")
+				to_chat(user, span_notice("A hologram of the station appears before your eyes."))
 
 /obj/machinery/station_map/attack_ai(var/mob/living/silicon/robot/user)
 	return // TODO - Implement for AI ~Leshana
@@ -146,9 +142,9 @@
 			var/mob/M = watching_mob
 			spawn(5) //we give it time to fade out
 				M.client.images -= holomap_datum.station_map
-		GLOB.moved_event.unregister(watching_mob, src)
-		GLOB.dir_set_event.unregister(watching_mob, src)
-		GLOB.destroyed_event.unregister(watching_mob, src)
+		UnregisterSignal(watching_mob, COMSIG_OBSERVER_MOVED)
+		//GLOB.dir_set_event.unregister(watching_mob, src)
+		UnregisterSignal(watching_mob, COMSIG_OBSERVER_DESTROYED)
 	watching_mob = null
 	update_use_power(USE_POWER_IDLE)
 
@@ -168,8 +164,8 @@
 /obj/machinery/station_map/update_icon()
 	if(!holomap_datum)
 		return //Not yet.
-		
-	overlays.Cut()
+
+	cut_overlays()
 	if(stat & BROKEN)
 		icon_state = "station_mapb"
 	else if((stat & NOPOWER) || !anchored)
@@ -180,8 +176,8 @@
 		if(bogus)
 			holomap_datum.initialize_holomap_bogus()
 		else
-			small_station_map.icon = SSholomaps.extraMiniMaps["[HOLOMAP_EXTRA_STATIONMAPSMALL]_[original_zLevel]"]
-			overlays |= small_station_map
+			small_station_map = image(SSholomaps.extraMiniMaps["[HOLOMAP_EXTRA_STATIONMAPSMALL]_[original_zLevel]"], dir = src.dir)
+			add_overlay(small_station_map)
 			holomap_datum.initialize_holomap(get_turf(src))
 
 	// Put the little "map" overlay down where it looks nice
@@ -189,14 +185,14 @@
 		floor_markings.dir = src.dir
 		floor_markings.pixel_x = -src.pixel_x
 		floor_markings.pixel_y = -src.pixel_y
-		overlays += floor_markings
+		add_overlay(floor_markings)
 
 	if(panel_open)
-		overlays += "station_map-panel"
+		add_overlay("station_map-panel")
 	else
-		overlays -= "station_map-panel"
+		cut_overlay("station_map-panel")
 
-/obj/machinery/station_map/attackby(obj/item/weapon/W as obj, mob/user as mob)
+/obj/machinery/station_map/attackby(obj/item/W as obj, mob/user as mob)
 	src.add_fingerprint(user)
 	if(default_deconstruction_screwdriver(user, W))
 		return
@@ -224,7 +220,7 @@
 	frame_style = "wall"
 	x_offset = WORLD_ICON_SIZE
 	y_offset = WORLD_ICON_SIZE
-	circuit = /obj/item/weapon/circuitboard/station_map
+	circuit = /obj/item/circuitboard/station_map
 	icon_override = 'icons/obj/machines/stationmap.dmi'
 
 /datum/frame/frame_types/station_map/get_icon_state(var/state)
@@ -233,7 +229,7 @@
 /obj/structure/frame
 	layer = ABOVE_WINDOW_LAYER
 
-/obj/item/weapon/circuitboard/station_map
+/obj/item/circuitboard/station_map
 	name = T_BOARD("Station Map")
 	board_type = new /datum/frame/frame_types/station_map
 	build_path = /obj/machinery/station_map

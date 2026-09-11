@@ -1,3 +1,7 @@
+GLOBAL_LIST_INIT(dsi_to_species, list(SPECIES_TAJARAN = "DSI - Tajaran", SPECIES_UNATHI = "DSI - Lizard", SPECIES_SERGAL = "DSI - Sergal", SPECIES_NEVREAN = "DSI - Nevrean", \
+									SPECIES_VULPKANIN = "DSI - Vulpkanin", SPECIES_AKULA = "DSI - Akula", SPECIES_VASILISSAN = "DSI - Vasilissan", SPECIES_ZORREN = "DSI - Zorren",\
+									SPECIES_TESHARI = "DSI - Teshari", SPECIES_FENNEC = "DSI - Fennec"))
+
 //CitRP Port
 var/const/cyberbeast_monitor_styles = "blank=cyber_blank;\
 	default=cyber_default;\
@@ -23,6 +27,7 @@ var/const/cyberbeast_monitor_styles = "blank=cyber_blank;\
 	desc = "Nano-y!"
 	lifelike = 1
 	unavailable_to_build = 1
+	unavailable_at_chargen = 1
 
 //////////////// For-specific-character fluff ones /////////////////
 // arokha : Aronai Sieyes
@@ -32,12 +37,13 @@ var/const/cyberbeast_monitor_styles = "blank=cyber_blank;\
 	icon = 'icons/mob/human_races/cyberlimbs/_fluff_vr/aronai.dmi'
 	blood_color = "#5dd4fc"
 	includes_tail = 1
+	includes_ears = 1
 	lifelike = 1
 	unavailable_to_build = 1
-	suggested_species = "Tajara"
+	suggested_species = SPECIES_VULPKANIN
 	whitelisted_to = list("arokha")
 
-/obj/item/weapon/disk/limb/kitsuhana
+/obj/item/disk/limb/kitsuhana
 	company = "Kitsuhana"
 
 // silencedmp5a5 : Serdykov Antoz
@@ -48,9 +54,9 @@ var/const/cyberbeast_monitor_styles = "blank=cyber_blank;\
 	blood_color = "#ff6a00"
 	unavailable_to_build = 1
 	includes_tail = 1
-	whitelisted_to = list("silencedmp5a5")
+	whitelisted_to = list("silencedmp5a5", "cgr")
 
-/obj/item/weapon/disk/limb/white_kryten
+/obj/item/disk/limb/white_kryten
 	company = "White Kryten Cybernetics"
 
 // tucker0666 : Frost
@@ -64,7 +70,7 @@ var/const/cyberbeast_monitor_styles = "blank=cyber_blank;\
     unavailable_to_build = 1
     whitelisted_to = list("tucker0666")
 
-/obj/item/weapon/disk/limb/zenghu_frost
+/obj/item/disk/limb/zenghu_frost
     company = "Zeng-Hu (Modified)"
     catalogue_data = list(/datum/category_item/catalogue/information/organization/zeng_hu)
 
@@ -78,5 +84,21 @@ var/const/cyberbeast_monitor_styles = "blank=cyber_blank;\
 	monitor_icon = 'icons/mob/monitor_icons_vr.dmi'
 	monitor_styles = cyberbeast_monitor_styles
 
-/obj/item/weapon/disk/limb/cyber_beast
+/obj/item/disk/limb/cyber_beast
 	company = "Cyber Tech"
+
+/datum/robolimb/zenghu_glacier
+	company = "Zeng-Hu Glacier"
+	desc = "This limb has a rubbery white covering with visible seams."
+	icon = 'icons/mob/human_races/cyberlimbs/zenghu/zenghu_glacier_main.dmi'
+	species_alternates = list(SPECIES_TAJ = "Zeng-Hu - Tajaran")
+	unavailable_to_build = 1
+	skin_tone = 1
+	modular_bodyparts = MODULAR_BODYPART_PROSTHETIC
+
+/datum/robolimb/zenghu_taj_glacier
+	company = "Zeng-Hu Glacier - Tajaran"
+	desc = "This limb has a rubbery white covering with visible seams."
+	icon = 'icons/mob/human_races/cyberlimbs/zenghu/zenghu_glacier_taj.dmi'
+	unavailable_to_build = 1
+	parts = list(BP_HEAD)

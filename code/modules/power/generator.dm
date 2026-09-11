@@ -4,8 +4,9 @@ GLOBAL_LIST_EMPTY(all_turbines)
 	name = "thermoelectric generator"
 	desc = "It's a high efficiency thermoelectric generator."
 	icon_state = "teg-unassembled"
-	density = 1
-	anchored = 0
+	density = TRUE
+	anchored = FALSE
+	unacidable = TRUE
 
 	use_power = USE_POWER_IDLE
 	idle_power_usage = 100 //Watts, I hope.  Just enough to do the computer and display things.
@@ -67,7 +68,7 @@ GLOBAL_LIST_EMPTY(all_turbines)
 				circ1 = null
 				circ2 = null
 
-/obj/machinery/power/generator/proc/updateicon()
+/obj/machinery/power/generator/update_icon()
 	icon_state = anchored ? "teg-assembled" : "teg-unassembled"
 	cut_overlays()
 	if (circ1)
@@ -162,14 +163,14 @@ GLOBAL_LIST_EMPTY(all_turbines)
 		genlev = 1
 	if(genlev != lastgenlev)
 		lastgenlev = genlev
-		updateicon()
+		update_icon()
 	add_avail(effective_gen)
 
 /obj/machinery/power/generator/attack_ai(mob/user)
 	attack_hand(user)
 
-/obj/machinery/power/generator/attackby(obj/item/weapon/W as obj, mob/user as mob)
-	if(W.is_wrench())
+/obj/machinery/power/generator/attackby(obj/item/W as obj, mob/user as mob)
+	if(W.has_tool_quality(TOOL_WRENCH))
 		playsound(src, W.usesound, 75, 1)
 		anchored = !anchored
 		user.visible_message("[user.name] [anchored ? "secures" : "unsecures"] the bolts holding [src.name] to the floor.", \
@@ -183,7 +184,7 @@ GLOBAL_LIST_EMPTY(all_turbines)
 		reconnect()
 		lastgenlev = 0
 		effective_gen = 0
-		updateicon()
+		update_icon()
 	else
 		..()
 
@@ -237,7 +238,7 @@ GLOBAL_LIST_EMPTY(all_turbines)
 
 /obj/machinery/power/generator/power_change()
 	..()
-	updateicon()
+	update_icon()
 
 
 /obj/machinery/power/generator/verb/rotate_clockwise()
@@ -260,11 +261,11 @@ GLOBAL_LIST_EMPTY(all_turbines)
 
 	src.set_dir(turn(src.dir, 90))
 
-/obj/machinery/power/generator/power_spike()
-//	if(!effective_gen >= max_power / 2 && powernet) // Don't make a spike if we're not making a whole lot of power.
-//		return
+/obj/machinery/power/generator/power_spike(var/announce_prob = 30)
+	if(!(effective_gen >= max_power / 2 && powernet)) // Don't make a spike if we're not making a whole lot of power.
+		return
 
-	var/list/powernet_union = powernet.nodes
+	var/list/powernet_union = powernet.nodes.Copy()
 	for(var/obj/machinery/power/terminal/T in powernet.nodes)
 		if(T.master && istype(T.master, /obj/machinery/power/smes))
 			var/obj/machinery/power/smes/S = T.master
@@ -272,7 +273,7 @@ GLOBAL_LIST_EMPTY(all_turbines)
 
 	var/found_grid_checker = FALSE
 	for(var/obj/machinery/power/grid_checker/G in powernet_union)
-		G.power_failure(prob(30)) // If we found a grid checker, then all is well.
+		G.power_failure(announce_prob) // If we found a grid checker, then all is well.
 		found_grid_checker = TRUE
 	if(!found_grid_checker) // Otherwise lets break some stuff.
 		spawn(1)

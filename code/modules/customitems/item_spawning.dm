@@ -69,8 +69,8 @@
 			U.update_rolldown_status()
 
 	// Kits are dumb so this is going to have to be hardcoded/snowflake.
-	if(istype(item, /obj/item/device/kit))
-		var/obj/item/device/kit/K = item
+	if(istype(item, /obj/item/kit))
+		var/obj/item/kit/K = item
 		K.set_info(kit_name, kit_desc, kit_icon, additional_data = additional_data)
 	return item
 
@@ -96,7 +96,7 @@
 //this has to mirror the way update_inv_*_hand() selects the state
 /datum/custom_item/proc/get_state(var/obj/item/item, var/slot_str, var/hand_str)
 	var/t_state
-	if(item.item_state_slots && item.item_state_slots[slot_str])
+	if(LAZYACCESS(item.item_state_slots, slot_str))
 		t_state = item.item_state_slots[slot_str]
 	else if(item.item_state)
 		t_state = item.item_state
@@ -111,7 +111,7 @@
 	var/icon/t_icon
 	if(item.icon_override)
 		t_icon = item.icon_override
-	else if(item.item_icons && (slot_str in item.item_icons))
+	else if(LAZYACCESS(item.item_icons, slot_str))
 		t_icon = item.item_icons[slot_str]
 	else
 		t_icon = hand_icon
@@ -189,9 +189,9 @@
 			continue
 
 		// Check for required access.
-		var/obj/item/weapon/card/id/current_id = M.wear_id
+		var/obj/item/card/id/current_id = M.wear_id
 		if(citem.req_access && citem.req_access > 0) // These are numbers, not lists
-			if(!(istype(current_id) && (citem.req_access in current_id.access)))
+			if(!(istype(current_id) && (citem.req_access in current_id.GetAccess())))
 				log_debug("Custom Item: [key_name(M)] Does not have required access.")
 				continue
 
@@ -209,12 +209,12 @@
 
 		// ID cards and PDAs are applied directly to the existing object rather than spawned fresh.
 		var/obj/item/existing_item
-		if(citem.item_path == /obj/item/weapon/card/id && istype(current_id)) //Set earlier.
+		if(citem.item_path == /obj/item/card/id && istype(current_id)) //Set earlier.
 			existing_item = M.wear_id
-		else if(citem.item_path == /obj/item/device/pda)
-			existing_item = locate(/obj/item/device/pda) in M.contents
-		else if(citem.item_path == /obj/item/weapon/storage/backpack)
-			existing_item = locate(/obj/item/weapon/storage/backpack) in M.contents
+		else if(citem.item_path == /obj/item/pda)
+			existing_item = locate(/obj/item/pda) in M.contents
+		else if(citem.item_path == /obj/item/storage/backpack)
+			existing_item = locate(/obj/item/storage/backpack) in M.contents
 
 		// Spawn and equip the item.
 		if(existing_item)

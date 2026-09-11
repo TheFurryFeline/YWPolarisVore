@@ -1,11 +1,4 @@
 //DEFINITIONS FOR ASSET DATUMS START HERE.
-
-/datum/asset/simple/tgui
-	assets = list(
-		"tgui.bundle.js" = 'tgui/packages/tgui/public/tgui.bundle.js',
-		"tgui.bundle.css" = 'tgui/packages/tgui/public/tgui.bundle.css',
-	)
-
 /datum/asset/simple/headers
 	assets = list(
 		"alarm_green.gif" 			= 'icons/program_icons/alarm_green.gif',
@@ -152,11 +145,6 @@
 // 		/datum/asset/simple/fontawesome
 // 	)
 
-// /datum/asset/simple/jquery
-// 	assets = list(
-// 		"jquery.min.js"            = 'code/modules/goonchat/browserassets/js/jquery.min.js',
-// 	)
-
 // /datum/asset/simple/goonchat
 // 	assets = list(
 // 		"json2.min.js"             = 'code/modules/goonchat/browserassets/js/json2.min.js',
@@ -164,16 +152,6 @@
 // 		"browserOutput.css"	       = 'code/modules/goonchat/browserassets/css/browserOutput.css',
 // 		"browserOutput_white.css"  = 'code/modules/goonchat/browserassets/css/browserOutput_white.css',
 // 	)
-
-/datum/asset/simple/fontawesome
-	assets = list(
-		"fa-regular-400.eot"  = 'html/font-awesome/webfonts/fa-regular-400.eot',
-		"fa-regular-400.woff" = 'html/font-awesome/webfonts/fa-regular-400.woff',
-		"fa-solid-900.eot"    = 'html/font-awesome/webfonts/fa-solid-900.eot',
-		"fa-solid-900.woff"   = 'html/font-awesome/webfonts/fa-solid-900.woff',
-		"font-awesome.css"    = 'html/font-awesome/css/all.min.css',
-		"v4shim.css"          = 'html/font-awesome/css/v4-shims.min.css'
-	)
 
 // /datum/asset/spritesheet/goonchat
 // 	name = "chat"
@@ -280,20 +258,27 @@
 /datum/asset/spritesheet/pipes
 	name = "pipes"
 
-/datum/asset/spritesheet/pipes/register()
+/datum/asset/spritesheet/pipes/create_spritesheets()
 	for(var/each in list('icons/obj/pipe-item.dmi', 'icons/obj/pipes/disposal.dmi'))
 		InsertAll("", each, global.alldirs)
-	..()
 
 //VOREStation Add
 /datum/asset/spritesheet/vore
 	name = "vore"
 
-/datum/asset/spritesheet/vore/register()
+/datum/asset/spritesheet/vore/create_spritesheets()
 	var/icon/downscaled = icon('icons/mob/screen_full_vore.dmi')
 	downscaled.Scale(240, 240)
 	InsertAll("", downscaled)
-	..()
+
+/datum/asset/spritesheet/vore_colorized //This should be getting loaded in the TGUI vore panel but the game refuses to do so, for some reason. It only loads the vore spritesheet.
+	name = "colorizedvore"
+
+/datum/asset/spritesheet/vore_colorized/create_spritesheets()
+	var/icon/downscaledVC = icon('icons/mob/screen_full_colorized_vore.dmi')
+	downscaledVC.Scale(240, 240)
+	InsertAll("", downscaledVC)
+
 //VOREStation Add End
 
 // // Representative icons for each research design
@@ -358,10 +343,9 @@
 /datum/asset/spritesheet/vending
 	name = "vending"
 
-/datum/asset/spritesheet/vending/register()
+/datum/asset/spritesheet/vending/create_spritesheets()
 	populate_vending_products()
-	for(var/k in GLOB.vending_products)
-		var/atom/item = k
+	for(var/atom/item as anything in GLOB.vending_products)
 		if(!ispath(item, /atom))
 			continue
 
@@ -370,18 +354,10 @@
 
 		// I really don't like the fact that I have to do this, but what the hell else *can* I do to make all of these
 		// random special items work?
-		if(ispath(item, /obj/item/weapon/reagent_containers/food/drinks/glass2) && !ispath(item, /obj/item/weapon/reagent_containers/food/drinks/glass2/fitnessflask))
-			var/obj/item/weapon/reagent_containers/food/drinks/glass2/G = item
+		if(ispath(item, /obj/item/reagent_containers/food/drinks/glass2) && !ispath(item, /obj/item/reagent_containers/food/drinks/glass2/fitnessflask))
+			var/obj/item/reagent_containers/food/drinks/glass2/G = item
 			icon_state = initial(G.base_icon)
-		if(ispath(item, /obj/item/clothing/suit))
-			var/obj/item/clothing/suit/U = item
-			if(initial(U.index))
-				icon_file = "icons/obj/clothing/suits_[initial(U.index)].dmi"
-		if(ispath(item, /obj/item/clothing/under))
-			var/obj/item/clothing/under/U = item
-			if(initial(U.index))
-				icon_file = "icons/obj/clothing/uniforms_[initial(U.index)].dmi"
-		if(ispath(item, /obj/item/weapon/reagent_containers/hypospray/autoinjector))
+		if(ispath(item, /obj/item/reagent_containers/hypospray/autoinjector))
 			icon_state += "0"
 
 		var/icon/I
@@ -405,7 +381,6 @@
 		var/imgid = replacetext(replacetext("[item]", "/obj/item/", ""), "/", "-")
 
 		Insert(imgid, I)
-	return ..()
 
 // this is cursed but necessary or else vending product icons can be missing
 // basically, if there's any vending machines that aren't already mapped in, our register() will not know
@@ -451,70 +426,90 @@
 // 	..()
 
 //Pill sprites for UIs
-/datum/asset/chem_master
-	var/assets = list()
-	var/verify = FALSE
+/datum/asset/spritesheet/chem_master
+	name = "chem_master"
 
-/datum/asset/chem_master/register()
+/datum/asset/spritesheet/chem_master/create_spritesheets()
 	for(var/i = 1 to 24)
-		assets["pill[i].png"] = icon('icons/obj/chemical.dmi', "pill[i]")
+		Insert("pill[i]", 'icons/obj/chemical.dmi', "pill[i]")
 
 	for(var/i = 1 to 4)
-		assets["bottle-[i].png"] = icon('icons/obj/chemical.dmi', "bottle-[i]")
+		Insert("bottle-[i]", 'icons/obj/chemical.dmi', "bottle-[i]")
 
-	for(var/asset_name in assets)
-		register_asset(asset_name, assets[asset_name])
 
-/datum/asset/chem_master/send(client)
-	send_asset_list(client, assets, verify)
+// Robot UI sprites
+/datum/asset/spritesheet/robot_icons
+	name = "robot_icons"
+
+/datum/asset/spritesheet/robot_icons/create_spritesheets()
+	for(var/datum/robot_sprite/S as anything in typesof(/datum/robot_sprite))
+		if(!S.name || !S.sprite_icon_state) // snowflake out those customs... they suck
+			continue
+		var/icon/I_N = icon(S.sprite_icon, S.sprite_icon_state, NORTH)
+		var/icon/I_S = icon(S.sprite_icon, S.sprite_icon_state, SOUTH)
+		var/icon/I_W = icon(S.sprite_icon, S.sprite_icon_state, WEST)
+		var/icon/I_E = icon(S.sprite_icon, S.sprite_icon_state, EAST)
+		if(S.has_eye_sprites)
+			var/icon/I_NE = icon(S.sprite_icon, "[S.sprite_icon_state]-eyes", NORTH)
+			if(I_NE)
+				I_N.Blend(I_NE, ICON_OVERLAY)
+		if(S.has_eye_sprites)
+			var/icon/I_SE = icon(S.sprite_icon, "[S.sprite_icon_state]-eyes", SOUTH)
+			if(I_SE)
+				I_S.Blend(I_SE, ICON_OVERLAY)
+		if(S.has_eye_sprites)
+			var/icon/I_WE = icon(S.sprite_icon, "[S.sprite_icon_state]-eyes", WEST)
+			if(I_WE)
+				I_W.Blend(I_WE, ICON_OVERLAY)
+		if(S.has_eye_sprites)
+			var/icon/I_EE = icon(S.sprite_icon, "[S.sprite_icon_state]-eyes", EAST)
+			if(I_EE)
+				I_E.Blend(I_EE, ICON_OVERLAY)
+		var/imgid = sanitize_css_class_name("[S.type]")
+		I_N.Scale(120, 120)
+		I_S.Scale(120, 120)
+		I_W.Scale(120, 120)
+		I_E.Scale(120, 120)
+		Insert(imgid + "N", I_N)
+		Insert(imgid + "S", I_S)
+		Insert(imgid + "W", I_W)
+		Insert(imgid + "E", I_E)
+
 
 //Cloning pod sprites for UIs
-/datum/asset/cloning
-	var/assets = list()
-	var/verify = FALSE
-
-/datum/asset/cloning/register()
-	assets["pod_idle.gif"] = icon('icons/obj/cloning.dmi', "pod_idle")
-	assets["pod_cloning.gif"] = icon('icons/obj/cloning.dmi', "pod_cloning")
-	assets["pod_mess.gif"] = icon('icons/obj/cloning.dmi', "pod_mess")
-	for(var/asset_name in assets)
-		register_asset(asset_name, assets[asset_name])
-
-/datum/asset/cloning/send(client)
-	send_asset_list(client, assets, verify)
+/datum/asset/simple/cloning
+	assets = list(
+		"pod_idle.gif" = 'icons/UI_Icons/synthprinter.gif',
+		"pod_cloning.gif" = 'icons/UI_Icons/synthprinter_working.gif',
+	)
 
 // VOREStation Add
-/datum/asset/cloning/resleeving
-/datum/asset/cloning/resleeving/register()
-	// This intentionally does not call the parent. Duplicate assets are not allowed.
-	assets["sleeve_empty.gif"] = icon('icons/obj/machines/implantchair.dmi', "implantchair")
-	assets["sleeve_occupied.gif"] = icon('icons/obj/machines/implantchair.dmi', "implantchair_on")
-	assets["synthprinter.gif"] = icon('icons/obj/machines/synthpod.dmi', "pod_0")
-	assets["synthprinter_working.gif"] = icon('icons/obj/machines/synthpod.dmi', "pod_1")
-	for(var/asset_name in assets)
-		register_asset(asset_name, assets[asset_name])
-// VOREStation Add End
+/datum/asset/simple/cloning/resleeving
+	assets = list(
+		"sleeve_empty.gif" = 'icons/UI_Icons/sleeve_empty.gif',
+		"sleeve_occupied.gif" = 'icons/UI_Icons/sleeve_occupied.gif',
+		"synthprinter.gif" = 'icons/UI_Icons/synthprinter.gif',
+		"synthprinter_working.gif" = 'icons/UI_Icons/synthprinter_working.gif',
+	)
 
 /datum/asset/spritesheet/sheetmaterials
 	name = "sheetmaterials"
 
-/datum/asset/spritesheet/sheetmaterials/register()
+/datum/asset/spritesheet/sheetmaterials/create_spritesheets()
 	InsertAll("", 'icons/obj/stacks.dmi')
-	..()
 
 // Nanomaps
 /datum/asset/simple/nanomaps
 	// It REALLY doesnt matter too much if these arent up to date
 	// They are relatively big
 	assets = list(
-		// YawnWider Edit: We don't need Southern Cross or tether
+		// YW Edit: We don't need Southern Cross, groundbase or tether
 		// "southern_cross_nanomap_z1.png"		= 'icons/_nanomaps/southern_cross_nanomap_z1.png',
 		// "southern_cross_nanomap_z10.png"	= 'icons/_nanomaps/southern_cross_nanomap_z10.png',
 		// "southern_cross_nanomap_z2.png"		= 'icons/_nanomaps/southern_cross_nanomap_z2.png',
 		// "southern_cross_nanomap_z3.png"		= 'icons/_nanomaps/southern_cross_nanomap_z3.png',
 		// "southern_cross_nanomap_z5.png"		= 'icons/_nanomaps/southern_cross_nanomap_z5.png',
 		// "southern_cross_nanomap_z6.png"		= 'icons/_nanomaps/southern_cross_nanomap_z6.png',
-		
 		//"tether_nanomap_z1.png"				= 'icons/_nanomaps/tether_nanomap_z1.png',
 		//"tether_nanomap_z2.png"				= 'icons/_nanomaps/tether_nanomap_z2.png',
 		//"tether_nanomap_z3.png"				= 'icons/_nanomaps/tether_nanomap_z3.png',
@@ -527,12 +522,23 @@
 		//"tether_nanomap_z10.png"			= 'icons/_nanomaps/tether_nanomap_z10.png',
 		//"tether_nanomap_z13.png"			= 'icons/_nanomaps/tether_nanomap_z13.png',
 		//"tether_nanomap_z14.png"			= 'icons/_nanomaps/tether_nanomap_z14.png',
+		//"stellardelight_nanomap_z1.png"		= 'icons/_nanomaps/sd_deck1.png',
+		//"stellardelight_nanomap_z2.png"		= 'icons/_nanomaps/sd_deck2.png',
+		//"stellardelight_nanomap_z3.png"		= 'icons/_nanomaps/sd_deck3.png',
+		//"groundbase_nanomap_z1.png"			= 'icons/_nanomaps/gb1.png',
+		//"groundbase_nanomap_z2.png"			= 'icons/_nanomaps/gb2.png',
+		//"groundbase_nanomap_z3.png"			= 'icons/_nanomaps/gb3.png',
+		//"groundbase_nanomap_z4.png"			= 'icons/_nanomaps/gbnorth.png',
+		//"groundbase_nanomap_z5.png"			= 'icons/_nanomaps/gbsouth.png',
+		//"groundbase_nanomap_z6.png"			= 'icons/_nanomaps/gbeast.png',
+		//"groundbase_nanomap_z7.png"			= 'icons/_nanomaps/gbwest.png',
+		//"groundbase_nanomap_z10.png"		= 'icons/_nanomaps/gbmining.png',
 		"cryogaia_nanomap_z2.png"				= 'icons/_nanomaps/cryogaia_nanomap_z2.png',
 		"cryogaia_nanomap_z3.png"				= 'icons/_nanomaps/cryogaia_nanomap_z3.png',
 		"cryogaia_nanomap_z4.png"				= 'icons/_nanomaps/cryogaia_nanomap_z4.png',
 		"cryogaia_nanomap_z5.png"				= 'icons/_nanomaps/cryogaia_nanomap_z5.png',
 		"cryogaia_nanomap_z6.png"				= 'icons/_nanomaps/cryogaia_nanomap_z6.png',
 		"cryogaia_nanomap_z13.png"				= 'icons/_nanomaps/cryogaia_nanomap_z13.png',
-		// YawnWider Edit End
+		// YW Edit End
 
 	)

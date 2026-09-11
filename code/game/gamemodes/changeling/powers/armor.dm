@@ -37,16 +37,16 @@
 	desc = "A huge, bulky mass of pressure and temperature-resistant organic tissue, evolved to facilitate space travel."
 	flags = 0	//Not THICKMATERIAL because it's organic tissue, so if somebody tries to inject something into it,
 				//it still ends up in your blood. (also balance but muh fluff)
-	allowed = list(/obj/item/device/flashlight, /obj/item/weapon/tank/emergency/oxygen, /obj/item/weapon/tank/oxygen)
+	allowed = list(/obj/item/flashlight, /obj/item/tank/emergency/oxygen, /obj/item/tank/oxygen)
 	armor = list(melee = 0, bullet = 0, laser = 0,energy = 0, bomb = 0, bio = 0, rad = 0) //No armor at all.
-	canremove = 0
+	canremove = FALSE
 
 /obj/item/clothing/suit/space/changeling/New()
 	..()
 	if(ismob(loc))
-		loc.visible_message("<span class='warning'>[loc.name]\'s flesh rapidly inflates, forming a bloated mass around their body!</span>",
-		"<span class='warning'>We inflate our flesh, creating a spaceproof suit!</span>",
-		"<span class='italics'>You hear organic matter ripping and tearing!</span>")
+		loc.visible_message(span_warning("[loc.name]\'s flesh rapidly inflates, forming a bloated mass around their body!"),
+		span_warning("We inflate our flesh, creating a spaceproof suit!"),
+		span_warningplain("You hear organic matter ripping and tearing!"))
 
 /obj/item/clothing/suit/space/changeling/dropped()
 	qdel(src)
@@ -58,7 +58,7 @@
 	flags = BLOCKHAIR //Again, no THICKMATERIAL.
 	armor = list(melee = 0, bullet = 0, laser = 0,energy = 0, bomb = 0, bio = 0, rad = 0)
 	body_parts_covered = HEAD|FACE|EYES
-	canremove = 0
+	canremove = FALSE
 
 /obj/item/clothing/head/helmet/space/changeling/dropped()
 	qdel(src)
@@ -67,8 +67,8 @@
 	desc = "A suction cupped mass of flesh, shaped like a foot."
 	name = "fleshy grippers"
 	icon_state = "lingspacesuit"
-	action_button_name = "Toggle Grippers"
-	canremove = 0
+	actions_types = list(/datum/action/item_action/toggle_grippers)
+	canremove = FALSE
 
 /obj/item/clothing/shoes/magboots/changeling/set_slowdown()
 	slowdown = shoes? max(SHOES_SLOWDOWN, shoes.slowdown): SHOES_SLOWDOWN	//So you can't put on magboots to make you walk faster.
@@ -103,14 +103,14 @@
 	armor = list(melee = 75, bullet = 60, laser = 60, energy = 60, bomb = 60, bio = 0, rad = 0) //It costs 3 points, so it should be very protective.
 	siemens_coefficient = 0.3
 	max_heat_protection_temperature = FIRESUIT_MAX_HEAT_PROTECTION_TEMPERATURE
-	slowdown = 3
+	slowdown = 1.5
 
 /obj/item/clothing/suit/space/changeling/armored/New()
 	..()
 	if(ismob(loc))
-		loc.visible_message("<span class='warning'>[loc.name]\'s flesh turns black, quickly transforming into a hard, chitinous mass!</span>",
-		"<span class='warning'>We harden our flesh, creating a suit of armor!</span>",
-		"<span class='italics'>You hear organic matter ripping and tearing!</span>")
+		loc.visible_message(span_warning("[loc.name]\'s flesh turns black, quickly transforming into a hard, chitinous mass!"),
+		span_warning("We harden our flesh, creating a suit of armor!"),
+		span_warningplain("You hear organic matter ripping and tearing!"))
 
 /obj/item/clothing/head/helmet/space/changeling/armored
 	name = "chitinous mass"
@@ -124,7 +124,7 @@
 	desc = "A tough, hard mass of chitin, with long talons for digging into terrain."
 	name = "chitinous talons"
 	icon_state = "lingarmor"
-	action_button_name = "Toggle Talons"
+	actions_types = list(/datum/action/item_action/toggle_talons)
 
 /obj/item/clothing/gloves/combat/changeling //Combined insulated/fireproof gloves
 	name = "chitinous gauntlets"

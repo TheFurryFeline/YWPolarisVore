@@ -42,7 +42,7 @@
 	factory = null
 	if(infested)
 		infested.forceMove(get_turf(src))
-		visible_message("<span class='warning'>\The [infested] falls to the ground as the blob spore bursts.</span>")
+		visible_message(span_warning("\The [infested] falls to the ground as the blob spore bursts."))
 		infested = null
 	return ..()
 
@@ -61,14 +61,14 @@
 		set_light(0)
 
 	if(is_infesting)
-		overlays.Cut()
+		cut_overlays()
 		icon = infested.icon
-		overlays = infested.overlays
+		add_overlay(infested.overlays)
 		var/mutable_appearance/blob_head_overlay = mutable_appearance('icons/mob/blob.dmi', "blob_head")
 		if(overmind)
 			blob_head_overlay.color = overmind.blob_type.complementary_color
 		color = initial(color)//looks better.
-		overlays += blob_head_overlay
+		add_overlay(blob_head_overlay)
 
 /mob/living/simple_mob/hostile/blob/spore/Life()
 	if(can_infest && !is_infesting && isturf(src.loc))
@@ -103,7 +103,7 @@
 	infested = H
 
 	update_icons()
-	visible_message("<span class='warning'>The corpse of [H.name] suddenly rises!</span>")
+	visible_message(span_warning("The corpse of [H.name] suddenly rises!"))
 
 /mob/living/simple_mob/hostile/blob/spore/GetIdCard()
 	if(infested) // If we've infested someone, use their ID.

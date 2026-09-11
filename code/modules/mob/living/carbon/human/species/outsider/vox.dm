@@ -6,7 +6,7 @@
 	default_language = LANGUAGE_VOX
 	language = LANGUAGE_GALCOM
 	species_language = LANGUAGE_VOX
-	num_alternate_languages = 1
+	num_alternate_languages = 3
 	assisted_langs = list(LANGUAGE_ROOTGLOBAL)
 	unarmed_types = list(/datum/unarmed_attack/stomp, /datum/unarmed_attack/kick,  /datum/unarmed_attack/claws/strong, /datum/unarmed_attack/bite/strong)
 	rarity_value = 4
@@ -45,10 +45,12 @@
 
 	breath_type = "phoron"
 	poison_type = "oxygen"
+	ideal_air_type = /datum/gas_mixture/belly_air/vox
 	siemens_coefficient = 0.2
 
 	flags = NO_SCAN | NO_DEFIB
-	appearance_flags = HAS_EYE_COLOR | HAS_HAIR_COLOR
+	// spawn_flags = SPECIES_IS_WHITELISTED YW Edit: comment out
+	appearance_flags = HAS_EYE_COLOR | HAS_HAIR_COLOR | HAS_SKIN_COLOR
 
 	blood_color = "#9066BD"
 	flesh_color = "#808D11"
@@ -101,11 +103,11 @@
 
 	H.equip_to_slot_or_del(new /obj/item/clothing/mask/breath(H), slot_wear_mask)
 	if(H.backbag == 1)
-		H.equip_to_slot_or_del(new /obj/item/weapon/tank/vox(H), slot_back)
+		H.equip_to_slot_or_del(new /obj/item/tank/vox(H), slot_back)
 		H.internal = H.back
 	else
-		H.equip_to_slot_or_del(new /obj/item/weapon/tank/vox(H), slot_r_hand)
+		H.equip_to_slot_or_del(new /obj/item/tank/vox(H), slot_r_hand)
 		H.internal = H.r_hand
-	H.internal = locate(/obj/item/weapon/tank) in H.contents
-	if(istype(H.internal,/obj/item/weapon/tank) && H.internals)
+	H.internal = locate(/obj/item/tank) in H.contents
+	if(istype(H.internal,/obj/item/tank) && H.internals)
 		H.internals.icon_state = "internal1"

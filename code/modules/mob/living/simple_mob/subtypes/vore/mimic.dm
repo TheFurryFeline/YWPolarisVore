@@ -31,7 +31,7 @@
 		mimic_active = FALSE
 		if(prob(mimic_chance))
 			var/mob/living/simple_mob/vore/aggressive/mimic/new_mimic = new(loc, src)
-			visible_message("<font color='red'><b>[new_mimic] suddenly growls as it turns out to be a mimic!</b></font>")
+			visible_message(span_bolddanger("[new_mimic] suddenly growls as it turns out to be a mimic!"))
 			forceMove(new_mimic)
 			new_mimic.real_crate = src
 			new_mimic.name = name
@@ -52,7 +52,7 @@
 
 /obj/structure/closet/crate/mimic/damage(var/damage)
 	if(contents.len)
-		visible_message("<font color='red'><b>[src] makes out a crunchy noise as its contents are destroyed!</b></font>")
+		visible_message(span_bolddanger("[src] makes out a crunchy noise as its contents are destroyed!"))
 		for(var/obj/O in src.contents)
 			qdel(O)
 	..()
@@ -79,11 +79,11 @@
 	icon_living = "crate"
 	icon = 'icons/obj/storage.dmi'
 
-	faction = "mimic"
+	faction = FACTION_MIMIC
 
 	maxHealth = 125
 	health = 125
-	movement_cooldown = 7
+	movement_cooldown = 3
 
 	response_help = "touches"
 	response_disarm = "pushes"
@@ -130,7 +130,7 @@
 		var/mob/living/L = A
 		if(prob(knockdown_chance))
 			L.Weaken(3)
-			L.visible_message(span("danger", "\The [src] knocks down \the [L]!"))
+			L.visible_message(span_danger("\The [src] knocks down \the [L]!"))
 
 /mob/living/simple_mob/vore/aggressive/mimic/will_show_tooltip()
 	return FALSE

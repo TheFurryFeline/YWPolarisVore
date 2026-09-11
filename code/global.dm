@@ -1,13 +1,7 @@
-//#define TESTING
-#if DM_VERSION < 506
-#warn This compiler is out of date. You may experience issues with projectile animations.
-#endif
-
 // Items that ask to be called every cycle.
 var/global/datum/datacore/data_core = null
-var/global/list/machines                 = list()	// ALL Machines, wether processing or not.
-var/global/list/processing_machines      = list()	// TODO - Move into SSmachines
-var/global/list/processing_power_items   = list()	// TODO - Move into SSmachines
+var/global/list/machines                 = SSmachines.all_machines //I would upgrade all instances of global.machines to SSmachines.all_machines but it's used in so many places and a search returns so many matches for 'machines' that isn't a use of the global...
+
 var/global/list/active_diseases          = list()
 var/global/list/hud_icon_reference       = list()
 
@@ -87,15 +81,12 @@ var/list/reverse_dir = list( // reverse_dir[dir] = reverse of dir
 	41, 43, 36, 38, 37, 39, 44, 46, 45, 47, 16, 18, 17, 19, 24, 26, 25, 27, 20, 22, 21,
 	23, 28, 30, 29, 31, 48, 50, 49, 51, 56, 58, 57, 59, 52, 54, 53, 55, 60, 62, 61, 63
 )
-
-var/datum/configuration/config      = null
+var/global/const/SQRT_TWO = 1.41421356237
 
 var/list/combatlog = list()
 var/list/IClog     = list()
 var/list/OOClog    = list()
 var/list/adminlog  = list()
-
-var/list/powernets = list()	// TODO - Move into SSmachines
 
 var/Debug2 = 0
 var/datum/debug/debugobj
@@ -134,11 +125,24 @@ var/DBConnection/dbcon_old = new() // /tg/station database (Old database) -- see
 var/global/list/alphabet_uppercase = list("A","B","C","D","E","F","G","H","I","J","K","L","M","N","O","P","Q","R","S","T","U","V","W","X","Y","Z")
 
 
-// Used by robots and robot preferences.
+// Used by robots and robot preferences for regular modules.
 var/list/robot_module_types = list(
 	"Standard", "Engineering", "Surgeon",  "Crisis",
 	"Miner",    "Janitor",     "Service",      "Clerical", "Security",
 	"Research"
+)
+// List of modules added during code red
+var/list/emergency_module_types = list(
+	"Combat"
+)
+// List of modules available to AI shells
+var/list/shell_module_types = list(
+	"Standard", "Engineering", "Surgeon", "Crisis",
+	"Miner", "Janitor", "Service", "Clerical", "Security", "Research"
+)
+// List of whitelisted modules
+var/list/whitelisted_module_types = list(
+	"Lost"
 )
 
 // Some scary sounds.
@@ -159,16 +163,20 @@ var/static/list/scarySounds = list(
 	'sound/items/Welder2.ogg',
 	'sound/machines/door/old_airlock.ogg',
 	'sound/effects/clownstep1.ogg',
-	'sound/effects/clownstep2.ogg'
+	'sound/effects/clownstep2.ogg',
+	'sound/voice/teppi/roar.ogg',	//VOREStation Add
+	'sound/voice/moth/scream_moth.ogg',	//VOREStation Add
+	'sound/voice/nya.ogg',	//VOREStation Add
+	'sound/voice/succlet_shriek.ogg'	//VOREStation Add
 )
 
 // Bomb cap!
 var/max_explosion_range = 14
 
 // Announcer intercom, because too much stuff creates an intercom for one message then hard del()s it.
-var/global/obj/item/device/radio/intercom/omni/global_announcer = new /obj/item/device/radio/intercom/omni(null)
+var/global/obj/item/radio/intercom/omni/global_announcer = new /obj/item/radio/intercom/omni(null)
 
-var/list/station_departments = list("Command", "Medical", "Engineering", "Science", "Security", "Cargo", "Exploration", "Civilian") //VOREStation Edit
+var/list/station_departments = list("Command", "Medical", "Engineering", "Research", "Security", "Cargo", "Exploration", "Civilian") //VOREStation Edit
 
 //Icons for in-game HUD glasses. Why don't we just share these a little bit?
 var/static/icon/ingame_hud = icon('icons/mob/hud.dmi')

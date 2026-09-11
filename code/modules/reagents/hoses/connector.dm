@@ -3,7 +3,7 @@
 	. = ..()
 
 	if(locate(/obj/item/hose_connector) in src)
-		if(O.is_wirecutter())
+		if(O.has_tool_quality(TOOL_WIRECUTTER))
 			var/list/available_sockets = list()
 
 			for(var/obj/item/hose_connector/HC in src)
@@ -13,7 +13,7 @@
 			if(LAZYLEN(available_sockets))
 				if(available_sockets.len == 1)
 					var/obj/item/hose_connector/AC = available_sockets[1]
-					var/choice = alert("Are you sure you want to disconnect [AC]?", "Confirm", "Yes", "No")
+					var/choice = tgui_alert(usr, "Are you sure you want to disconnect [AC]?", "Confirm", list("Yes", "No"))
 
 					if(choice == "Yes" && Adjacent(user))
 						visible_message("[user] disconnects \the hose from \the [src].")
@@ -22,11 +22,11 @@
 
 			else
 
-				var/choice = input("Select a target hose connector.", "Socket Disconnect", null) as null|anything in available_sockets
+				var/choice = tgui_input_list(usr, "Select a target hose connector.", "Socket Disconnect", available_sockets)
 
 				if(choice)
 					var/obj/item/hose_connector/AC = choice
-					var/confirm = alert("Are you sure you want to disconnect [AC]?", "Confirm", "Yes", "No")
+					var/confirm = tgui_alert(usr, "Are you sure you want to disconnect [AC]?", "Confirm", list("Yes", "No"))
 
 					if(confirm == "Yes" && Adjacent(user))
 						visible_message("[user] disconnects \the hose from \the [src].")
@@ -134,5 +134,7 @@
 		carrier = loc
 
 /obj/item/hose_connector/output/active/process()
-	if(carrier)
+	if(carrier && my_hose)
 		carrier.reagents.trans_to_holder(reagents, reagents.maximum_volume)
+	else if(reagents.total_volume && carrier && !my_hose)
+		reagents.trans_to_obj(carrier, reagents.maximum_volume)

@@ -1,9 +1,9 @@
 /obj/machinery/embedded_controller
 	name = "Embedded Controller"
-	anchored = 1
+	anchored = TRUE
 	use_power = USE_POWER_IDLE
 	idle_power_usage = 10
-	var/datum/computer/file/embedded_program/program	//the currently executing program
+	var/datum/embedded_program/program	//the currently executing program
 	var/list/valid_actions = list()
 	var/on = 1
 
@@ -17,6 +17,11 @@
 		qdel(program) // the program will clear the ref in its Destroy
 	return ..()
 
+/obj/machinery/embedded_controller/examine(mob/user, infix, suffix)
+	. = ..()
+	if(in_range(src, user))
+		. += "It has an ID tag of \"[program?.id_tag]\""
+
 /obj/machinery/embedded_controller/proc/post_signal(datum/signal/signal, comm_line)
 	return 0
 
@@ -28,16 +33,17 @@
 
 /obj/machinery/embedded_controller/Topic()
 	. = ..()
-	stack_trace("WARNING: Embedded controller [src] ([type]) had Topic() called unexpectedly. Please report this.")
+	// stack_trace("WARNING: Embedded controller [src] ([type]) had Topic() called unexpectedly. Please report this.") // statpanel means that topic can always be called for clicking
 
-/obj/machinery/embedded_controller/tgui_act(action, params)
+/obj/machinery/embedded_controller/tgui_act(action, params, datum/tgui/ui)
 	if(..())
 		return TRUE
 	if(LAZYLEN(valid_actions))
 		if(action in valid_actions)
 			program.receive_user_command(action)
-	if(usr)
-		add_fingerprint(usr)
+			return TRUE
+	if(ui.user)
+		add_fingerprint(ui.user)
 
 /obj/machinery/embedded_controller/process()
 	if(program)
@@ -67,8 +73,8 @@
 	icon = 'icons/obj/airlock_machines.dmi'
 	icon_state = "airlock_control_standby"
 	power_channel = ENVIRON
-	density = 0
-	unacidable = 1
+	density = FALSE
+	unacidable = TRUE
 
 	var/id_tag
 	//var/radio_power_use = 50 //power used to xmit signals

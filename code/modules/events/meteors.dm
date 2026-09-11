@@ -45,6 +45,8 @@
 /datum/event/meteor_wave/proc/send_wave()
 	var/pick_side = prob(80) ? start_side : (prob(50) ? turn(start_side, 90) : turn(start_side, -90))
 
+	if(!affecting_z.len)
+		return
 	spawn() spawn_meteors(get_wave_size(), get_meteors(), pick_side, pick(affecting_z))
 	next_meteor += rand(next_meteor_lower, next_meteor_upper) / severity
 	waves--
@@ -125,23 +127,15 @@
 	. = ..()
 	if(!victim)
 		return
-	var/skill = victim.get_helm_skill()
 	var/speed = victim.get_speed()
-	if(skill >= SKILL_PROF)
-		. = round(. * 0.5)
+	. = round(. * 0.5)
 	if(victim.is_still()) //Standing still means less shit flies your way
 		. = round(. * 0.1)
 	if(speed < SHIP_SPEED_SLOW) //Slow and steady
 		. = round(. * 0.5)
 	if(speed > SHIP_SPEED_FAST) //Sanic stahp
 		. *= 2
-	
+
 	//Smol ship evasion
 	if(victim.vessel_size < SHIP_SIZE_LARGE && speed < SHIP_SPEED_FAST)
-		var/skill_needed = SKILL_PROF
-		if(speed < SHIP_SPEED_SLOW)
-			skill_needed = SKILL_ADEPT
-		if(victim.vessel_size < SHIP_SIZE_SMALL)
-			skill_needed = skill_needed - 1
-		if(skill >= max(skill_needed, victim.skill_needed))
-			. = round(. * 0.5)
+		. = round(. * 0.5)

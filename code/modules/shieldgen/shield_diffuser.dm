@@ -4,12 +4,12 @@
 	description_info = "This device disrupts shields on directly adjacent tiles (in a + shaped pattern). They are commonly installed around exterior airlocks to prevent shields from blocking EVA access."
 	icon = 'icons/obj/machines/shielding.dmi'
 	icon_state = "fdiffuser_on"
-	circuit = /obj/item/weapon/circuitboard/shield_diffuser
+	circuit = /obj/item/circuitboard/shield_diffuser
 	use_power = USE_POWER_ACTIVE
 	idle_power_usage = 25		// Previously 100.
 	active_power_usage = 500	// Previously 2000
-	anchored = 1
-	density = 0
+	anchored = TRUE
+	density = FALSE
 	level = 1
 	var/alarm = 0
 	var/enabled = 1

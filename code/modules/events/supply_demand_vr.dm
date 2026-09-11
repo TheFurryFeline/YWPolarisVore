@@ -63,7 +63,7 @@
 		send_console_message(message, dpt);
 
 	// Also announce over main comms so people know to look
-	command_announcement.Announce("An order for the station to deliver supplies to [command_name()] has been delivered to all supply Request Consoles", my_department)
+	command_announcement.Announce("An order for the [using_map.facility_type] to deliver supplies to [command_name()] has been delivered to all supply Request Consoles", my_department)
 
 /datum/event/supply_demand/tick()
 	if(required_items.len == 0)
@@ -200,7 +200,7 @@
 /datum/supply_demand_order/reagent/match_item(var/atom/I)
 	if(!I.reagents)
 		return
-	if(!istype(I, /obj/item/weapon/reagent_containers))
+	if(!istype(I, /obj/item/reagent_containers))
 		return
 	var/amount_to_take = min(I.reagents.get_reagent_amount(reagent_id), qty_need)
 	if(amount_to_take >= 1)
@@ -252,7 +252,7 @@
 //
 
 /datum/event/supply_demand/proc/choose_food_items(var/differentTypes)
-	var/list/types = typesof(/datum/recipe) - /datum/recipe
+	var/list/types = subtypesof(/datum/recipe)
 	for(var/i in 1 to differentTypes)
 		var/datum/recipe/R = pick(types)
 		types -= R // Don't pick the same thing twice
@@ -262,7 +262,7 @@
 	return
 
 /datum/event/supply_demand/proc/choose_research_items(var/differentTypes)
-	var/list/types = typesof(/datum/design) - /datum/design
+	var/list/types = subtypesof(/datum/design)
 	for(var/i in 1 to differentTypes)
 		var/datum/design/D = pick(types)
 		types -= D // Don't pick the same thing twice
@@ -327,7 +327,7 @@
 	return
 
 /datum/event/supply_demand/proc/choose_alloy_items(var/differentTypes)
-	var/list/types = typesof(/datum/alloy) - /datum/alloy
+	var/list/types = subtypesof(/datum/alloy)
 	for(var/i in 1 to differentTypes)
 		var/datum/alloy/A = pick(types)
 		types -= A // Don't pick the same thing twice

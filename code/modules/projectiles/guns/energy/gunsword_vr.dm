@@ -1,4 +1,4 @@
-/obj/item/weapon/gun/energy/gun/fluff/gunsword
+/obj/item/gun/energy/gun/fluff/gunsword
 	name = "Sword Buster"
 	desc = "The Sword Buster gun is custom built using the science behind a Golden Empire pistol. The cell can be removed in close range and used as energy shortsword."
 
@@ -7,7 +7,7 @@
 
 	icon_override = 'icons/vore/custom_guns_vr.dmi'
 	item_state = "gbuster"
-	item_icons = list(slot_r_hand_str = 'icons/vore/custom_guns_vr.dmi', slot_l_hand_str = 'icons/vore/custom_guns_vr.dmi', "slot_belt" = 'icons/mob/belt_vr.dmi')
+	item_icons = list(slot_r_hand_str = 'icons/vore/custom_guns_vr.dmi', slot_l_hand_str = 'icons/vore/custom_guns_vr.dmi', "slot_belt" = 'icons/inventory/belt/mob_vr.dmi')
 
 	w_class = ITEMSIZE_NORMAL
 	origin_tech = list(TECH_COMBAT = 8, TECH_MATERIAL = 4)
@@ -15,7 +15,7 @@
 	fire_sound = 'sound/weapons/Taser.ogg'
 	charge_meter = 1
 
-	cell_type = /obj/item/weapon/cell/device/weapon/gunsword
+	cell_type = /obj/item/cell/device/weapon/gunsword
 
 	modifystate = "gbuster"
 
@@ -27,7 +27,7 @@
 
 
 // -----------------gunsword battery--------------------------
-/obj/item/weapon/cell/device/weapon/gunsword
+/obj/item/cell/device/weapon/gunsword
 	name = "Buster Cell"
 	desc = "The Buster Cell. It doubles as a sword when activated outside the gun housing."
 	icon = 'icons/vore/custom_guns_vr.dmi'
@@ -45,19 +45,20 @@
 
 	var/active = 0
 	var/active_force = 30
+	var/active_armourpen = 50
 	var/active_throwforce = 20
 	var/active_w_class = ITEMSIZE_LARGE
 	var/active_embed_chance = 0		//In the off chance one of these is supposed to embed, you can just tweak this var
-	sharp = 0
-	edge = 0
-	armor_penetration = 50
+	sharp = FALSE
+	edge = FALSE
+	armor_penetration = 0
 	flags = NOBLOODY
 	var/lrange = 2
 	var/lpower = 2
 	var/lcolor = "#800080"
 
 
-/obj/item/weapon/cell/device/weapon/gunsword/proc/activate(mob/living/user)
+/obj/item/cell/device/weapon/gunsword/proc/activate(mob/living/user)
 	if(active)
 		return
 	icon_state = "gsaber"
@@ -65,9 +66,10 @@
 	active = 1
 	embed_chance = active_embed_chance
 	force = active_force
+	armor_penetration = active_armourpen
 	throwforce = active_throwforce
-	sharp = 1
-	edge = 1
+	sharp = TRUE
+	edge = TRUE
 	w_class = active_w_class
 	playsound(src, 'sound/weapons/saberon.ogg', 50, 1)
 	set_light(lrange, lpower, lcolor)
@@ -75,7 +77,7 @@
 
 
 
-/obj/item/weapon/cell/device/weapon/gunsword/proc/deactivate(mob/living/user)
+/obj/item/cell/device/weapon/gunsword/proc/deactivate(mob/living/user)
 	if(!active)
 		return
 	playsound(src, 'sound/weapons/saberoff.ogg', 50, 1)
@@ -84,20 +86,21 @@
 	active = 0
 	embed_chance = initial(embed_chance)
 	force = initial(force)
+	armor_penetration = initial(armor_penetration)
 	throwforce = initial(throwforce)
 	sharp = initial(sharp)
 	edge = initial(edge)
 	w_class = initial(w_class)
 	set_light(0,0)
-	attack_verb = list()
+	attack_verb = null
 
 
-/obj/item/weapon/cell/device/weapon/gunsword/attack_self(mob/living/user as mob)
+/obj/item/cell/device/weapon/gunsword/attack_self(mob/living/user as mob)
 	var/datum/gender/TU = gender_datums[user.get_visible_gender()]
 	if (active)
 		if ((CLUMSY in user.mutations) && prob(50))
-			user.visible_message("<span class='danger'>\The [user] accidentally cuts [TU.himself] with \the [src].</span>",\
-			"<span class='danger'>You accidentally cut yourself with \the [src].</span>")
+			user.visible_message(span_danger("\The [user] accidentally cuts [TU.himself] with \the [src]."),\
+			span_danger("You accidentally cut yourself with \the [src]."))
 			user.take_organ_damage(5,5)
 		deactivate(user)
 		update_icon()
@@ -115,12 +118,5 @@
 	add_fingerprint(user)
 	return
 
-/obj/item/weapon/cell/device/weapon/gunsword/suicide_act(mob/user)
-	var/datum/gender/TU = gender_datums[user.get_visible_gender()]
-	if(active)
-		user.visible_message(pick("<span class='danger'>\The [user] is slitting [TU.his] stomach open with \the [src]! It looks like [TU.he] [TU.is] trying to commit seppuku.</span>",\
-			"<span class='danger'>\The [user] is falling on \the [src]! It looks like [TU.he] [TU.is] trying to commit suicide.</span>"))
-		return (BRUTELOSS|FIRELOSS)
-
-/obj/item/weapon/cell/device/weapon/gunsword/update_icon()
-	overlays.Cut()
+/obj/item/cell/device/weapon/gunsword/update_icon()
+	cut_overlays()

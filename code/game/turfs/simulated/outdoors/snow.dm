@@ -14,7 +14,9 @@
 /turf/simulated/floor/outdoors/snow/snow/Entered(atom/A)
 	if(isliving(A) && !istype(A, /mob/living/simple_mob))
 		var/mob/living/L = A
-		if(L.hovering) // Flying things shouldn't make footprints.
+		if(L.hovering || L.flying) // Flying things shouldn't make footprints.
+			if(L.flying)
+				L.adjust_nutrition(-0.5)
 			return ..()
 		var/mdir = "[A.dir]"
 		crossed_dirs[mdir] = 1
@@ -26,16 +28,15 @@
 	for(var/d in crossed_dirs)
 		add_overlay(image(icon = 'icons/turf/outdoors.dmi', icon_state = "snow_footprints", dir = text2num(d)))
 
-/turf/simulated/floor/outdoors/snow/snow/attackby(var/obj/item/W, var/mob/user)
-	if(istype(W, /obj/item/weapon/shovel))
-		to_chat(user, "<span class='notice'>You begin to remove \the [src] with your [W].</span>")
+/turf/simulated/floor/outdoors/snow/snow/attackby(var/obj/item/W, var/mob/user) // YW Edit -Radiant
+	if(istype(W, /obj/item/shovel))
+		to_chat(user, span_notice("You begin to remove \the [src] with your [W]."))
 		if(do_after(user, 4 SECONDS * W.toolspeed))
-			to_chat(user, "<span class='notice'>\The [src] has been dug up, and now lies in a pile nearby.</span>")
-			var/obj/item/stack/material/snow/S = new(src)
-			S.amount = 10
+			to_chat(user, span_notice("\The [src] has been dug up, and now lies in a pile nearby."))
+			new /obj/item/stack/material/snow(src, 10)
 			demote()
 		else
-			to_chat(user, "<span class='notice'>You decide to not finish removing \the [src].</span>")
+			to_chat(user, span_notice("You decide to not finish removing \the [src]."))
 	else
 		..()
 
@@ -51,13 +52,24 @@
 	name = "ice"
 	icon_state = "ice"
 	desc = "Looks slippery."
-	edge_blending_priority = 0
+	edge_blending_priority = 0.1 //YW Edit - allow edge blending
+	can_be_plated = FALSE
+
+/turf/simulated/floor/outdoors/ice/dark
+	name = "black ice"
+	icon_state = "ice_dark"
+	desc = "An uneven surface of dark rocks glazed over by solid ice. Looks slippey, maybe even painful"
+
+/turf/simulated/floor/outdoors/ice/dark_smooth
+	name = "smooth black ice"
+	icon_state = "ice_dark_smooth"
+	desc = "Dark rock that has been smoothened to be perfectly even. It's coated in a layer of slippey ice"
 
 /turf/simulated/floor/outdoors/ice/Entered(var/mob/living/M)
 	sleep(1 * world.tick_lag)
 	if(istype(M, /mob/living))
 		if(M.stunned == 0)
-			to_chat(M, "<span class='warning'>You slide across the ice!</span>")
+			to_chat(M, span_warning("You slide across the ice!"))
 		M.SetStunned(1)
 		step(M,M.dir)
 
@@ -67,3 +79,18 @@
 	icon_state = "ice"
 	desc = "Looks slippery."
 	movement_cost = 4
+	edge_blending_priority = 0
+
+// Extra cold variants
+
+/turf/simulated/floor/outdoors/snow/v5
+	temperature = 150
+	oxygen = 8
+	nitrogen = 17
+	carbon_dioxide = 75
+
+/turf/simulated/floor/outdoors/ice/v5
+	temperature = 150
+	oxygen = 8
+	nitrogen = 17
+	carbon_dioxide = 75

@@ -4,6 +4,7 @@
 	icon = 'icons/obj/stock_parts.dmi'
 	icon_state = "frame_bitem"
 	var/build_machine_type
+	var/build_wall_only = FALSE
 	var/refund_amt = 5
 	var/refund_type = /obj/item/stack/material/steel
 	var/reverse = 0 //if resulting object faces opposite its dir (like light fixtures)
@@ -16,8 +17,8 @@
 	if(!frame_types_wall)
 		frame_types_wall = construction_frame_wall
 
-/obj/item/frame/attackby(obj/item/weapon/W as obj, mob/user as mob)
-	if(W.is_wrench())
+/obj/item/frame/attackby(obj/item/W as obj, mob/user as mob)
+	if(W.has_tool_quality(TOOL_WRENCH))
 		new refund_type(get_turf(src.loc), refund_amt)
 		qdel(src)
 		return
@@ -27,8 +28,8 @@
 	..()
 	update_type_list()
 	var/datum/frame/frame_types/frame_type
-	if(!build_machine_type)
-		var/datum/frame/frame_types/response = input(user, "What kind of frame would you like to make?", "Frame type request", null) as null|anything in frame_types_floor
+	if(!build_machine_type && !build_wall_only)
+		var/datum/frame/frame_types/response = tgui_input_list(user, "What kind of frame would you like to make?", "Frame type request", frame_types_floor)
 		if(!response)
 			return
 		frame_type = response
@@ -47,7 +48,7 @@
 	M.fingerprints = fingerprints
 	M.fingerprintshidden = fingerprintshidden
 	M.fingerprintslast = fingerprintslast
-	if(istype(src.loc, /obj/item/weapon/gripper)) //Typical gripper shenanigans
+	if(istype(src.loc, /obj/item/gripper)) //Typical gripper shenanigans
 		user.drop_item()
 	qdel(src)
 
@@ -69,20 +70,20 @@
 	var/turf/loc = get_turf(user)
 	var/area/A = loc.loc
 	if(!istype(loc, /turf/simulated/floor))
-		to_chat(user, "<span class='danger'>\The frame cannot be placed on this spot.</span>")
+		to_chat(user, span_danger("\The frame cannot be placed on this spot."))
 		return
 
 	if(A.requires_power == 0 || A.name == "Space")
-		to_chat(user, "<span class='danger'>\The [src] Alarm cannot be placed in this area.</span>")
+		to_chat(user, span_danger("\The [src] Alarm cannot be placed in this area."))
 		return
 
 	if(gotwallitem(loc, ndir))
-		to_chat(user, "<span class='danger'>There's already an item on this wall!</span>")
+		to_chat(user, span_danger("There's already an item on this wall!"))
 		return
 
 	var/datum/frame/frame_types/frame_type
 	if(!build_machine_type)
-		var/datum/frame/frame_types/response = input(user, "What kind of frame would you like to make?", "Frame type request", null) as null|anything in frame_types_wall
+		var/datum/frame/frame_types/response = tgui_input_list(user, "What kind of frame would you like to make?", "Frame type request", frame_types_wall)
 		if(!response)
 			return
 		frame_type = response
@@ -96,7 +97,7 @@
 	M.fingerprints = fingerprints
 	M.fingerprintshidden = fingerprintshidden
 	M.fingerprintslast = fingerprintslast
-	if(istype(src.loc, /obj/item/weapon/gripper)) //Typical gripper shenanigans
+	if(istype(src.loc, /obj/item/gripper)) //Typical gripper shenanigans
 		user.drop_item()
 	qdel(src)
 

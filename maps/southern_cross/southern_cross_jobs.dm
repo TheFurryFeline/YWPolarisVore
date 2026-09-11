@@ -29,7 +29,7 @@ var/const/access_explorer = 43
 	department = "Command"
 	head_position = 1
 	department_flag = ENGSEC
-	faction = "Station"
+	faction = FACTION_STATION
 	total_positions = 1
 	spawn_positions = 1
 	supervisors = "company officials and Corporate Regulations"
@@ -60,7 +60,7 @@ var/const/access_explorer = 43
 	flag = PILOT
 	departments = list(DEPARTMENT_PLANET)
 	department_flag = CIVILIAN
-	faction = "Station"
+	faction = FACTION_STATION
 	total_positions = 2
 	spawn_positions = 2
 	supervisors = "the Head of Personnel"
@@ -77,7 +77,7 @@ var/const/access_explorer = 43
 	flag = EXPLORER
 	departments = list(DEPARTMENT_RESEARCH, DEPARTMENT_PLANET)
 	department_flag = MEDSCI
-	faction = "Station"
+	faction = FACTION_STATION
 	total_positions = 4
 	spawn_positions = 4
 	supervisors = "the Research Director"
@@ -85,14 +85,15 @@ var/const/access_explorer = 43
 	economic_modifier = 4
 	access = list(access_explorer, access_research)
 	minimal_access = list(access_explorer, access_research)
+	banned_job_species = list(SPECIES_ZADDAT)
 
 	outfit_type = /decl/hierarchy/outfit/job/explorer2
 	job_description = "An Explorer searches for interesting things on the surface of Sif, and returns them to the station."
 
 /*
 	alt_titles = list(
-		"Explorer Technician" = /decl/hierarchy/outfit/job/explorer2/technician,
-		"Explorer Medic" = /decl/hierarchy/outfit/job/explorer2/medic)
+		JOB_ALT_EXPLORERE_TECHNICIAN = /decl/hierarchy/outfit/job/explorer2/technician,
+		JOB_ALT_EXPLORER_MEDIC = /decl/hierarchy/outfit/job/explorer2/medic)
 */
 
 /datum/job/sar
@@ -100,7 +101,7 @@ var/const/access_explorer = 43
 	flag = SAR
 	departments = list(DEPARTMENT_PLANET, DEPARTMENT_MEDICAL)
 	department_flag = MEDSCI
-	faction = "Station"
+	faction = FACTION_STATION
 	total_positions = 2
 	spawn_positions = 2
 	supervisors = "the Chief Medical Officer"
@@ -108,6 +109,7 @@ var/const/access_explorer = 43
 	economic_modifier = 4
 	access = list(access_medical, access_medical_equip, access_morgue, access_surgery, access_chemistry, access_virology, access_eva, access_maint_tunnels, access_external_airlocks, access_psychiatrist, access_explorer)
 	minimal_access = list(access_medical, access_medical_equip, access_morgue, access_explorer)
+	min_age_by_species = list(SPECIES_PROMETHEAN = 2)
 
 	outfit_type = /decl/hierarchy/outfit/job/medical/sar
 	job_description = "A Search and Rescue operative recovers individuals who are injured or dead on the surface of Sif."

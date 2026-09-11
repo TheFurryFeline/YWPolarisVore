@@ -24,6 +24,7 @@
 	default_pixel_x = -16
 	pixel_x = -16
 	pixel_y = 0
+	faction = FACTION_LAMIA
 
 	// Vore tags
 	vore_active = 1
@@ -54,8 +55,7 @@
 /mob/living/simple_mob/vore/lamia/update_fullness()
 	var/new_fullness = 0
 	// We only want to count our upper_stomach towards capacity
-	for(var/belly in vore_organs)
-		var/obj/belly/B = belly
+	for(var/obj/belly/B as anything in vore_organs)
 		if(B.name == "upper stomach")
 			for(var/mob/living/M in B)
 				new_fullness += M.size_multiplier
@@ -76,8 +76,7 @@
 		var/upper_shows = FALSE
 		var/tail_shows = FALSE
 
-		for(var/belly in vore_organs)
-			var/obj/belly/B = belly
+		for(var/obj/belly/B as anything in vore_organs)
 			if(!(B.name in list("upper stomach", "tail stomach")))
 				continue
 			var/belly_fullness = 0
@@ -152,7 +151,7 @@
 	icon_living = "albino_bra"
 	icon_rest = "albino_bra_rest"
 	icon_dead = "albino_bra_dead"
-	
+
 /mob/living/simple_mob/vore/lamia/albino/shirt
 	desc = "Combination snake-human. This one is albino. They're wearing a shirt."
 	icon_state = "albino_shirt"
@@ -175,7 +174,7 @@
 	icon_living = "cobra_bra"
 	icon_rest = "cobra_bra_rest"
 	icon_dead = "cobra_bra_dead"
-	
+
 /mob/living/simple_mob/vore/lamia/cobra/shirt
 	desc = "Combination snake-human. This one looks like a cobra. They're wearing a shirt."
 	icon_state = "cobra_shirt"
@@ -198,7 +197,7 @@
 	icon_living = "copper_bra"
 	icon_rest = "copper_bra_rest"
 	icon_dead = "copper_bra_dead"
-	
+
 /mob/living/simple_mob/vore/lamia/copper/shirt
 	desc = "Combination snake-human. This one is copper. They're wearing a shirt."
 	icon_state = "copper_shirt"
@@ -221,7 +220,7 @@
 	icon_living = "green_bra"
 	icon_rest = "green_bra_rest"
 	icon_dead = "green_bra_dead"
-	
+
 /mob/living/simple_mob/vore/lamia/green/shirt
 	desc = "Combination snake-human. This one is green. They're wearing a shirt."
 	icon_state = "green_shirt"
@@ -244,7 +243,7 @@
 	icon_living = "zebra_bra"
 	icon_rest = "zebra_bra_rest"
 	icon_dead = "zebra_bra_dead"
-	
+
 /mob/living/simple_mob/vore/lamia/zebra/shirt
 	desc = "Combination snake-human. This one has a zebra pattern. They're wearing a shirt."
 	icon_state = "zebra_shirt"
@@ -283,7 +282,7 @@ GLOBAL_LIST_INIT(valid_random_lamias, list(
 	icon_living = initial(new_attrs.icon_living)
 	icon_rest = initial(new_attrs.icon_rest)
 	icon_dead = initial(new_attrs.icon_dead)
-	
+
 	vore_default_mode = initial(new_attrs.vore_default_mode)
 	vore_digest_chance = initial(new_attrs.vore_digest_chance)
 	vore_pounce_chance = initial(new_attrs.vore_pounce_chance)

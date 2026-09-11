@@ -14,9 +14,14 @@
 		handle_attack_delay(A, melee_attack_delay) // This will sleep this proc for a bit, which is why waitfor is false.
 
 	// Cooldown testing is done at click code (for players) and interface code (for AI).
-	setClickCooldown(get_attack_speed())
+	// VOREStation Edit Start: Simplemob Injury
+	if(injury_enrages)
+		setClickCooldown(get_attack_speed() - ((injury_level / 2) SECONDS)) // Increase how fast we can attack by our injury level / 2
+	else
+		setClickCooldown(get_attack_speed() + ((injury_level / 2) SECONDS)) // Delay how fast we can attack by our injury level / 2
+	// VOREStation Edit Stop: Simplemob Injury
 
-	// Returns a value, but will be lost if 
+	// Returns a value, but will be lost if
 	. = do_attack(A, their_T)
 
 	if(melee_attack_delay)
@@ -36,7 +41,7 @@
 	if(missed) // Most likely we have a slow attack and they dodged it or we somehow got moved.
 		add_attack_logs(src, A, "Animal-attacked (dodged)", admin_notify = FALSE)
 		playsound(src, 'sound/weapons/punchmiss.ogg', 75, 1)
-		visible_message(span("warning", "\The [src] misses their attack."))
+		visible_message(span_warning("\The [src] misses their attack."))
 		return FALSE
 
 	var/damage_to_do = rand(melee_damage_lower, melee_damage_upper)
@@ -86,7 +91,16 @@
 //The actual top-level ranged attack proc
 /mob/living/simple_mob/proc/shoot_target(atom/A)
 	set waitfor = FALSE
-	setClickCooldown(get_attack_speed())
+
+	if(!istype(A) || QDELETED(A))
+		return
+
+	// VOREStation Edit Start: Simplemob Injury
+	if(injury_enrages)
+		setClickCooldown(get_attack_speed() - ((injury_level / 2) SECONDS)) // Increase how fast we can attack by our injury level / 2
+	else
+		setClickCooldown(get_attack_speed() + ((injury_level / 2) SECONDS)) // Delay how fast we can attack by our injury level / 2
+	// VOREStation Edit Stop: Simplemob Injury
 
 	face_atom(A)
 
@@ -99,7 +113,7 @@
 			try_reload()
 			return FALSE
 
-	visible_message("<span class='danger'><b>\The [src]</b> fires at \the [A]!</span>")
+	visible_message(span_danger(span_bold("\The [src]") + " fires at \the [A]!"))
 	shoot(A)
 	if(casingtype)
 		new casingtype(loc)

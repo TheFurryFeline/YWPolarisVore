@@ -52,12 +52,12 @@ GLOBAL_LIST_INIT(design_datums, list())
 
 /datum/research/New()		//Insert techs into possible_tech here. Known_tech automatically updated.
 	if(!LAZYLEN(GLOB.design_datums))
-		for(var/T in typesof(/datum/design) - /datum/design)
+		for(var/T in subtypesof(/datum/design))
 			GLOB.design_datums += new T
 	possible_designs = GLOB.design_datums
 
 	if(!LAZYLEN(known_tech))
-		for(var/T in typesof(/datum/tech) - /datum/tech)
+		for(var/T in subtypesof(/datum/tech))
 			known_tech += new T
 	RefreshResearch()
 
@@ -120,8 +120,7 @@ GLOBAL_LIST_INIT(design_datums, list())
 
 // A simple helper proc to find the name of a tech with a given ID.
 /proc/CallTechName(var/ID)
-	for(var/T in subtypesof(/datum/tech))
-		var/datum/tech/check_tech = T
+	for(var/datum/tech/check_tech as anything in subtypesof(/datum/tech))
 		if(initial(check_tech.id) == ID)
 			return  initial(check_tech.name)
 
@@ -182,8 +181,8 @@ GLOBAL_LIST_INIT(design_datums, list())
 	id = TECH_DATA
 
 /datum/tech/syndicate
-	name = "Illegal Technologies Research"
-	desc = "The study of technologies that violate standard government regulations."
+	name = "Transgressive Technologies Research"
+	desc = "The study of technologies that sit on the very boundaries of legality and ethics."
 	id = TECH_ILLEGAL
 	level = 0
 
@@ -199,7 +198,7 @@ GLOBAL_LIST_INIT(design_datums, list())
 	id = TECH_PRECURSOR
 	level = 0
 
-/obj/item/weapon/disk/tech_disk
+/obj/item/disk/tech_disk
 	name = "technology disk"
 	desc = "A disk for storing technology data for further research."
 	icon = 'icons/obj/discs_vr.dmi' //VOREStation Edit
@@ -207,13 +206,13 @@ GLOBAL_LIST_INIT(design_datums, list())
 	item_state = "card-id"
 	randpixel = 5
 	w_class = ITEMSIZE_SMALL
-	matter = list(DEFAULT_WALL_MATERIAL = 30, "glass" = 10)
+	matter = list(MAT_STEEL = 30, MAT_GLASS = 10)
 	var/datum/tech/stored
 
-/obj/item/weapon/disk/tech_disk/New()
+/obj/item/disk/tech_disk/New()
 	randpixel_xy()
 
-/obj/item/weapon/disk/design_disk
+/obj/item/disk/design_disk
 	name = "component design disk"
 	desc = "A disk for storing device design data for construction in lathes."
 	icon = 'icons/obj/discs_vr.dmi' //VOREStation Edit
@@ -221,8 +220,8 @@ GLOBAL_LIST_INIT(design_datums, list())
 	item_state = "card-id"
 	randpixel = 5
 	w_class = ITEMSIZE_SMALL
-	matter = list(DEFAULT_WALL_MATERIAL = 30, "glass" = 10)
+	matter = list(MAT_STEEL = 30, MAT_GLASS = 10)
 	var/datum/design/blueprint
 
-/obj/item/weapon/disk/design_disk/New()
+/obj/item/disk/design_disk/New()
 	randpixel_xy()

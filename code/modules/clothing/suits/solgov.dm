@@ -1,8 +1,8 @@
 //SolGov Uniform Suits
 /obj/item/clothing/suit/storage/solgov
 	name = "master solgov jacket"
-	icon = 'icons/obj/clothing/suits_solgov.dmi'
-	icon_override = 'icons/mob/suit_solgov.dmi'
+	icon = 'icons/inventory/suit/item.dmi'
+	icon_override = 'icons/inventory/suit/mob.dmi'
 
 //Service
 
@@ -16,7 +16,7 @@
 	armor = list(melee = 0, bullet = 0, laser = 0,energy = 0, bomb = 0, bio = 0, rad = 0)
 	siemens_coefficient = 0.9
 	flags_inv = HIDEHOLSTER //VOREStation Add - These obviously do.
-	allowed = list(/obj/item/weapon/tank/emergency/oxygen,/obj/item/device/flashlight,/obj/item/weapon/pen,/obj/item/clothing/head/soft,/obj/item/clothing/head/beret,/obj/item/weapon/storage/fancy/cigarettes,/obj/item/weapon/flame/lighter,/obj/item/device/taperecorder,/obj/item/device/analyzer,/obj/item/device/radio,/obj/item/taperoll)
+	allowed = list(/obj/item/tank/emergency/oxygen,/obj/item/flashlight,/obj/item/pen,/obj/item/clothing/head/soft,/obj/item/clothing/head/beret,/obj/item/storage/fancy/cigarettes,/obj/item/flame/lighter,/obj/item/taperecorder,/obj/item/analyzer,/obj/item/radio,/obj/item/taperoll)
 	valid_accessory_slots = (ACCESSORY_SLOT_ARMBAND|ACCESSORY_SLOT_MEDAL|ACCESSORY_SLOT_INSIGNIA|ACCESSORY_SLOT_RANK|ACCESSORY_SLOT_DEPT)
 	restricted_accessory_slots = (ACCESSORY_SLOT_ARMBAND)
 
@@ -186,7 +186,7 @@
 	body_parts_covered = UPPER_TORSO|ARMS
 	armor = list(melee = 0, bullet = 0, laser = 0,energy = 0, bomb = 0, bio = 0, rad = 0)
 	siemens_coefficient = 0.9
-	allowed = list(/obj/item/weapon/tank/emergency/oxygen,/obj/item/device/flashlight,/obj/item/clothing/head/soft,/obj/item/clothing/head/beret,/obj/item/device/radio,/obj/item/weapon/pen)
+	allowed = list(/obj/item/tank/emergency/oxygen,/obj/item/flashlight,/obj/item/clothing/head/soft,/obj/item/clothing/head/beret,/obj/item/radio,/obj/item/pen)
 	valid_accessory_slots = (ACCESSORY_SLOT_MEDAL|ACCESSORY_SLOT_RANK)
 	restricted_accessory_slots = (ACCESSORY_SLOT_ARMBAND)
 
@@ -262,12 +262,12 @@
 	desc = "A uniform dress jacket, fancy."
 	icon_state = "blackdress"
 	item_state = "blackdress"
-	icon = 'icons/obj/clothing/suits_solgov.dmi'
-	icon_override = 'icons/mob/suit_solgov.dmi'
+	icon = 'icons/inventory/suit/item.dmi'
+	icon_override = 'icons/inventory/suit/mob.dmi'
 	body_parts_covered = UPPER_TORSO|ARMS
 	armor = list(melee = 0, bullet = 0, laser = 0,energy = 0, bomb = 0, bio = 0, rad = 0)
 	siemens_coefficient = 0.9
-	allowed = list(/obj/item/weapon/tank/emergency,/obj/item/device/flashlight,/obj/item/clothing/head/soft,/obj/item/clothing/head/beret,/obj/item/device/radio,/obj/item/weapon/pen)
+	allowed = list(/obj/item/tank/emergency,/obj/item/flashlight,/obj/item/clothing/head/soft,/obj/item/clothing/head/beret,/obj/item/radio,/obj/item/pen)
 	valid_accessory_slots = (ACCESSORY_SLOT_MEDAL|ACCESSORY_SLOT_RANK)
 
 /obj/item/clothing/suit/dress/solgov/fleet/sailor
@@ -293,8 +293,8 @@
 /obj/item/clothing/suit/storage/hooded/wintercoat/solgov
 	name = "\improper SifGuard winter coat"
 	icon_state = "coatec"
-	icon = 'icons/obj/clothing/suits_solgov.dmi'
-	icon_override = 'icons/mob/suit_solgov.dmi'
+	icon = 'icons/inventory/suit/item.dmi'
+	icon_override = 'icons/inventory/suit/mob.dmi'
 	armor = list(melee = 25, bullet = 10, laser = 5, energy = 10, bomb = 20, bio = 0, rad = 10)
 	valid_accessory_slots = (ACCESSORY_SLOT_INSIGNIA|ACCESSORY_SLOT_RANK)
 
@@ -344,8 +344,8 @@
 	desc = "An Stealth Assault Enterprises . Black and undecorated."
 	icon_state = "terranservice"
 	item_state = "terranservice"
-	icon = 'icons/obj/clothing/suits_solgov.dmi'
-	icon_override = 'icons/mob/suit_solgov.dmi'
+	icon = 'icons/inventory/suit/item.dmi'
+	icon_override = 'icons/inventory/suit/mob.dmi'
 
 /obj/item/clothing/suit/storage/saare/service/command
 	name = "SAARE command coat"
@@ -360,12 +360,12 @@
 	desc = "A Stealth Assault Enterprises uniform dress jacket, fancy."
 	icon_state = "terrandress"
 	item_state = "terrandress"
-	icon = 'icons/obj/clothing/suits_solgov.dmi'
-	icon_override = 'icons/mob/suit_solgov.dmi'
+	icon = 'icons/inventory/suit/item.dmi'
+	icon_override = 'icons/inventory/suit/mob.dmi'
 	body_parts_covered = UPPER_TORSO|ARMS
 	armor = list(melee = 0, bullet = 0, laser = 0,energy = 0, bomb = 0, bio = 0, rad = 0)
 	siemens_coefficient = 0.9
-	allowed = list(/obj/item/weapon/tank/emergency,/obj/item/device/flashlight,/obj/item/clothing/head/soft,/obj/item/clothing/head/beret,/obj/item/device/radio,/obj/item/weapon/pen)
+	allowed = list(/obj/item/tank/emergency,/obj/item/flashlight,/obj/item/clothing/head/soft,/obj/item/clothing/head/beret,/obj/item/radio,/obj/item/pen)
 	valid_accessory_slots = (ACCESSORY_SLOT_MEDAL|ACCESSORY_SLOT_RANK)
 
 /obj/item/clothing/suit/dress/terran/navy

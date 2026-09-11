@@ -20,7 +20,14 @@
 			. += M.slowdown
 
 	var/health_deficiency = (getMaxHealth() - health)
-	if(health_deficiency >= 40) . += (health_deficiency / 25)
+	if(istype(src, /mob/living/carbon/human)) //VOREStation Edit Start
+		var/mob/living/carbon/human/H = src
+		health_deficiency *= H.species.trauma_mod //Species pain sensitivity does not apply to painkillers, so we apply it before
+	if(health_deficiency >= 40)
+		if(chem_effects[CE_PAINKILLER]) //On painkillers? Reduce pain! On anti-painkillers? Increase pain!
+			health_deficiency = max(0, health_deficiency - src.chem_effects[CE_PAINKILLER])
+		if(health_deficiency >= 40) //Still in enough pain for it to be significant?
+			. += (health_deficiency / 25) //VOREStation Edit End
 
 	if(can_feel_pain())
 		if(halloss >= 10) . += (halloss / 10) //halloss shouldn't slow you down if you can't even feel it
@@ -32,8 +39,6 @@
 	if (feral >= 10) //crazy feral animals give less and less of a shit about pain and hunger as they get crazier
 		. = max(species.slowdown, species.slowdown+((.-species.slowdown)/(feral/10))) // As feral scales to damage, this amounts to an effective +1 slowdown cap
 		if(shock_stage >= 10) . -= 1.5 //this gets a +3 later, feral critters take reduced penalty
-	if(reagents.has_reagent("numbenzyme"))
-		. += 1.5 //A tad bit of slowdown.
 	if(riding_datum) //Bit of slowdown for taur rides if rider is bigger or fatter than mount.
 		var/datum/riding/R = riding_datum
 		var/mob/living/L = R.ridden
@@ -42,8 +47,8 @@
 				var/mob/living/carbon/human/H = M
 				if(H.size_multiplier > L.size_multiplier)
 					. += 1
-				if(H.weight > L.weight)
-					. += 1
+				//if(H.weight > L.weight) weight should not have mechanical impact
+					//. += 1
 	//VOREstation end
 
 	if(istype(buckled, /obj/structure/bed/chair/wheelchair))
@@ -97,7 +102,6 @@
 			var/their_slowdown = max(H.calculate_item_encumbrance(), 1)
 			item_tally = max(item_tally, their_slowdown) // If our slowdown is less than theirs, then we become as slow as them (before species modifires).
 
-	item_tally /= 2 //VOREStation Add
 	item_tally *= species.item_slowdown_mod
 
 	. += item_tally
@@ -112,7 +116,7 @@
 			. *= 0.5
 		. -= chem_effects[CE_SPEEDBOOST]	// give 'em a buff on top.
 
-	. = max(HUMAN_LOWEST_SLOWDOWN, . + config.human_delay)	// Minimum return should be the same as force_max_speed
+	. = max(HUMAN_LOWEST_SLOWDOWN, . + CONFIG_GET(number/human_delay))	// Minimum return should be the same as force_max_speed
 	. += ..()
 
 /mob/living/carbon/human/Moved()
@@ -124,8 +128,9 @@
 // It is in a seperate place to avoid an infinite loop situation with dragging mobs dragging each other.
 // Also its nice to have these things seperated.
 /mob/living/carbon/human/proc/calculate_item_encumbrance()
-	if(!buckled && shoes) // Shoes can make you go faster.
-		. += shoes.slowdown
+	if(shoes)	// Shoes can make you go faster.
+		if(!buckled || (buckled && istype(buckled, /obj/machinery/power/rtg/reg)))
+			. += shoes.slowdown
 
 	// Loop through some slots, and add up their slowdowns.
 	// Includes slots which can provide armor, the back slot, and suit storage.
@@ -142,14 +147,14 @@
 	if(!T)
 		return 0
 
-	if(T.movement_cost)
+	if(T.movement_cost && !flying) //VOREStation Add: If you are flying you are probably not affected by the terrain on the ground.
 		var/turf_move_cost = T.movement_cost
 		if(istype(T, /turf/simulated/floor/water))
 			if(species.water_movement)
 				turf_move_cost = CLAMP(turf_move_cost + species.water_movement, HUMAN_LOWEST_SLOWDOWN, 15)
 			if(shoes)
 				var/obj/item/clothing/shoes/feet = shoes
-				if(feet.water_speed)
+				if(istype(feet) && feet.water_speed)
 					turf_move_cost = CLAMP(turf_move_cost + feet.water_speed, HUMAN_LOWEST_SLOWDOWN, 15)
 			. += turf_move_cost
 		else if(istype(T, /turf/simulated/floor/outdoors/snow))
@@ -157,7 +162,7 @@
 				turf_move_cost = CLAMP(turf_move_cost + species.snow_movement, HUMAN_LOWEST_SLOWDOWN, 15)
 			if(shoes)
 				var/obj/item/clothing/shoes/feet = shoes
-				if(feet.water_speed)
+				if(istype(feet) && feet.snow_speed)
 					turf_move_cost = CLAMP(turf_move_cost + feet.snow_speed, HUMAN_LOWEST_SLOWDOWN, 15)
 			. += turf_move_cost
 		else
@@ -166,9 +171,9 @@
 
 	// Wind makes it easier or harder to move, depending on if you're with or against the wind.
 	// I don't like that so I'm commenting it out :)
-	// VOREstation Edit Start 
+	// VOREstation Edit Start
 /*
-	if(T.outdoors && (T.z <= SSplanets.z_to_planet.len))
+	if((T.is_outdoors()) && (T.z <= SSplanets.z_to_planet.len))
 		var/datum/planet/P = SSplanets.z_to_planet[z]
 		if(P)
 			var/datum/weather_holder/WH = P.weather_holder
@@ -186,8 +191,8 @@
 
 /mob/living/carbon/human/get_jetpack()
 	if(back)
-		var/obj/item/weapon/rig/rig = get_rig()
-		if(istype(back, /obj/item/weapon/tank/jetpack))
+		var/obj/item/rig/rig = get_rig()
+		if(istype(back, /obj/item/tank/jetpack))
 			return back
 		else if(istype(rig))
 			for(var/obj/item/rig_module/maneuvering_jets/module in rig.installed_modules)
@@ -198,30 +203,37 @@
 	if(restrained())	return 0
 
 	if(..()) //Can move due to other reasons, don't use jetpack fuel
-		return 1
+		return TRUE
+
+	if(species.can_space_freemove || (species.can_zero_g_move && !istype(get_turf(src), /turf/space))) //VOREStation Edit.
+		return TRUE  //VOREStation Edit.
+
+	if(flying) //VOREStation Edit. If you're flying, you glide around!
+		return TRUE  //VOREStation Edit.
 
 	//Do we have a working jetpack?
-	var/obj/item/weapon/tank/jetpack/thrust = get_jetpack()
+	var/obj/item/tank/jetpack/thrust = get_jetpack()
 
 	if(thrust)
 		if(((!check_drift) || (check_drift && thrust.stabilization_on)) && (!lying) && (thrust.do_thrust(0.01, src)))
 			inertia_dir = 0
-			return 1
-	if(flying) //VOREStation Edit. If you're flying, you glide around!
-		return 0  //VOREStation Edit.
+			return TRUE
 
-	return 0
+	return FALSE
 
 
 /mob/living/carbon/human/Process_Spaceslipping(var/prob_slip = 5)
 	//If knocked out we might just hit it and stop.  This makes it possible to get dead bodies and such.
 
 	if(species.flags & NO_SLIP)
-		return 0
+		return FALSE
 
-	var/obj/item/weapon/tank/jetpack/thrust = get_jetpack()
+	if(species.can_space_freemove || species.can_zero_g_move)
+		return FALSE
+
+	var/obj/item/tank/jetpack/thrust = get_jetpack()
 	if(thrust?.can_thrust(0.01))
-		return 0
+		return FALSE
 
 	if(stat)
 		prob_slip = 0 // Changing this to zero to make it line up with the comment, and also, make more sense.
@@ -245,7 +257,7 @@
 		return
 	if(is_incorporeal())
 		return
-	if(!config.footstep_volume || !T.footstep_sounds || !T.footstep_sounds.len)
+	if(!CONFIG_GET(number/footstep_volume) || !T.footstep_sounds || !T.footstep_sounds.len)
 		return
 	// Future Upgrades - Multi species support
 	var/list/footstep_sounds = T.footstep_sounds["human"]
@@ -264,7 +276,7 @@
 	if(m_intent == "run" && step_count++ % 2 != 0)
 		return
 
-	var/volume = config.footstep_volume
+	var/volume = CONFIG_GET(number/footstep_volume)
 
 	// Reduce volume while walking or barefoot
 	if(!shoes || m_intent == "walk")
@@ -280,8 +292,13 @@
 	if(buckled || lying || throwing)
 		return // people flying, lying down or sitting do not step
 
-	if(!has_gravity(src) && prob(75))
+	if(!get_gravity(src) && prob(75))
 		return // Far less likely to make noise in no gravity
 
 	playsound(T, S, volume, FALSE)
 	return
+
+/mob/living/carbon/human/set_dir(var/new_dir)
+	. = ..()
+	if(. && (species.tail || tail_style))
+		update_tail_showing()

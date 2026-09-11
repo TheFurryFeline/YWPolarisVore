@@ -70,7 +70,7 @@
 			M.Scale(x_scale, y_scale)
 			M.Translate(x_off, y_off)
 			dir.transform = M
-			overlays += dir
+			add_overlay(dir)
 
 /obj/screen/movable/pic_in_pic/ai/set_view_size(width, height, do_refresh = TRUE)
 	if(!aiEye) // Exploit fix
@@ -102,7 +102,7 @@
 		qdel(src)
 		return
 	highlighted = TRUE
-	overlays.Cut()
+	cut_overlays()
 	add_background()
 	add_buttons()
 
@@ -113,16 +113,16 @@
 		qdel(src)
 		return
 	highlighted = FALSE
-	overlays.Cut()
+	cut_overlays()
 	add_background()
 	add_buttons()
 
 /obj/screen/movable/pic_in_pic/ai/proc/set_ai(mob/living/silicon/ai/new_ai)
 	if(!aiEye && !QDELETED(src))
 		if(new_ai)
-			to_chat(new_ai, "<span class='danger'><h2>You've run into a unfixable bug with AI eye code. \
+			to_chat(new_ai, span_danger("<h2>You've run into a unfixable bug with AI eye code. \
 In order to create a new multicam, you will have to select a different camera first before trying to add one, or ask an admin to fix you. \
-Whatever you did that made the last camera window disappear-- don't do that again.</h2></span>")
+Whatever you did that made the last camera window disappear-- don't do that again.</h2>"))
 		qdel(src)
 		return
 	if(ai)
@@ -153,7 +153,7 @@ Whatever you did that made the last camera window disappear-- don't do that agai
 	. = ..()
 
 /area/ai_multicam_room
-	name = "ai_multicam_room"
+	name = "AI Multicam Room"
 	icon_state = "ai_camera_room"
 	dynamic_lighting = FALSE
 	ambience = list()
@@ -202,10 +202,8 @@ GLOBAL_DATUM(ai_camera_room_landmark, /obj/effect/landmark/ai_multicam_room)
 	var/list/obj/machinery/camera/add = list()
 	var/list/obj/machinery/camera/remove = list()
 	var/list/obj/machinery/camera/visible = list()
-	for(var/VV in visibleChunks)
-		var/datum/chunk/camera/CC = VV
-		for(var/V in CC.cameras)
-			var/obj/machinery/camera/C = V
+	for(var/datum/chunk/camera/CC as anything in visibleChunks)
+		for(var/obj/machinery/camera/C as anything in CC.cameras)
 			if (!C.can_use() || (get_dist(C, src) > telegraph_range))
 				continue
 			visible |= C
@@ -213,15 +211,13 @@ GLOBAL_DATUM(ai_camera_room_landmark, /obj/effect/landmark/ai_multicam_room)
 	add = visible - cameras_telegraphed
 	remove = cameras_telegraphed - visible
 
-	for(var/V in remove)
-		var/obj/machinery/camera/C = V
+	for(var/obj/machinery/camera/C as anything in remove)
 		if(QDELETED(C))
 			continue
 		cameras_telegraphed -= C
 		C.in_use_lights--
 		C.update_icon()
-	for(var/V in add)
-		var/obj/machinery/camera/C = V
+	for(var/obj/machinery/camera/C as anything in add)
 		if(QDELETED(C))
 			continue
 		cameras_telegraphed |= C
@@ -230,8 +226,7 @@ GLOBAL_DATUM(ai_camera_room_landmark, /obj/effect/landmark/ai_multicam_room)
 
 /mob/observer/eye/aiEye/pic_in_pic/proc/disable_camera_telegraphing()
 	telegraph_cameras = FALSE
-	for(var/V in cameras_telegraphed)
-		var/obj/machinery/camera/C = V
+	for(var/obj/machinery/camera/C as anything in cameras_telegraphed)
 		if(QDELETED(C))
 			continue
 		C.in_use_lights--
@@ -253,25 +248,25 @@ GLOBAL_DATUM(ai_camera_room_landmark, /obj/effect/landmark/ai_multicam_room)
 /mob/living/silicon/ai/proc/drop_new_multicam(silent = FALSE)
 	if(!multicam_allowed)
 		if(!silent)
-			to_chat(src, "<span class='warning'>This action is currently disabled. Contact an administrator to enable this feature.</span>")
+			to_chat(src, span_warning("This action is currently disabled. Contact an administrator to enable this feature."))
 		return
 	if(!eyeobj)
 		return
 	if(multicam_screens.len >= max_multicams)
 		if(!silent)
-			to_chat(src, "<span class='warning'>Cannot place more than [max_multicams] multicamera windows.</span>")
+			to_chat(src, span_warning("Cannot place more than [max_multicams] multicamera windows."))
 		return
 	var/obj/screen/movable/pic_in_pic/ai/C = new /obj/screen/movable/pic_in_pic/ai()
 	C.set_view_size(3, 3, FALSE)
 	C.set_view_center(get_turf(eyeobj))
 	C.set_ai(src)
 	if(!silent)
-		to_chat(src, "<span class='notice'>Added new multicamera window.</span>")
+		to_chat(src, span_notice("Added new multicamera window."))
 	return C
 
 /mob/living/silicon/ai/proc/toggle_multicam()
 	if(!multicam_allowed)
-		to_chat(src, "<span class='warning'>This action is currently disabled. Contact an administrator to enable this feature.</span>")
+		to_chat(src, span_warning("This action is currently disabled. Contact an administrator to enable this feature."))
 		return
 	if(multicam_on)
 		end_multicam()
@@ -282,17 +277,16 @@ GLOBAL_DATUM(ai_camera_room_landmark, /obj/effect/landmark/ai_multicam_room)
 	if(multicam_on || aiRestorePowerRoutine || !isturf(loc))
 		return
 	if(!GLOB.ai_camera_room_landmark)
-		to_chat(src, "<span class='warning'>This function is not available at this time.</span>")
+		to_chat(src, span_warning("This function is not available at this time."))
 		return
 	multicam_on = TRUE
 	refresh_multicam()
-	to_chat(src, "<span class='notice'>Multiple-camera viewing mode activated.</span>")
+	to_chat(src, span_notice("Multiple-camera viewing mode activated."))
 
 /mob/living/silicon/ai/proc/refresh_multicam()
 	reset_view(GLOB.ai_camera_room_landmark)
 	if(client)
-		for(var/V in multicam_screens)
-			var/obj/screen/movable/pic_in_pic/P = V
+		for(var/obj/screen/movable/pic_in_pic/P as anything in multicam_screens)
 			P.show_to(client)
 
 /mob/living/silicon/ai/proc/end_multicam()
@@ -301,11 +295,10 @@ GLOBAL_DATUM(ai_camera_room_landmark, /obj/effect/landmark/ai_multicam_room)
 	multicam_on = FALSE
 	select_main_multicam_window(null)
 	if(client)
-		for(var/V in multicam_screens)
-			var/obj/screen/movable/pic_in_pic/P = V
+		for(var/obj/screen/movable/pic_in_pic/P as anything in multicam_screens)
 			P.unshow_to(client)
 	reset_view()
-	to_chat(src, "<span class='notice'>Multiple-camera viewing mode deactivated.</span>")
+	to_chat(src, span_notice("Multiple-camera viewing mode deactivated."))
 
 
 /mob/living/silicon/ai/proc/select_main_multicam_window(obj/screen/movable/pic_in_pic/ai/P)

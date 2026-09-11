@@ -1,3 +1,4 @@
+#define BLOOD_MINIMUM_STOP_PROCESS 2.1 // Define to avoid hitting 0 blood.
 /****************************************************
 				BLOOD SYSTEM
 ****************************************************/
@@ -14,8 +15,12 @@ var/const/CE_STABLE_THRESHOLD = 0.5
 /mob/living/carbon/human/var/datum/reagents/vessel // Container for blood and BLOOD ONLY. Do not transfer other chems here.
 /mob/living/carbon/human/var/var/pale = 0          // Should affect how mob sprite is drawn, but currently doesn't.
 
-//Initializes blood vessels
-/mob/living/carbon/human/proc/make_blood()
+/***Initializes blood vessels
+ * Called code/modules/mob/living/carbon/human/human.dm#L1259 set_species procedure with 0 args
+ * Also called by inject_blood as fallback with amt = injected_amount
+ * MUST be followed by calling fixblood() allways.
+***/
+/mob/living/carbon/human/proc/make_blood(var/amt = 0)
 
 	if(vessel)
 		return
@@ -29,7 +34,11 @@ var/const/CE_STABLE_THRESHOLD = 0.5
 	if(!should_have_organ(O_HEART)) //We want the var for safety but we can do without the actual blood.
 		return
 
-	vessel.add_reagent("blood",species.blood_volume)
+	if(!amt)
+		vessel.add_reagent("blood",species.blood_volume)
+	else
+		vessel.add_reagent("blood", clamp(amt, 1, species.blood_volume))
+
 
 //Resets blood data
 /mob/living/carbon/human/proc/fixblood()
@@ -76,13 +85,20 @@ var/const/CE_STABLE_THRESHOLD = 0.5
 		if(species && should_have_organ(O_HEART))
 			var/obj/item/organ/internal/heart/heart = internal_organs_by_name[O_HEART]
 
-			if(!heart)
+			if(has_modifier_of_type(/datum/modifier/bloodpump))
+				blood_volume_raw *= 1
+				blood_volume *= 1
+			else if(!heart)
+				blood_volume_raw = 0
 				blood_volume = 0
 			else if(heart.is_broken())
+				blood_volume_raw *= 0.3
 				blood_volume *= 0.3
 			else if(heart.is_bruised())
+				blood_volume_raw *= 0.7
 				blood_volume *= 0.7
 			else if(heart.damage)
+				blood_volume_raw *= 0.8
 				blood_volume *= 0.8
 
 		//Effects of bloodloss
@@ -105,10 +121,10 @@ var/const/CE_STABLE_THRESHOLD = 0.5
 				pale = 1
 				update_icons_body()
 				var/word = pick("dizzy","woozy","faint","disoriented","unsteady")
-				to_chat(src, "<font color='red'>You feel slightly [word]</font>")
+				to_chat(src, span_red("You feel slightly [word]"))
 			if(prob(1))
 				var/word = pick("dizzy","woozy","faint","disoriented","unsteady")
-				to_chat(src, "<font color='red'>You feel [word]</font>")
+				to_chat(src, span_red("You feel [word]"))
 			if(getOxyLoss() < 20 * threshold_coef)
 				adjustOxyLoss(3 * dmg_coef)
 		else if(blood_volume_raw >= species.blood_volume*species.blood_level_danger)
@@ -122,13 +138,13 @@ var/const/CE_STABLE_THRESHOLD = 0.5
 			if(prob(15))
 				Paralyse(rand(1,3))
 				var/word = pick("dizzy","woozy","faint","disoriented","unsteady")
-				to_chat(src, "<font color='red'>You feel dangerously [word]</font>")
+				to_chat(src, span_red("You feel dangerously [word]"))
 		else if(blood_volume_raw >= species.blood_volume*species.blood_level_fatal)
 			adjustOxyLoss(5 * dmg_coef)
 //			adjustToxLoss(3 * dmg_coef)
 			if(prob(15))
 				var/word = pick("dizzy","woozy","faint","disoriented","unsteady")
-				to_chat(src, "<font color='red'>You feel extremely [word]</font>")
+				to_chat(src, span_red("You feel extremely [word]"))
 		else //Not enough blood to survive (usually)
 			if(!pale)
 				pale = 1
@@ -206,17 +222,21 @@ var/const/CE_STABLE_THRESHOLD = 0.5
 	if(!amt)
 		return 0
 
-	if(amt > vessel.get_reagent_amount("blood"))
-		amt = vessel.get_reagent_amount("blood") - 1	// Bit of a safety net; it's impossible to add blood if there's not blood already in the vessel.
+	var/current_blood = vessel.get_reagent_amount("blood")
+	if(current_blood < BLOOD_MINIMUM_STOP_PROCESS)
+		return 0 //We stop processing under 3 units of blood because apparently weird shit can make it overflowrandomly.
 
-	return vessel.remove_reagent("blood",amt * (src.mob_size/MOB_MEDIUM))
+	if(amt > current_blood)
+		amt = current_blood - 2	// Bit of a safety net; it's impossible to add blood if there's not blood already in the vessel.
+
+	return vessel.remove_reagent("blood",amt)
 
 /****************************************************
 				BLOOD TRANSFERS
 ****************************************************/
 
 //Gets blood from mob to the container, preserving all data in it.
-/mob/living/carbon/proc/take_blood(obj/item/weapon/reagent_containers/container, var/amount)
+/mob/living/carbon/proc/take_blood(obj/item/reagent_containers/container, var/amount)
 
 	var/datum/reagent/B = get_blood(container.reagents)
 	if(!B)
@@ -226,10 +246,19 @@ var/const/CE_STABLE_THRESHOLD = 0.5
 
 	//set reagent data
 	B.data["donor"] = src
-	if (!B.data["virus2"])
-		B.data["virus2"] = list()
-	B.data["virus2"] |= virus_copylist(src.virus2)
-	B.data["antibodies"] = src.antibodies
+	if(!B.data["viruses"])
+		B.data["viruses"] = list()
+
+	for(var/datum/disease/D in GetViruses())
+		if(D.spread_flags & SPECIAL)
+			continue
+		B.data["viruses"] |= D.Copy()
+
+	if(!B.data["resistances"])
+		B.data["resistances"] = list()
+
+	if(B.data["resistances"])
+		B.data["resistances"] |= GetResistances()
 	B.data["blood_DNA"] = copytext(src.dna.unique_enzymes,1,0)
 	B.data["blood_type"] = copytext(src.dna.b_type,1,0)
 
@@ -247,25 +276,29 @@ var/const/CE_STABLE_THRESHOLD = 0.5
 	return B
 
 //For humans, blood does not appear from blue, it comes from vessels.
-/mob/living/carbon/human/take_blood(obj/item/weapon/reagent_containers/container, var/amount)
+/mob/living/carbon/human/take_blood(obj/item/reagent_containers/container, var/amount)
 
 	if(!should_have_organ(O_HEART))
 		return null
 
-	if(vessel.get_reagent_amount("blood") < amount)
+	if(vessel.get_reagent_amount("blood") < max(amount, BLOOD_MINIMUM_STOP_PROCESS))
 		return null
 
 	. = ..()
-	vessel.remove_reagent("blood",amount) // Removes blood if human
+	remove_blood(amount) // Removes blood if human
 
 //Transfers blood from container ot vessels
 /mob/living/carbon/proc/inject_blood(var/datum/reagent/blood/injected, var/amount)
 	if (!injected || !istype(injected))
 		return
-	var/list/sniffles = virus_copylist(injected.data["virus2"])
+	var/list/sniffles = injected.data["viruses"]
 	for(var/ID in sniffles)
-		var/datum/disease2/disease/sniffle = sniffles[ID]
-		infect_virus2(src,sniffle,1)
+		var/datum/disease/D = ID
+		if((D.spread_flags & SPECIAL) || (D.spread_flags & NON_CONTAGIOUS)) // You can't put non-contagius diseases in blood, but just in case
+			continue
+		ContractDisease(D)
+	if (injected.data["resistances"] && prob(5))
+		antibodies |= injected.data["resistances"]
 	if (injected.data["antibodies"] && prob(5))
 		antibodies |= injected.data["antibodies"]
 	var/list/chems = list()
@@ -284,8 +317,28 @@ var/const/CE_STABLE_THRESHOLD = 0.5
 
 	var/datum/reagent/blood/our = get_blood(vessel)
 
-	if (!injected || !our)
+	if (!injected)
 		return
+	if(!our)
+		log_debug("[src] has no blood reagent, proceeding with fallback reinitialization.")
+		var/vessel_old = vessel
+		vessel = null
+		qdel(vessel_old)
+		make_blood(amount)
+		if(!vessel)
+			log_debug("Failed to re-initialize blood datums on [src]!")
+			return
+		if(vessel.total_volume < species.blood_volume)
+			vessel.add_reagent("blood", species.blood_volume - vessel.total_volume)
+		else if(vessel.total_volume > species.blood_volume)
+			vessel.maximum_volume = species.blood_volume
+		fixblood()
+		our = get_blood(vessel)
+		if(!our)
+			log_debug("Failed to re-initialize blood datums on [src]!")
+			return
+
+
 	if(blood_incompatible(injected.data["blood_type"],our.data["blood_type"],injected.data["species"],our.data["species"]) )
 		reagents.add_reagent("toxin",amount * 0.5)
 		reagents.update_total()
@@ -304,7 +357,7 @@ var/const/CE_STABLE_THRESHOLD = 0.5
 					return D
 	return res
 
-proc/blood_incompatible(donor,receiver,donor_species,receiver_species)
+/proc/blood_incompatible(donor,receiver,donor_species,receiver_species)
 	if(!donor || !receiver) return 0
 
 	if(donor_species && receiver_species)
@@ -327,7 +380,7 @@ proc/blood_incompatible(donor,receiver,donor_species,receiver_species)
 		//AB is a universal receiver.
 	return 0
 
-proc/blood_splatter(var/target,var/datum/reagent/blood/source,var/large)
+/proc/blood_splatter(var/target,var/datum/reagent/blood/source,var/large)
 
 	//Vorestation Edit Start - We're not going to splatter at all because we're in something and that's silly.
 	if(istype(source,/atom/movable))
@@ -361,7 +414,7 @@ proc/blood_splatter(var/target,var/datum/reagent/blood/source,var/large)
 
 	var/obj/effect/decal/cleanable/blood/drip/drop = B
 	if(istype(drop) && drips && drips.len && !large)
-		drop.overlays |= drips
+		drop.add_overlay(drips)
 		drop.drips |= drips
 
 	// If there's no data to copy, call it quits here.
@@ -386,9 +439,11 @@ proc/blood_splatter(var/target,var/datum/reagent/blood/source,var/large)
 			B.blood_DNA[source.data["blood_DNA"]] = "O+"
 
 	// Update virus information.
-	if(source.data["virus2"])
-		B.virus2 = virus_copylist(source.data["virus2"])
+	if(source.data["viruses"])
+		B.viruses = source.data["viruses"]
 
 	B.fluorescent  = 0
 	B.invisibility = 0
 	return B
+
+#undef BLOOD_MINIMUM_STOP_PROCESS

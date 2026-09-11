@@ -37,7 +37,7 @@
 
 /datum/event/prison_break/announce()
 	if(areas && areas.len > 0)
-		command_announcement.Announce("[pick("Gr3y.T1d3 virus","Malignant trojan")] detected in [station_name()] [(eventDept == "Security")? "imprisonment":"containment"] subroutines. Secure any compromised areas immediately. Station AI involvement is recommended.", "[eventDept] Alert")
+		command_announcement.Announce("[pick("Gr3y.T1d3 virus","Malignant trojan")] detected in [station_name()] [(eventDept == "Security")? "imprisonment":"containment"] subroutines. Secure any compromised areas immediately. Involvement of [using_map.facility_type] AI is recommended.", "[eventDept] Alert")
 
 
 /datum/event/prison_break/start()
@@ -51,7 +51,7 @@
 		for(var/obj/machinery/message_server/MS in machines)
 			MS.send_rc_message("Engineering", my_department, rc_message, "", "", 2)
 		for(var/mob/living/silicon/ai/A in player_list)
-			to_chat(A, "<span class='danger'>Malicious program detected in the [english_list(areaName)] lighting and airlock control systems by [my_department].</span>")
+			to_chat(A, span_danger("Malicious program detected in the [english_list(areaName)] lighting and airlock control systems by [my_department]."))
 
 	else
 		to_world_log("ERROR: Could not initate grey-tide. Unable to find suitable containment area.")
@@ -64,7 +64,7 @@
 			var/obj/machinery/power/apc/theAPC = null
 			for(var/area/A in areas)
 				theAPC = A.get_apc()
-				if(theAPC.operating)	//If the apc's off, it's a little hard to overload the lights.
+				if(theAPC && theAPC.operating)	//If the apc's off, it's a little hard to overload the lights.
 					for(var/obj/machinery/light/L in A)
 						L.flicker(10)
 

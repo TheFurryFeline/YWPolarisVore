@@ -19,11 +19,13 @@
 	icon_state = "map_vent_out"
 	external_pressure_bound = ONE_ATMOSPHERE * 1.1
 
+/* commented out because of the reworked blueprints by vore
 /obj/item/blueprints
 	SPACE_OUTSIDE_TYPES = list(
 		/area/borealis2/outdoors/exterior,
-        /area/borealis2/outdoors/grounds 
+        /area/borealis2/outdoors/grounds
 	)
+*/
 
 
 
@@ -58,15 +60,21 @@
 /obj/effect/ceiling
 	invisibility = 101 // nope cant see this
 	anchored = 1
+	can_atmos_pass = ATMOS_PASS_PROC
 
-/obj/effect/ceiling/CheckExit(atom/movable/O as mob|obj, turf/target as turf)
-	if(target && target.z > src.z)
-		return FALSE // Block exit from our turf to above
+/obj/effect/ceiling/CanZASPass(turf/T, is_zone)
+	if(T == GetAbove(src))
+		return FALSE // Keep your air up there, buddy
 	return TRUE
 
-/obj/effect/ceiling/CanPass(atom/movable/mover, turf/target, height=0, air_group=0)
-	if(mover && mover.z > src.z)
-		return FALSE // Block entry from above to our turf
+/obj/effect/ceiling/CanPass(atom/movable/mover, turf/target)
+	if(target == GetAbove(src))
+		return FALSE
+	return TRUE
+
+/obj/effect/ceiling/Uncross(atom/movable/mover, turf/target)
+	if(target == GetAbove(src))
+		return FALSE
 	return TRUE
 
 //
@@ -109,7 +117,7 @@
 /obj/machinery/portable_atmospherics/powered/scrubber/huge/stationary/tram/powered()
 	return TRUE // Always be powered
 
-//Chemistry 'chemavator'
+/* copy of code in another file /Chemistry 'chemavator'
 /obj/machinery/smartfridge/chemistry/chemvator
 	name = "\improper Smart Chemavator - Upper"
 	desc = "A refrigerated storage unit for medicine and chemical storage. Now sporting a fancy system of pulleys to lift bottles up and down."
@@ -131,23 +139,24 @@
 		item_records = attached.item_records
 	else
 		to_chat(world,"<span class='danger'>[src] at [x],[y],[z] cannot find the unit above it!</span>")
+	*/
 
 
-/obj/machinery/smartfridge/plantvator
+/obj/machinery/smartfridge/produce/plantvator
 	name = "\improper Smart plantavator - Upper"
 	desc = "A refrigerated storage unit for Food and plant storage. Now sporting a fancy system of pulleys to lift bottles up and down."
-	var/obj/machinery/smartfridge/plantvator/attached
+	var/obj/machinery/smartfridge/produce/plantvator/attached
 
-/obj/machinery/smartfridge/plantvator/down/Destroy()
+/obj/machinery/smartfridge/produce/plantvator/down/Destroy()
 	attached = null
 	return ..()
 
-/obj/machinery/smartfridge/plantvator/down
+/obj/machinery/smartfridge/produce/plantvator/down
 	name = "\improper Smart Plantavator - Lower"
 
-/obj/machinery/smartfridge/plantvator/down/Initialize()
+/obj/machinery/smartfridge/produce/plantvator/down/Initialize()
 	. = ..()
-	var/obj/machinery/smartfridge/plantvator/above = locate(/obj/machinery/smartfridge/plantvator,get_zstep(src,UP))
+	var/obj/machinery/smartfridge/produce/plantvator/above = locate(/obj/machinery/smartfridge/produce/plantvator,get_zstep(src,UP))
 	if(istype(above))
 		above.attached = src
 		attached = above
@@ -198,7 +207,7 @@
 		despawn_occupant(user)
 
 // Tram arrival point landmarks and datum
-var/global/list/latejoin_tram   = list()
+// defined in another file var/global/list/latejoin_tram   = list()
 
 /obj/effect/landmark/tram
 	name = "JoinLateTram"
@@ -311,17 +320,17 @@ var/global/list/latejoin_tram   = list()
 	desc = "Wall-mounted Medical Equipment dispenser. This limited-use version dispenses antitoxins with mild painkillers for surface EVAs."
 	icon_state = "wallmed"
 	density = 0 //It is wall-mounted, and thus, not dense. --Superxpdude
-	products = list(/obj/item/weapon/reagent_containers/pill/airlock = 10,/obj/item/device/healthanalyzer = 1)
-	contraband = list(/obj/item/weapon/reagent_containers/pill/tox = 2)
+	products = list(/obj/item/reagent_containers/pill/airlock = 10,/obj/item/healthanalyzer = 1)
+	contraband = list(/obj/item/reagent_containers/pill/tox = 2)
 	req_log_access = access_cmo
 	has_logs = 1
 
-/obj/item/weapon/reagent_containers/pill/airlock
+/obj/item/reagent_containers/pill/airlock
 	name = "\'Airlock\' Pill"
 	desc = "Neutralizes toxins and provides a mild analgesic effect."
 	icon_state = "pill2"
 
-/obj/item/weapon/reagent_containers/pill/airlock/New()
+/obj/item/reagent_containers/pill/airlock/New()
 	..()
 	reagents.add_reagent("anti_toxin", 15)
 	reagents.add_reagent("paracetamol", 5)
@@ -351,7 +360,7 @@ var/global/list/latejoin_tram   = list()
 //Freezable Airlock Door
 /obj/machinery/door/airlock/glass_external/freezable
 	maxhealth = 600
-	var/frozen = 0
+	var/frozen = FALSE
 	var/freezing = 0 //see process().
 	var/deiceTools[0]
 	var/nextWeatherCheck
@@ -360,15 +369,15 @@ var/global/list/latejoin_tram   = list()
 	//Associate objects with the number of seconds it would take to de-ice a door.
 	//Most items are either more or less effecient at it.
 	//For items with very specific cases (like welders using fuel, or needing to be on) see attackby().
-	deiceTools[/obj/item/weapon/ice_pick] = 3 //Ice Pick
-	deiceTools[/obj/item/weapon/tool/crowbar] = 5 //Crowbar
-	deiceTools[/obj/item/weapon/pen] = 30 //Pen
-	deiceTools[/obj/item/weapon/card] = 35 //Cards. (Mostly ID cards)
+	deiceTools[/obj/item/ice_pick] = 3 //Ice Pick
+	deiceTools[/obj/item/tool/crowbar] = 5 //Crowbar
+	deiceTools[/obj/item/pen] = 30 //Pen
+	deiceTools[/obj/item/card] = 35 //Cards. (Mostly ID cards)
 
 	//Generic weapon items. Tools are better then weapons.
 	//This is for preventing "Sierra" syndrome that could result from needing very specific objects.
-	deiceTools[/obj/item/weapon/tool] = 10
-	deiceTools[/obj/item/weapon] = 12
+	deiceTools[/obj/item/tool] = 10
+	deiceTools[/obj/item] = 12
 	..()
 
 /obj/machinery/door/airlock/glass_external/freezable/attackby(obj/item/I, mob/user as mob)
@@ -381,8 +390,8 @@ var/global/list/latejoin_tram   = list()
 	if(frozen)
 
 		//the welding tool is a special snowflake.
-		if(istype(I, /obj/item/weapon/weldingtool))
-			var/obj/item/weapon/weldingtool/welder = I
+		if(istype(I, /obj/item/weldingtool))
+			var/obj/item/weldingtool/welder = I
 			if(welder.remove_fuel(0,user) && welder && welder.isOn())
 				to_chat(user, "<span class='notice'>You start to melt the ice off \the [src]</span>")
 				playsound(src, welder.usesound, 50, 1)
@@ -391,7 +400,7 @@ var/global/list/latejoin_tram   = list()
 					unFreeze()
 					return
 
-		if(istype(I, /obj/item/weapon/pen/crayon))
+		if(istype(I, /obj/item/pen/crayon))
 			to_chat(user, "<span class='notice'>You try to use \the [I] to clear the ice, but it crumbles away!</span>")
 			qdel(I)
 			return
@@ -408,27 +417,28 @@ var/global/list/latejoin_tram   = list()
 		return
 	..()
 
-/obj/machinery/door/airlock/glass_external/freezable/proc/handleRemoveIce(obj/item/weapon/W as obj, mob/user as mob, var/time = 15 as num)
+/obj/machinery/door/airlock/glass_external/freezable/proc/handleRemoveIce(obj/item/W as obj, mob/user as mob, var/time = 15 as num)
 	to_chat(user, "<span class='notice'>You start to chip at the ice covering \the [src]</span>")
 	if(do_after(user, text2num(time SECONDS)))
 		unFreeze()
 		to_chat(user, "<span class='notice'>You finish chipping the ice off \the [src]</span>")
 
 /obj/machinery/door/airlock/glass_external/freezable/proc/unFreeze()
-	frozen = 0
+	frozen = FALSE
 	update_icon()
 	return
 
 /obj/machinery/door/airlock/glass_external/freezable/proc/freeze()
-	frozen = 1
+	frozen = TRUE
 	update_icon()
 	return
 
 /obj/machinery/door/airlock/glass_external/freezable/update_icon()
 	..()
 	if(frozen)
-		overlays += image(icon = 'icons/turf/overlays.dmi', icon_state = "snowairlock")
-	return
+		add_overlay(image(icon = 'icons/turf/overlays.dmi', icon_state = "snowairlock"), priority = TRUE,)
+	if(!frozen)
+		cut_overlays(priority = TRUE)
 
 /obj/machinery/door/airlock/glass_external/freezable/proc/handleFreezeUnfreeze()
 
@@ -482,38 +492,29 @@ var/global/list/latejoin_tram   = list()
 /obj/structure/closet/secure_closet/guncabinet/excursion/New()
 	..()
 	for(var/i = 1 to 4)
-		new /obj/item/weapon/gun/energy/locked/frontier(src)
+		new /obj/item/gun/energy/locked/frontier(src)
 	for(var/i = 1 to 4)
-		new /obj/item/weapon/gun/energy/locked/frontier/holdout(src)
+		new /obj/item/gun/energy/locked/frontier/holdout(src)
 
 // Used at centcomm for the elevator
 /obj/machinery/cryopod/robot/door/dorms
 	spawnpoint_type = /datum/spawnpoint/tram
-
-//Dance pole
-/obj/structure/dancepole
-	name = "dance pole"
-	desc = "Engineered for your entertainment"
-	icon = 'icons/obj/objects_vr.dmi'
-	icon_state = "dancepole"
-	density = 0
-	anchored = 1
 
 /obj/structure/dancepole/attackby(var/obj/item/O as obj, var/mob/user as mob)
 	if(O.is_wrench())
 		anchored = !anchored
 		playsound(src.loc, 'sound/items/Deconstruct.ogg', 50, 1)
 		if(anchored)
-			to_chat(user, "<font color='blue'>You secure \the [src].</font>")
+			to_chat(user, span_red("You secure \the [src]."))
 		else
-			to_chat(user, "<font color='blue'>You unsecure \the [src].</font>")
+			to_chat(user, span_blue("You unsecure \the [src]."))
 //
 // ### Wall Machines On Full Windows ###
 // To make sure wall-mounted machines placed on full-tile windows are clickable they must be above the window
 //
-/obj/item/device/radio/intercom
+/obj/item/radio/intercom
 	layer = ABOVE_WINDOW_LAYER
-/obj/item/weapon/storage/secure/safe
+/obj/item/storage/secure/safe
 	layer = ABOVE_WINDOW_LAYER
 /obj/machinery/airlock_sensor
 	layer = ABOVE_WINDOW_LAYER
@@ -581,7 +582,7 @@ var/global/list/latejoin_tram   = list()
 	anchored = TRUE
 	catalogue_data = list(/datum/category_item/catalogue/material/trail_blazer)
 
-obj/machinery/trailblazer/Initialize()
+/obj/machinery/trailblazer/Initialize()
 	randomize_color()
 	return ..()
 
@@ -680,3 +681,21 @@ obj/machinery/trailblazer/Initialize()
 	mobs_to_pick_from = list(
 		/mob/living/simple_mob/animal/passive/gaslamp/snow = 3,
 		)
+
+/obj/tether_away_spawner/cryogaia_spiders
+	name = "Aggressive spider mobs"
+	faction = "spiders"
+	prob_spawn = 100
+	prob_fall = 0
+	atmos_comp = 1
+	mobs_to_pick_from = list(
+		/mob/living/simple_mob/animal/giant_spider/frost = 1
+	)
+
+/obj/structure/prop/spiderhole
+	name = "spider hole"
+	desc = "Frost spiders often come out of those"
+	icon = 'icons/obj/structures_yw32x32.dmi'
+	icon_state = "spiderhole"
+	density = FALSE
+	anchored = TRUE

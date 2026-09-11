@@ -28,6 +28,7 @@
 	female_cough_sounds = list('sound/effects/mob_effects/tesharicougha.ogg','sound/effects/mob_effects/tesharicoughb.ogg')
 	male_sneeze_sound = 'sound/effects/mob_effects/tesharisneeze.ogg'
 	female_sneeze_sound = 'sound/effects/mob_effects/tesharisneeze.ogg'
+	center_offset = 0
 
 	blood_color = "#D514F7"
 	flesh_color = "#5F7BB0"
@@ -43,7 +44,7 @@
 	damage_overlays = 'icons/mob/human_races/masks/dam_teshari.dmi'
 	damage_mask = 'icons/mob/human_races/masks/dam_mask_teshari.dmi'
 	blood_mask = 'icons/mob/human_races/masks/blood_teshari.dmi'
-	suit_storage_icon = 'icons/mob/species/teshari/belt_mirror.dmi'
+	suit_storage_icon = 'icons/inventory/suit_store/mob_teshari.dmi'
 
 	fire_icon_state = "generic" // Humanoid is too big for them and spriting a new one is really annoying.
 
@@ -55,11 +56,12 @@
 	burn_mod =  1.35
 	mob_size = MOB_SMALL
 	pass_flags = PASSTABLE
-	holder_type = /obj/item/weapon/holder/human
-	short_sighted = 1
+	holder_type = /obj/item/holder/human
+	short_sighted = 1 // YW uncomment -Kel
 	gluttonous = 1
 	blood_volume = 400
 	hunger_factor = 0.2
+	soft_landing = TRUE
 
 	ambiguous_genders = TRUE
 
@@ -79,7 +81,7 @@
 	breath_cold_level_2 = 100	//Default 180
 	breath_cold_level_3 = 60	//Default 100
 
-	heat_level_1 = 320	//Default 360
+	heat_level_1 = 330	//Default 360
 	heat_level_2 = 370	//Default 400
 	heat_level_3 = 600	//Default 1000
 
@@ -146,7 +148,7 @@
 		/datum/mob_descriptor/build = -3
 	)
 
-	var/static/list/flight_bodyparts = list(
+/*	var/static/list/flight_bodyparts = list(
 		BP_L_ARM,
 		BP_R_ARM,
 		BP_L_HAND,
@@ -155,7 +157,7 @@
 	var/static/list/flight_suit_blacklisted_types = list(
 		/obj/item/clothing/suit/space,
 		/obj/item/clothing/suit/straight_jacket
-	)
+	)*/
 
 	default_emotes = list(
 		/decl/emote/audible/teshsqueak,
@@ -165,14 +167,15 @@
 
 /datum/species/teshari/equip_survival_gear(var/mob/living/carbon/human/H)
 	..()
-	H.equip_to_slot_or_del(new /obj/item/clothing/shoes/sandal(H),slot_shoes)
-
+	if(!(H.client?.prefs?.shoe_hater))
+		H.equip_to_slot_or_del(new /obj/item/clothing/shoes/sandal(H),slot_shoes)
+/*
 /datum/species/teshari/handle_falling(mob/living/carbon/human/H, atom/hit_atom, damage_min, damage_max, silent, planetary)
 
 	// Tesh can glide to save themselves from some falls. Basejumping bird
 	// without parachute, or falling bird without free wings, goes splat.
 
-	// Are we landing from orbit, or handcuffed/unconscious/tied to something? 
+	// Are we landing from orbit, or handcuffed/unconscious/tied to something?
 	if(planetary || !istype(H) || H.incapacitated(INCAPACITATION_DEFAULT|INCAPACITATION_DISABLED))
 		return ..()
 
@@ -183,14 +186,14 @@
 
 	if(H.buckled)
 		if(!silent)
-			to_chat(H, SPAN_WARNING("You try to spread your wings to slow your fall, but \the [H.buckled] weighs you down!"))
+			to_chat(H, span_warning("You try to spread your wings to slow your fall, but \the [H.buckled] weighs you down!"))
 		return ..()
 
 	// Is there enough air to flap against?
 	var/datum/gas_mixture/environment = landing.return_air()
 	if(!environment || environment.return_pressure() < (ONE_ATMOSPHERE * 0.75))
 		if(!silent)
-			to_chat(H, SPAN_WARNING("You spread your wings to slow your fall, but the air is too thin!"))
+			to_chat(H, span_warning("You spread your wings to slow your fall, but the air is too thin!"))
 		return ..()
 
 	// Are we wearing a space suit?
@@ -198,7 +201,7 @@
 		for(var/blacklisted_type in flight_suit_blacklisted_types)
 			if(istype(H.wear_suit, blacklisted_type))
 				if(!silent)
-					to_chat(H, SPAN_WARNING("You try to spread your wings to slow your fall, but \the [H.wear_suit] is in the way!"))
+					to_chat(H, span_warning("You try to spread your wings to slow your fall, but \the [H.wear_suit] is in the way!"))
 				return ..()
 
 	// Do we have working wings?
@@ -206,17 +209,17 @@
 		var/obj/item/organ/external/E = H.organs_by_name[bp]
 		if(!istype(E) || !E.is_usable() || E.is_broken() || E.is_stump())
 			if(!silent)
-				to_chat(H, SPAN_WARNING("You try to spread your wings to slow your fall, but they won't hold your weight!"))
+				to_chat(H, span_warning("You try to spread your wings to slow your fall, but they won't hold your weight!"))
 			return ..()
 
 	// Handled!
 	if(!silent)
-		to_chat(H, SPAN_NOTICE("You catch the air in your wings and greatly slow your fall."))
-		landing.visible_message(SPAN_NOTICE("\The [H] glides down from above, landing safely."))
+		to_chat(H, span_notice("You catch the air in your wings and greatly slow your fall."))
+		landing.visible_message(span_infoplain(span_bold("\The [H]") + " glides down from above, landing safely."))
 		H.Stun(1)
 		playsound(H, "rustle", 25, 1)
 	return TRUE
-
+*/
 
 //YW EDIT Start: loneliness
 /datum/species/teshari/handle_environment_special(var/mob/living/carbon/human/H)
@@ -232,7 +235,7 @@
 			if(H.loneliness_stage > 0)
 				H.loneliness_stage -= 4
 			return
-		if(istype(H.loc, /obj/item/weapon/holder))
+		if(istype(H.loc, /obj/item/holder))
 			if(H.loneliness_stage > 0)
 				H.loneliness_stage -= 4
 			return
@@ -252,7 +255,7 @@
 						H.next_loneliness_time = world.time+500
 				return
 
-		for(var/obj/item/weapon/holder/micro/M in range(1, H))
+		for(var/obj/item/holder/micro/M in range(1, H))
 			if(H.loneliness_stage > 0)
 				H.loneliness_stage -= 4
 				if(H.loneliness_stage < 0)

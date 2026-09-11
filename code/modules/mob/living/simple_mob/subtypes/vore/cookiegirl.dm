@@ -15,8 +15,13 @@
 	melee_damage_lower = 2
 	melee_damage_upper = 5
 
+	meat_amount = 10
+	meat_type = /obj/item/reagent_containers/food/snacks/cookie
+
 	say_list_type = /datum/say_list/cookiegirl
 	ai_holder_type = /datum/ai_holder/simple_mob/passive/cookiegirl
+
+	faction = FACTION_COOKIEGIRL
 
 	// Activate Noms!
 /mob/living/simple_mob/vore/cookiegirl

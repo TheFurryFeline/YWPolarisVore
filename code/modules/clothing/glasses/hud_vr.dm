@@ -13,6 +13,8 @@
 	var/flash_prot = 0 //0 for none, 1 for flash weapon protection, 2 for welder protection
 	enables_planes = list(VIS_CH_ID,VIS_CH_HEALTH_VR,VIS_AUGMENTED)
 	plane_slots = list(slot_glasses)
+	var/ar_toggled = TRUE //Used for toggle_ar_planes() verb
+
 
 /obj/item/clothing/glasses/omnihud/New()
 	..()
@@ -28,6 +30,14 @@
 		SStgui.close_uis(src)
 	..()
 
+/obj/item/clothing/glasses/omnihud/examine()
+	. = ..()
+	if(ar_toggled)
+		. += "\n " + span_notice("The HUD indicator reads ON.")
+	else
+		. += "\n " + span_notice("The HUD indicator reads OFF.")
+
+
 /obj/item/clothing/glasses/omnihud/emp_act(var/severity)
 	if(tgarscreen)
 		SStgui.close_uis(src)
@@ -41,12 +51,12 @@
 		if(prob(10))
 			icon_state = "3d"
 			if(ishuman(loc))
-				to_chat(loc, "<span class='warning'>The lenses of your [src.name] malfunction!</span>")
+				to_chat(loc, span_warning("The lenses of your [src.name] malfunction!"))
 	..()
 
 /obj/item/clothing/glasses/omnihud/proc/flashed()
 	if(flash_prot && ishuman(loc))
-		to_chat(loc, "<span class='warning'>Your [src.name] darken to try and protect your eyes!</span>")
+		to_chat(loc, span_warning("Your [src.name] darken to try and protect your eyes!"))
 
 /obj/item/clothing/glasses/omnihud/prescribe(var/mob/user)
 	prescription = !prescription
@@ -66,10 +76,10 @@
 
 	var/mob/living/carbon/human/H = user
 	if(!H.glasses || !(H.glasses == src))
-		to_chat(user, "<span class='warning'>You must be wearing the [src] to see the display.</span>")
+		to_chat(user, span_warning("You must be wearing the [src] to see the display."))
 	else
 		if(!ar_interact(H))
-			to_chat(user, "<span class='warning'>The [src] does not have any kind of special display.</span>")
+			to_chat(user, span_warning("The [src] does not have any kind of special display."))
 
 //cosmetic shading, doesn't enhance eye protection
 /obj/item/clothing/glasses/omnihud/verb/chromatize()
@@ -90,10 +100,12 @@
 		if(icon_state == "glasses")
 			to_chat(usr, "You darken the electrochromic lenses of \the [src] to one-way transparency.")
 			name = "[initial(name)] (shaded, pr)"
+			flags_inv |= HIDEEYES
 			icon_state = "sun"
 		else if(icon_state == "sun")
 			to_chat(usr, "You restore the electrochromic lenses of \the [src] to standard two-way transparency.")
 			name = "[initial(name)] (pr)"
+			flags_inv &= ~HIDEEYES
 			icon_state = "glasses"
 		else
 			to_chat(usr, "The [src] don't seem to support this functionality.")
@@ -101,14 +113,38 @@
 		if(icon_state == "glasses")
 			to_chat(usr, "You darken the electrochromic lenses of \the [src] to one-way transparency.")
 			name = "[initial(name)] (shaded)"
+			flags_inv |= HIDEEYES
 			icon_state = "sun"
 		else if(icon_state == "sun")
 			to_chat(usr, "You restore the electrochromic lenses of \the [src] to standard two-way transparency.")
 			name = "[initial(name)]"
+			flags_inv &= ~HIDEEYES
 			icon_state = "glasses"
 		else
 			to_chat(usr, "The [src] don't seem to support this functionality.")
 	update_clothing_icon()
+
+/obj/item/clothing/glasses/omnihud/verb/toggle_ar_planes()
+	set name = "Toggle AR Heads-Up Display"
+	set desc = "Toggles the job icon and other non-manually requested displays. Does not disable Crew monitor and similar."
+	set category = "Object"
+	set src in usr
+
+	//We do not check if user can move or not, since this system is inspired to help see chat bubbles during scenes primarily.
+	//Preventing turning off the HUD could get in the way of scene flow.
+	if(ar_toggled)
+		away_planes = enables_planes
+		enables_planes = null
+		to_chat(usr, span_notice("You disabled the Augmented Reality HUD of your [src.name]."))
+	else
+		enables_planes = away_planes
+		away_planes = null
+		to_chat(usr, span_notice("You enabled the Augmented Reality HUD of your [src.name]."))
+	ar_toggled = !ar_toggled
+	usr.update_mob_action_buttons()
+	usr.recalculate_vis()
+
+
 
 /obj/item/clothing/glasses/omnihud/proc/ar_interact(var/mob/living/carbon/human/user)
 	return 0 //The base models do nothing.
@@ -116,8 +152,8 @@
 /obj/item/clothing/glasses/omnihud/visor
 	name = "AR visor"
 	desc = "The VZR-AR are a product based upon the classic AR Glasses, just more fashionable."
-	icon_override = 'icons/mob/eyes_vr.dmi'
-	icon = 'icons/mob/eyes_vr.dmi'
+	icon_override = 'icons/inventory/eyes/mob_vr.dmi'
+	icon = 'icons/inventory/eyes/mob_vr.dmi'
 	icon_state = "visor_CIV"
 	item_state = "visor_CIV"
 
@@ -131,14 +167,14 @@
 	These have been upgraded with medical records access and virus database integration. \
 	They can also read data from active suit sensors using the crew monitoring system."
 	mode = "med"
-	action_button_name = "AR Console (Crew Monitor)"
+	actions_types = list(/datum/action/item_action/ar_console_crew)
 	tgarscreen_path = /datum/tgui_module/crew_monitor/glasses
 	enables_planes = list(VIS_CH_ID,VIS_CH_HEALTH_VR,VIS_CH_STATUS_R,VIS_CH_BACKUP,VIS_AUGMENTED)
 
-	ar_interact(var/mob/living/carbon/human/user)
-		if(tgarscreen)
-			tgarscreen.tgui_interact(user)
-		return 1
+/obj/item/clothing/glasses/omnihud/med/ar_interact(var/mob/living/carbon/human/user)
+	if(tgarscreen)
+		tgarscreen.tgui_interact(user)
+	return 1
 
 /obj/item/clothing/glasses/omnihud/sec
 	name = "\improper AR-S glasses"
@@ -147,14 +183,14 @@
 	They also have access to security alerts such as camera and motion sensor alarms."
 	mode = "sec"
 	flash_protection = FLASH_PROTECTION_MODERATE //weld protection is a little too widespread
-	action_button_name = "AR Console (Security Alerts)"
+	actions_types = list(/datum/action/item_action/ar_console_security_alerts)
 	tgarscreen_path = /datum/tgui_module/alarm_monitor/security/glasses
 	enables_planes = list(VIS_CH_ID,VIS_CH_HEALTH_VR,VIS_CH_WANTED,VIS_AUGMENTED)
 
-	ar_interact(var/mob/living/carbon/human/user)
-		if(tgarscreen)
-			tgarscreen.tgui_interact(user)
-		return 1
+/obj/item/clothing/glasses/omnihud/sec/ar_interact(var/mob/living/carbon/human/user)
+	if(tgarscreen)
+		tgarscreen.tgui_interact(user)
+	return 1
 
 /obj/item/clothing/glasses/omnihud/eng
 	name = "\improper AR-E glasses"
@@ -163,13 +199,13 @@
 	and can also display a list of atmospheric, fire, and power alarms."
 	mode = "eng"
 	flash_protection = FLASH_PROTECTION_MAJOR
-	action_button_name = "AR Console (Station Alerts)"
+	actions_types = list(/datum/action/item_action/ar_console_station_alerts)
 	tgarscreen_path = /datum/tgui_module/alarm_monitor/engineering/glasses
 
-	ar_interact(var/mob/living/carbon/human/user)
-		if(tgarscreen)
-			tgarscreen.tgui_interact(user)
-		return 1
+/obj/item/clothing/glasses/omnihud/eng/ar_interact(var/mob/living/carbon/human/user)
+	if(tgarscreen)
+		tgarscreen.tgui_interact(user)
+	return 1
 
 /obj/item/clothing/glasses/omnihud/rnd
 	name = "\improper AR-R glasses"
@@ -213,7 +249,7 @@
 			item_state = initial(item_state)
 			usr.update_inv_glasses()
 			to_chat(usr, "You activate the retinal projector on the [src].")
-		usr.update_action_buttons()
+		usr.update_mob_action_buttons()
 
 /obj/item/clothing/glasses/omnihud/all
 	name = "\improper AR-B glasses"
@@ -222,14 +258,14 @@
 	<br>Offers full protection against bright flashes/welders and full access to system alarm monitoring."
 	mode = "best"
 	flash_protection = FLASH_PROTECTION_MAJOR
-	enables_planes = list(VIS_CH_ID,VIS_CH_HEALTH_VR,VIS_CH_STATUS_R,VIS_CH_BACKUP,VIS_CH_WANTED)
-	action_button_name = "AR Console (All Alerts)"
+	enables_planes = list(VIS_CH_ID,VIS_CH_HEALTH_VR,VIS_CH_STATUS_R,VIS_CH_BACKUP,VIS_CH_WANTED,VIS_AUGMENTED)
+	actions_types = list(/datum/action/item_action/ar_console_all_alerts)
 	tgarscreen_path = /datum/tgui_module/alarm_monitor/all/glasses
 
-	ar_interact(var/mob/living/carbon/human/user)
-		if(tgarscreen)
-			tgarscreen.tgui_interact(user)
-		return 1
+/obj/item/clothing/glasses/omnihud/all/ar_interact(var/mob/living/carbon/human/user)
+	if(tgarscreen)
+		tgarscreen.tgui_interact(user)
+	return 1
 
 /obj/item/clothing/glasses/hud/security/eyepatch
     name = "Security Hudpatch"
@@ -241,6 +277,31 @@
     var/eye = null
 
 /obj/item/clothing/glasses/hud/security/eyepatch/verb/switcheye()
+	set name = "Switch Eyepatch"
+	set category = "Object"
+	set src in usr
+	if(!istype(usr, /mob/living)) return
+	if(usr.stat) return
+
+	eye = !eye
+	if(eye)
+		icon_state = "[icon_state]_1"
+	else
+		icon_state = initial(icon_state)
+	update_clothing_icon()
+
+/obj/item/clothing/glasses/hud/security/eyepatch2
+    name = "Security Hudpatch MKII"
+    desc = "An eyepatch with built in scanners, that analyzes those in view and provides accurate data about their ID status and security records. This updated model offers better ergonomics and updated sensors."
+    icon = 'icons/inventory/eyes/item_vr.dmi'
+    icon_override = 'icons/inventory/eyes/mob_vr.dmi'
+    icon_state = "sec_eyepatch"
+    item_state_slots = list(slot_r_hand_str = "blindfold", slot_l_hand_str = "blindfold")
+    body_parts_covered = 0
+    enables_planes = list(VIS_CH_ID,VIS_CH_WANTED,VIS_CH_IMPTRACK,VIS_CH_IMPLOYAL,VIS_CH_IMPCHEM)
+    var/eye = null
+
+/obj/item/clothing/glasses/hud/security/eyepatch2/verb/switcheye()
 	set name = "Switch Eyepatch"
 	set category = "Object"
 	set src in usr

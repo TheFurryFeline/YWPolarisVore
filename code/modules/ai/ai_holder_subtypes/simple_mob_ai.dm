@@ -18,6 +18,7 @@
 	can_flee = TRUE
 	violent_breakthrough = FALSE
 	base_wander_delay = 8 //vorestation edit, to make pets slow.
+	belly_attack = FALSE //They already don't fight back, so this ensures that catgirls and similar are still edible when they are spawned as retaliate or aggressive by semi-random mob spawners.
 
 // Won't wander away as quickly, ideal for event-spawned mobs like carp or drones.
 /datum/ai_holder/simple_mob/event
@@ -97,6 +98,23 @@
 	step_rand(holder)
 	holder.face_atom(AM)
 
+// Only attacks you if you're in front of it.
+/datum/ai_holder/simple_mob/ranged/guard_limit
+	guard_limit = TRUE
+	returns_home = TRUE
+
+/datum/ai_holder/simple_mob/ranged/guard_limit/pointblank
+	pointblank = TRUE
+
+/datum/ai_holder/simple_mob/ranged/guard_limit/aggressive
+	pointblank = TRUE
+	var/closest_distance = 1
+
+/datum/ai_holder/simple_mob/ranged/guard_limit/kiting
+	pointblank = TRUE // So we don't need to copypaste post_melee_attack().
+	var/run_if_this_close = 4 // If anything gets within this range, it'll try to move away.
+	var/moonwalk = TRUE // If true, mob turns to face the target while kiting, otherwise they turn in the direction they moved towards.
+
 // Switches intents based on specific criteria.
 // Used for special mobs who do different things based on intents (and aren't slimes).
 // Intent switching is generally done in pre_[ranged/special]_attack(), so that the mob can use the right attack for the right time.
@@ -141,11 +159,25 @@
 		return TRUE // We're out in the open, uncloaked, and our target isn't stunned, so lets flee.
 	return FALSE
 
+// Can only target people in view range, will return home
+/datum/ai_holder/simple_mob/melee/guard_limit
+	guard_limit = TRUE
+	returns_home = TRUE
+
+/datum/ai_holder/simple_mob/melee/evasive/guard_limit
+	guard_limit = TRUE
+	returns_home = TRUE
 
 // Simple mobs that aren't hostile, but will fight back.
 /datum/ai_holder/simple_mob/retaliate
 	hostile = FALSE
 	retaliate = TRUE
+
+/datum/ai_holder/simple_mob/retaliate/chill
+	base_wander_delay = 8
+
+/datum/ai_holder/simple_mob/retaliate/edible
+	belly_attack = FALSE
 
 // Simple mobs that retaliate and support others in their faction who get attacked.
 /datum/ai_holder/simple_mob/retaliate/cooperative
@@ -180,10 +212,17 @@
 /datum/ai_holder/simple_mob/humanoid/hostile/post_ranged_attack(atom/A)
 	//Pick a random turf to step into
 	var/turf/T = get_step(holder, pick(alldirs))
-	if(check_trajectory(A, T)) // Can we even hit them from there?
+	if((A in check_trajectory(A, T))) // Can we even hit them from there?
 		holder.IMove(T)
 		holder.face_atom(A)
 
 	if(get_dist(holder, A) < run_if_this_close)
 		holder.IMove(get_step_away(holder, A))
 		holder.face_atom(A)
+
+/datum/ai_holder/simple_mob/passive/speedy
+	base_wander_delay = 1
+
+// For setting up possible stealth missions
+/datum/ai_holder/simple_mob/humanoid/hostile/guard_limit
+	guard_limit = TRUE

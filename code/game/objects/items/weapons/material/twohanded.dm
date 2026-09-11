@@ -16,7 +16,7 @@
 /*
  * Twohanded
  */
-/obj/item/weapon/material/twohanded
+/obj/item/material/twohanded
 	w_class = ITEMSIZE_LARGE
 	var/wielded = 0
 	var/force_wielded = 0
@@ -30,7 +30,7 @@
 	drop_sound = 'sound/items/drop/sword.ogg'
 	pickup_sound = 'sound/items/pickup/sword.ogg'
 
-/obj/item/weapon/material/twohanded/update_held_icon()
+/obj/item/material/twohanded/update_held_icon()
 	var/mob/living/M = loc
 	if(istype(M) && M.can_wield_item(src) && is_held_twohanded(M))
 		wielded = 1
@@ -44,7 +44,7 @@
 	update_icon()
 	..()
 
-/obj/item/weapon/material/twohanded/update_force()
+/obj/item/material/twohanded/update_force()
 	base_name = name
 	if(sharp || edge)
 		force_wielded = material.get_edge_damage()
@@ -56,23 +56,23 @@
 	throwforce = round(force*thrown_force_divisor)
 	//to_world("[src] has unwielded force [force_unwielded], wielded force [force_wielded] and throwforce [throwforce] when made from default material [material.name]")
 
-/obj/item/weapon/material/twohanded/New()
+/obj/item/material/twohanded/New()
 	..()
 	update_icon()
 
 //Allow a small chance of parrying melee attacks when wielded - maybe generalize this to other weapons someday
-/obj/item/weapon/material/twohanded/handle_shield(mob/user, var/damage, atom/damage_source = null, mob/attacker = null, var/def_zone = null, var/attack_text = "the attack")
+/obj/item/material/twohanded/handle_shield(mob/user, var/damage, atom/damage_source = null, mob/attacker = null, var/def_zone = null, var/attack_text = "the attack")
 	if(wielded && default_parry_check(user, attacker, damage_source) && prob(15))
-		user.visible_message("<span class='danger'>\The [user] parries [attack_text] with \the [src]!</span>")
+		user.visible_message(span_danger("\The [user] parries [attack_text] with \the [src]!"))
 		playsound(src, 'sound/weapons/punchmiss.ogg', 50, 1)
 		return 1
 	return 0
 
-/obj/item/weapon/material/twohanded/update_icon()
+/obj/item/material/twohanded/update_icon()
 	icon_state = "[base_icon][wielded]"
 	item_state = icon_state
 
-/obj/item/weapon/material/twohanded/dropped()
+/obj/item/material/twohanded/dropped()
 	..()
 	if(wielded)
 		spawn(0)
@@ -81,7 +81,7 @@
 /*
  * Fireaxe
  */
-/obj/item/weapon/material/twohanded/fireaxe  // DEM AXES MAN, marker -Agouri
+/obj/item/material/twohanded/fireaxe  // DEM AXES MAN, marker -Agouri
 	icon_state = "fireaxe0"
 	base_icon = "fireaxe"
 	name = "fire axe"
@@ -90,8 +90,8 @@
 	unwielded_force_divisor = 0.25
 	force_divisor = 0.7 // 10/42 with hardness 60 (steel) and 0.25 unwielded divisor
 	dulled_divisor = 0.75	//Still metal on a stick
-	sharp = 1
-	edge = 1
+	sharp = TRUE
+	edge = TRUE
 	w_class = ITEMSIZE_LARGE
 	slot_flags = SLOT_BACK
 	force_wielded = 30
@@ -101,7 +101,7 @@
 	drop_sound = 'sound/items/drop/axe.ogg'
 	pickup_sound = 'sound/items/pickup/axe.ogg'
 
-/obj/item/weapon/material/twohanded/fireaxe/update_held_icon()
+/obj/item/material/twohanded/fireaxe/update_held_icon()
 	var/mob/living/M = loc
 	if(istype(M) && !issmall(M) && M.item_is_in_hands(src) && !M.hands_are_full())
 		wielded = 1
@@ -117,7 +117,7 @@
 	update_icon()
 	..()
 
-/obj/item/weapon/material/twohanded/fireaxe/afterattack(atom/A as mob|obj|turf|area, mob/user as mob, proximity)
+/obj/item/material/twohanded/fireaxe/afterattack(atom/A as mob|obj|turf|area, mob/user as mob, proximity)
 	if(!proximity) return
 	..()
 	if(A && wielded)
@@ -130,7 +130,7 @@
 			var/obj/effect/plant/P = A
 			P.die_off()
 
-/obj/item/weapon/material/twohanded/fireaxe/scythe
+/obj/item/material/twohanded/fireaxe/scythe
 	icon_state = "scythe0"
 	base_icon = "scythe"
 	name = "scythe"
@@ -140,12 +140,11 @@
 	attack_verb = list("chopped", "sliced", "cut", "reaped")
 
 //spears, bay edition
-/obj/item/weapon/material/twohanded/spear
+/obj/item/material/twohanded/spear
 	icon_state = "spearglass0"
 	base_icon = "spearglass"
 	name = "spear"
 	desc = "A haphazardly-constructed yet still deadly weapon of ancient design."
-	description_info = "This weapon can strike from two tiles away, and over certain objects such as tables, or other people."
 	force = 10
 	w_class = ITEMSIZE_LARGE
 	slot_flags = SLOT_BACK
@@ -153,8 +152,8 @@
 	unwielded_force_divisor = 0.375
 	thrown_force_divisor = 1.5 		// 22.5 when thrown with weight 15 (glass)
 	throw_speed = 3
-	edge = 0
-	sharp = 1
+	edge = FALSE
+	sharp = TRUE
 	hitsound = 'sound/weapons/bladeslice.ogg'
 	mob_throw_hit_sound =  'sound/weapons/pierce.ogg'
 	attack_verb = list("attacked", "poked", "jabbed", "torn", "gored")
@@ -165,7 +164,7 @@
 	attackspeed = 14
 
 //This is mostly for centaurs.
-/obj/item/weapon/material/twohanded/spear/lance
+/obj/item/material/twohanded/spear/lance
 	name = "lance"
 	desc = "End him rightly"
 	icon = 'icons/obj/weapons_vr.dmi'
@@ -174,12 +173,12 @@
 	force_divisor = 0.3
 	force = 10
 	thrown_force_divisor = 1
-	default_material = "DEFAULT_WALL_MATERIAL"
+	default_material = "MAT_STEEL"
 	fragile = 0
-	sharp = 1
-	edge = 0
+	sharp = TRUE
+	edge = FALSE
 
-/obj/item/weapon/material/twohanded/riding_crop
+/obj/item/material/twohanded/riding_crop
 	name = "riding crop"
 	desc = "A rod, a little over a foot long with a widened grip and a thick, leather patch at the end. Used since the dawn of the West to control animals."
 	force_divisor = 0.05 //Required in order for the X attacks Y message to pop up.
@@ -189,3 +188,6 @@
 	base_icon = "riding_crop"
 	icon_state = "riding_crop0"
 	attack_verb = list("cropped","spanked","swatted","smacked","peppered")
+
+/obj/item/material/twohanded/spear/flint
+	default_material = MAT_FLINT

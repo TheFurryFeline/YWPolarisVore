@@ -27,10 +27,9 @@
 	var/obj/machinery/camera/camera
 	var/list/camera_networks
 
-	action_button_name = "Toggle Helmet Light"
+	actions_types = list(/datum/action/item_action/toggle_helmet_light)
 	light_overlay = "helmet_light"
-	brightness_on = 4
-	on = 0
+	light_range = 4
 
 /obj/item/clothing/head/helmet/space/Initialize()
 	. = ..()
@@ -38,7 +37,7 @@
 		verbs |= /obj/item/clothing/head/helmet/space/proc/toggle_camera
 
 	if(type == /obj/item/clothing/head/helmet/space) //VOREStation edit - use the specially refitted sprites by KBraid. Done this way to avoid breaking subtypes.
-		sprite_sheets[SPECIES_TESHARI] = 'icons/mob/species/teshari/helmet_vr.dmi'
+		LAZYSET(sprite_sheets, SPECIES_TESHARI, 'icons/inventory/head/mob_vr_teshari.dmi')
 
 /obj/item/clothing/head/helmet/space/proc/toggle_camera()
 	set name = "Toggle Helmet Camera"
@@ -55,11 +54,11 @@
 
 	if(camera.status == TRUE)
 		camera.set_status(FALSE)
-		to_chat(usr, "<font color='blue'>Camera deactivated.</font>")
+		to_chat(usr, span_blue("Camera deactivated."))
 	else
 		camera.set_status(TRUE)
 		camera.c_tag = usr.name
-		to_chat(usr, "<font color='blue'>User scanned as [camera.c_tag]. Camera activated.</font>")
+		to_chat(usr, span_blue("User scanned as [camera.c_tag]. Camera activated."))
 
 /obj/item/clothing/head/helmet/space/examine(mob/user)
 	. = ..()
@@ -69,8 +68,7 @@
 /obj/item/clothing/suit/space
 	name = "Space suit"
 	desc = "A suit that protects against low pressure environments."
-	icon = 'icons/obj/clothing/spacesuits.dmi'
-	update_icon_define = INV_SPACESUIT_DEF_ICON
+	icon = 'icons/inventory/suit/item.dmi'
 	icon_state = "space"
 	w_class = ITEMSIZE_HUGE // So you can't fit this in your bag and be prepared at all times.
 	gas_transfer_coefficient = 0.01
@@ -78,8 +76,8 @@
 	flags = PHORONGUARD
 	item_flags = THICKMATERIAL
 	body_parts_covered = UPPER_TORSO|LOWER_TORSO|LEGS|FEET|ARMS|HANDS
-	allowed = list(/obj/item/device/flashlight,/obj/item/weapon/tank/emergency/oxygen,/obj/item/device/suit_cooling_unit)
-	slowdown = 3
+	allowed = list(/obj/item/flashlight,/obj/item/tank/emergency/oxygen,/obj/item/suit_cooling_unit)
+	slowdown = 1.5
 	armor = list(melee = 0, bullet = 0, laser = 0,energy = 0, bomb = 0, bio = 100, rad = 50)
 	flags_inv = HIDEGLOVES|HIDESHOES|HIDEJUMPSUIT|HIDETAIL|HIDETIE|HIDEHOLSTER
 	cold_protection = UPPER_TORSO | LOWER_TORSO | LEGS | FEET | ARMS | HANDS
@@ -96,7 +94,7 @@
 /obj/item/clothing/suit/space/Initialize()
 	. = ..()
 	if(type == /obj/item/clothing/suit/space)
-		sprite_sheets[SPECIES_TESHARI] = 'icons/mob/species/teshari/suit_vr.dmi'
+		LAZYSET(sprite_sheets, SPECIES_TESHARI, 'icons/inventory/suit/mob_vr_teshari.dmi')
 //VOREStation edit end.
 
 /obj/item/clothing/suit/space/equipped(mob/M)

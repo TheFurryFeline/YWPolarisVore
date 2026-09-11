@@ -115,7 +115,7 @@
 
 /obj/effect/step_trigger/lost_in_space/Trigger(var/atom/movable/A) //replacement for shuttle dump zones because there's no empty space levels to dump to
 	if(ismob(A))
-		to_chat(A, "<span class='danger'>[deathmessage]</span>")
+		to_chat(A, span_danger("[deathmessage]"))
 	qdel(A)
 
 /obj/effect/step_trigger/lost_in_space/bluespace
@@ -135,22 +135,6 @@
 /obj/effect/step_trigger/lost_in_space/tram
 	deathmessage = "You fly down the tunnel of the tram at high speed for a few moments before impact kills you with sheer concussive force."
 
-
-// Invisible object that blocks z transfer to/from its turf and the turf above.
-/obj/effect/ceiling
-	invisibility = 101 // nope cant see this
-	anchored = 1
-
-/obj/effect/ceiling/CheckExit(atom/movable/O as mob|obj, turf/target as turf)
-	if(target && target.z > src.z)
-		return FALSE // Block exit from our turf to above
-	return TRUE
-
-/obj/effect/ceiling/CanPass(atom/movable/mover, turf/target, height=0, air_group=0)
-	if(mover && mover.z > src.z)
-		return FALSE // Block entry from above to our turf
-	return TRUE
-
 //
 // TRAM STATION
 //
@@ -161,6 +145,7 @@
 	desc = "Magnetic levitation tram tracks. Caution! Electrified!"
 	icon = 'icons/turf/flooring/maglevs.dmi'
 	icon_state = "maglevup"
+	can_be_plated = FALSE
 
 	var/area/shock_area = /area/tether/surfacebase/tram
 
@@ -170,7 +155,7 @@
 
 // Walking on maglev tracks will shock you! Horray!
 /turf/simulated/floor/maglev/Entered(var/atom/movable/AM, var/atom/old_loc)
-	if(isliving(AM) && prob(50))
+	if(isliving(AM) && !(AM.is_incorporeal()) && prob(50))
 		track_zap(AM)
 /turf/simulated/floor/maglev/attack_hand(var/mob/user)
 	if(prob(75))
@@ -190,29 +175,6 @@
 
 /obj/machinery/portable_atmospherics/powered/scrubber/huge/stationary/tram/powered()
 	return TRUE // Always be powered
-
-//Chemistry 'chemavator'
-/obj/machinery/smartfridge/chemistry/chemvator
-	name = "\improper Smart Chemavator - Upper"
-	desc = "A refrigerated storage unit for medicine and chemical storage. Now sporting a fancy system of pulleys to lift bottles up and down."
-	var/obj/machinery/smartfridge/chemistry/chemvator/attached
-
-/obj/machinery/smartfridge/chemistry/chemvator/down/Destroy()
-	attached = null
-	return ..()
-
-/obj/machinery/smartfridge/chemistry/chemvator/down
-	name = "\improper Smart Chemavator - Lower"
-
-/obj/machinery/smartfridge/chemistry/chemvator/down/Initialize()
-	. = ..()
-	var/obj/machinery/smartfridge/chemistry/chemvator/above = locate(/obj/machinery/smartfridge/chemistry/chemvator,get_zstep(src,UP))
-	if(istype(above))
-		above.attached = src
-		attached = above
-		item_records = attached.item_records
-	else
-		to_chat(world,"<span class='danger'>[src] at [x],[y],[z] cannot find the unit above it!</span>")
 
 // Tram departure cryo doors that turn into ordinary airlock doors at round end
 /obj/machinery/cryopod/robot/door/tram
@@ -250,32 +212,11 @@
 
 	var/mob/living/carbon/human/user = AM
 
-	var/choice = alert("Do you want to depart via the tram? Your character will leave the round.","Departure","Yes","No")
+	var/choice = tgui_alert(usr, "Do you want to depart via the tram? Your character will leave the round.","Departure",list("Yes","No"))
 	if(user && Adjacent(user) && choice == "Yes")
 		var/mob/observer/dead/newghost = user.ghostize()
 		newghost.timeofdeath = world.time
 		despawn_occupant(user)
-
-// Tram arrival point landmarks and datum
-var/global/list/latejoin_tram   = list()
-
-/obj/effect/landmark/tram
-	name = "JoinLateTram"
-	delete_me = 1
-
-/obj/effect/landmark/tram/New()
-	latejoin_tram += loc // Register this turf as tram latejoin.
-	latejoin += loc // Also register this turf as fallback latejoin, since we won't have any arrivals shuttle landmarks.
-	..()
-
-/datum/spawnpoint/tram
-	display_name = "Tram Station"
-	msg = "has arrived on the tram"
-
-/datum/spawnpoint/tram/New()
-	..()
-	turfs = latejoin_tram
-
 //
 // Holodorms
 //
@@ -316,37 +257,9 @@ var/global/list/latejoin_tram   = list()
 	name = "dorm seven holodeck control"
 	projection_area = /area/crew_quarters/sleep/Dorm_7/holo
 
-/obj/machinery/computer/HolodeckControl/holodorm/warship
-	name = "warship holodeck control"
-	projection_area = /area/mothership/holodeck/holo
-
 // Our map is small, if the supermatter is ejected lets not have it just blow up somewhere else
 /obj/machinery/power/supermatter/touch_map_edge()
 	qdel(src)
-
-//Airlock antitox vendor
-/obj/machinery/vending/wallmed_airlock
-	name = "Airlock NanoMed"
-	desc = "Wall-mounted Medical Equipment dispenser. This limited-use version dispenses antitoxins with mild painkillers for surface EVAs."
-	icon_state = "wallmed"
-	density = 0 //It is wall-mounted, and thus, not dense. --Superxpdude
-	products = list(/obj/item/weapon/reagent_containers/pill/airlock = 20)
-	contraband = list(/obj/item/weapon/reagent_containers/pill/tox = 2)
-	req_log_access = access_cmo
-	has_logs = 1
-
-/obj/machinery/vending/wallmed1/public
-	products = list(/obj/item/stack/medical/bruise_pack = 8,/obj/item/stack/medical/ointment = 8,/obj/item/weapon/reagent_containers/hypospray/autoinjector = 16,/obj/item/device/healthanalyzer = 4)
-
-/obj/item/weapon/reagent_containers/pill/airlock
-	name = "\'Airlock\' Pill"
-	desc = "Neutralizes toxins and provides a mild analgesic effect."
-	icon_state = "pill2"
-
-/obj/item/weapon/reagent_containers/pill/airlock/New()
-	..()
-	reagents.add_reagent("anti_toxin", 15)
-	reagents.add_reagent("paracetamol", 5)
 
 //"Red" Armory Door
 /obj/machinery/door/airlock/security/armory
@@ -359,59 +272,25 @@ var/global/list/latejoin_tram   = list()
 
 	return ..(user)
 
-/obj/structure/closet/secure_closet/guncabinet/excursion
-	name = "expedition weaponry cabinet"
-	req_one_access = list(access_explorer,access_armory)
-
-/obj/structure/closet/secure_closet/guncabinet/excursion/New()
-	..()
-	for(var/i = 1 to 2)
-		new /obj/item/weapon/gun/energy/locked/frontier(src)
-	for(var/i = 1 to 2)
-		new /obj/item/weapon/gun/energy/locked/frontier/holdout(src)
-
-// Used at centcomm for the elevator
-/obj/machinery/cryopod/robot/door/dorms
-	spawnpoint_type = /datum/spawnpoint/tram
-
 //Tether-unique network cameras
 /obj/machinery/camera/network/tether
 	network = list(NETWORK_TETHER)
 
-/obj/machinery/camera/network/tcomms
-	network = list(NETWORK_TCOMMS)
-
 /obj/machinery/camera/network/outside
 	network = list(NETWORK_OUTSIDE)
 
-/obj/machinery/camera/network/exploration
-	network = list(NETWORK_EXPLORATION)
+// Shelter Capsule extra restrictions
+/datum/map_template/shelter/New()
+	..()
+	banned_areas += list(/area/tether/surfacebase/fish_farm, /area/tether/surfacebase/public_garden, /area/tether/surfacebase/tram)
 
-/obj/machinery/camera/network/research/xenobio
-	network = list(NETWORK_RESEARCH, NETWORK_XENOBIO)
-
-//Camera monitors
-/obj/machinery/computer/security/xenobio
-	name = "xenobiology camera monitor"
-	desc = "Used to access the xenobiology cell cameras."
-	icon_keyboard = "mining_key"
-	icon_screen = "mining"
-	network = list(NETWORK_XENOBIO)
-	circuit = /obj/item/weapon/circuitboard/security/xenobio
-	light_color = "#F9BBFC"
-
-/obj/item/weapon/circuitboard/security/xenobio
-	name = T_BOARD("xenobiology camera monitor")
-	build_path = /obj/machinery/computer/security/xenobio
-	network = list(NETWORK_XENOBIO)
-	req_access = list()
 //
 // ### Wall Machines On Full Windows ###
 // To make sure wall-mounted machines placed on full-tile windows are clickable they must be above the window
 //
-/obj/item/device/radio/intercom
+/obj/item/radio/intercom
 	layer = ABOVE_WINDOW_LAYER
-/obj/item/weapon/storage/secure/safe
+/obj/item/storage/secure/safe
 	layer = ABOVE_WINDOW_LAYER
 /obj/machinery/airlock_sensor
 	layer = ABOVE_WINDOW_LAYER
@@ -453,7 +332,7 @@ var/global/list/latejoin_tram   = list()
 	layer = ABOVE_WINDOW_LAYER
 /obj/machinery/vending/wallmed2
 	layer = ABOVE_WINDOW_LAYER
-/obj/structure/closet/fireaxecabinet
+/obj/structure/fireaxecabinet
 	layer = ABOVE_WINDOW_LAYER
 /obj/structure/extinguisher_cabinet
 	layer = ABOVE_WINDOW_LAYER
@@ -461,3 +340,11 @@ var/global/list/latejoin_tram   = list()
 	layer = ABOVE_WINDOW_LAYER
 /obj/structure/noticeboard
 	layer = ABOVE_WINDOW_LAYER
+
+/obj/tether_away_spawner/tether_outside
+	name = "Tether Outside Spawner"
+	prob_spawn = 75
+	prob_fall = 50
+	mobs_to_pick_from = list(
+		/mob/living/simple_mob/animal/passive/gaslamp = 300
+		)

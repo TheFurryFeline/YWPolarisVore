@@ -3,11 +3,11 @@
 /obj/machinery/computer/operating
 	name = "patient monitoring console"
 	desc = "Used to monitor the vitals of a patient."
-	density = 1
-	anchored = 1.0
+	density = TRUE
+	anchored = TRUE
 	icon_keyboard = "med_key"
 	icon_screen = "crew"
-	circuit = /obj/item/weapon/circuitboard/operating
+	circuit = /obj/item/circuitboard/operating
 	var/obj/machinery/optable/table = null
 	var/mob/living/carbon/human/victim = null
 	var/verbose = 1 //general speaker toggle
@@ -68,7 +68,7 @@
 		occupantData["stat"] = occupant.stat
 		occupantData["health"] = occupant.health
 		occupantData["maxHealth"] = occupant.maxHealth
-		occupantData["minHealth"] = config.health_threshold_dead
+		occupantData["minHealth"] = CONFIG_GET(number/health_threshold_dead)
 		occupantData["bruteLoss"] = occupant.getBruteLoss()
 		occupantData["oxyLoss"] = occupant.getOxyLoss()
 		occupantData["toxLoss"] = occupant.getToxLoss()
@@ -127,11 +127,11 @@
 
 	return data
 
-/obj/machinery/computer/operating/tgui_act(action, params)
+/obj/machinery/computer/operating/tgui_act(action, params, datum/tgui/ui)
 	if(..())
 		return TRUE
-	if((usr.contents.Find(src) || (in_range(src, usr) && istype(src.loc, /turf))) || (istype(usr, /mob/living/silicon)))
-		usr.set_machine(src)
+	if((ui.user.contents.Find(src) || (in_range(src, ui.user) && istype(src.loc, /turf))) || (istype(ui.user, /mob/living/silicon)))
+		ui.user.set_machine(src)
 
 	. = TRUE
 	switch(action)
@@ -184,7 +184,7 @@
 /obj/machinery/computer/operating/proc/build_surgery_list(mob/user)
 	if(!istype(victim))
 		return null
-	
+
 	. = list()
 
 	for(var/limb in victim.organs_by_name)
@@ -281,6 +281,7 @@
 			/datum/surgery_step/cavity,
 			/datum/surgery_step/limb,
 			/datum/surgery_step/brainstem,
+			/datum/surgery_step/generic/ripper,
 		)
 	good_surgeries = surgery_steps
 	for(var/datum/surgery_step/S in good_surgeries)
@@ -309,3 +310,5 @@
 			// Please for the love of all that is holy, someone make surgery steps
 			// have names so I don't have to do this stupid pretty_type shit.
 			. += "[pretty_type(S)]: [english_list(allowed_tools_by_name)]"
+
+#undef OP_COMPUTER_COOLDOWN

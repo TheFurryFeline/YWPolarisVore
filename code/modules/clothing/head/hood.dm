@@ -152,6 +152,7 @@
 	light_range = 3
 	light_power = 1
 	light_color = "#B18B25" //clockwork slab background top color
+	light_on = TRUE
 
 /obj/item/clothing/head/hood/winter/narsie
 	name = "runed winter hood"
@@ -162,6 +163,16 @@
 	name = "cosmic winter hood"
 	desc = "A starry winter hood."
 	icon_state = "winterhood_cosmic"
+
+/obj/item/clothing/head/hood/winter/christmasred
+	name = "red christmas winter hood"
+	desc = "A red festive winter hood."
+	icon_state = "winterhood_christmasr"
+
+/obj/item/clothing/head/hood/winter/christmasgreen
+	name = "green christmas winter hood"
+	desc = "A green festive winter hood."
+	icon_state = "winterhood_christmasg"
 
 // Explorer gear
 /obj/item/clothing/head/hood/explorer
@@ -186,3 +197,49 @@
 	desc = "A hood that looks just like a corgi's head, it won't guarantee dog biscuits."
 	icon_state = "ian"
 	item_state_slots = list(slot_r_hand_str = "ian", slot_l_hand_str = "ian") //Does not exist -S2-
+
+//Techpriest
+/obj/item/clothing/head/hood/techpriest
+	name = "techpriest hood"
+	desc = "A techpriest hood."
+	icon_state = "techpriesthood"
+
+/obj/item/clothing/head/hood/siffet_hood
+	name = "siffet hood"
+	desc = "A hood that looks vaguely like a siffet's head. Guaranteed to traumatize your Promethean coworkers."
+	icon_state = "siffet"
+	item_state_slots = list(slot_r_hand_str = "siffet", slot_l_hand_str = "siffet")
+
+/obj/item/clothing/head/hood/hoodie
+	name = "hood"
+	desc = "The hood of a hoodie. Cosy!"
+	icon = 'icons/inventory/head/item_vr.dmi'
+	icon_override = 'icons/inventory/head/mob_vr.dmi'
+	icon_state = "hood_plain"
+
+/obj/item/clothing/head/hood/raincoat
+	name = "raincoat hood"
+	desc = "A hood attached to a raincoat."
+	icon_state = "raincoat"
+
+//hooded cloak hoods
+/obj/item/clothing/head/hood/cloak
+    name  = "maroon cloak hood"
+    desc = "A hood attached to a maroon cloak."
+    icon_state = "maroon_cloakhood"
+    flags_inv = HIDEEARS|BLOCKHAIR
+
+/obj/item/clothing/head/hood/cloak/winter
+    name = "winter cloak hood"
+    desc = "A hood attached to a winter cloak."
+    icon_state = "winter_cloakhood"
+
+/obj/item/clothing/head/hood/cloak/asymmetric
+    name = "asymmetric cloak hood"
+    desc = "A hood attached to an asymmetric cloak."
+    icon_state = "royalist_cloakhood"
+
+/obj/item/clothing/head/hood/cloak/fancy
+    name = "fancy cloak hood"
+    desc = "A hood attached to a fancy cloak."
+    icon_state = "hb_cloakhood"

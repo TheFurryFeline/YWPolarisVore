@@ -5,39 +5,45 @@ var/list/mining_overlay_cache = list()
 	name = "impassable rock"
 	icon = 'icons/turf/walls.dmi'
 	icon_state = "rock-dark"
-	density = 1
+	density = TRUE
 	opacity = 1 // YW edit. Stops all my unsimulated tiles from being seethrough.
 
+/*
 /turf/unsimulated/mineral/ice
 	name = "Ice wall"
 	desc = "Frigid Ice that seems to be stronger then most manmade structures"
 	icon = 'icons/turf/snow_new.dmi'
 	icon_state = "Icerock"
+*/
 
 
-
+	
 /turf/simulated/mineral //wall piece
 	name = "rock"
 	icon = 'icons/turf/walls.dmi'
 	icon_state = "rock"
-	var/rock_side_icon_state = "rock_side"
-	var/sand_icon_state = "asteroid"
-	var/rock_icon_state = "rock"
-	var/random_icon = 0
 	oxygen = 0
 	nitrogen = 0
 	opacity = 1
-	density = 1
+	density = TRUE
 	blocks_air = 1
 	temperature = T0C
-
 	can_dirty = FALSE
+
+	var/floor_name = "sand"
+	var/rock_side_icon_state = "rock_side"
+	var/sand_icon_state = "asteroid"
+	var/rock_icon_state = "rock"
+	var/sand_icon_path = 'icons/turf/flooring/asteroid.dmi' // Override this on a subtype turf if you want a custom icon
+	var/rock_icon_path = 'icons/turf/walls.dmi' // Override this on a subtype turf if you want a custom icon
+	var/random_icon = 0
 
 	var/ore/mineral
 	var/sand_dug
 	var/mined_ore = 0
 	var/last_act = 0
 	var/overlay_detail
+	var/overlay_detail_icon_path = 'icons/turf/flooring/decals.dmi' // Override this on a subtype turf if you want a custom icon
 
 	var/datum/geosample/geologic_data
 	var/excavation_level = 0
@@ -45,34 +51,38 @@ var/list/mining_overlay_cache = list()
 	var/next_rock = 0
 	var/archaeo_overlay = ""
 	var/excav_overlay = ""
-	var/obj/item/weapon/last_find
+	var/obj/item/last_find
 	var/datum/artifact_find/artifact_find
 	var/ignore_mapgen
 
 	var/static/list/ore_types = list(
-		"hematite" = /obj/item/weapon/ore/iron,
-		"uranium" = /obj/item/weapon/ore/uranium,
-		"gold" = /obj/item/weapon/ore/gold,
-		"silver" = /obj/item/weapon/ore/silver,
-		"diamond" = /obj/item/weapon/ore/diamond,
-		"phoron" = /obj/item/weapon/ore/phoron,
-		"osmium" = /obj/item/weapon/ore/osmium,
-		"hydrogen" = /obj/item/weapon/ore/hydrogen,
-		"silicates" = /obj/item/weapon/ore/glass,
-		"carbon" = /obj/item/weapon/ore/coal,
-		"verdantium" = /obj/item/weapon/ore/verdantium,
-		"marble" = /obj/item/weapon/ore/marble,
-		"lead" = /obj/item/weapon/ore/lead,
-		"copper" = /obj/item/weapon/ore/copper,
-//		"tin" = /obj/item/weapon/ore/tin,
-		"bauxite" = /obj/item/weapon/ore/bauxite,
-//		"void opal" = /obj/item/weapon/ore/void_opal,
-//		"painite" = /obj/item/weapon/ore/painite,
-//		"quartz" = /obj/item/weapon/ore/quartz,
-		"rutile" = /obj/item/weapon/ore/rutile
+		"hematite" = /obj/item/ore/iron,
+		"uranium" = /obj/item/ore/uranium,
+		"gold" = /obj/item/ore/gold,
+		"silver" = /obj/item/ore/silver,
+		"diamond" = /obj/item/ore/diamond,
+		"phoron" = /obj/item/ore/phoron,
+		"platinum" = /obj/item/ore/osmium,
+		"mhydrogen" = /obj/item/ore/hydrogen,
+		"sand" = /obj/item/ore/glass,
+		"carbon" = /obj/item/ore/coal,
+		"verdantium" = /obj/item/ore/verdantium,
+		"marble" = /obj/item/ore/marble,
+		"lead" = /obj/item/ore/lead,
+//		"copper" = /obj/item/ore/copper,
+//		"tin" = /obj/item/ore/tin,
+//		"bauxite" = /obj/item/ore/bauxite,
+//		"void opal" = /obj/item/ore/void_opal,
+//		"painite" = /obj/item/ore/painite,
+//		"quartz" = /obj/item/ore/quartz,
+		"rutile" = /obj/item/ore/rutile
 	)
 
 	has_resources = 1
+
+/turf/simulated/mineral/ChangeTurf(turf/N, tell_universe, force_lighting_update, preserve_outdoors)
+	clear_ore_effects()
+	. = ..()
 
 // Alternative rock wall sprites.
 /turf/simulated/mineral/light
@@ -82,6 +92,30 @@ var/list/mining_overlay_cache = list()
 	rock_icon_state = "rock-light"
 	random_icon = 1
 
+/turf/simulated/mineral/alt
+	icon_state = "rock-alt"
+	rock_side_icon_state = "rock_side-alt"
+	sand_icon_state = "asteroid"
+	rock_icon_state = "rock-alt"
+
+/turf/simulated/mineral/icey
+	icon_state = "rock-icey"
+	rock_side_icon_state = "rock_side-icey"
+	sand_icon_state = "sand-icey" // to be replaced
+	rock_icon_state = "rock-icey"
+
+/turf/simulated/mineral/crystal
+	icon_state = "rock-crystal"
+	rock_side_icon_state = "rock_side-crystal"
+	sand_icon_state = "sand-icey" // to be replaced
+	rock_icon_state = "rock-crystal"
+
+/turf/simulated/mineral/crystal_shiny
+	icon_state = "rock-crystal-shiny"
+	rock_side_icon_state = "rock_side-crystal"
+	sand_icon_state = "sand-icey" // to be replaced
+	rock_icon_state = "rock-crystal-shiny"
+
 /turf/simulated/mineral/ignore_mapgen
 	ignore_mapgen = 1
 
@@ -89,25 +123,37 @@ var/list/mining_overlay_cache = list()
 	name = "sand"
 	icon = 'icons/turf/flooring/asteroid.dmi'
 	icon_state = "asteroid"
-	density = 0
+	density = FALSE
 	opacity = 0
 	blocks_air = 0
 	can_build_into_floor = TRUE
 
+/turf/simulated/mineral/floor/mud
+	icon_state = "mud"
+	sand_icon_state = "mud"
+
+/turf/simulated/mineral/floor/dirt
+	icon_state = "dirt"
+	sand_icon_state = "dirt"
+
 //Alternative sand floor sprite.
-turf/simulated/mineral/floor/light
+/turf/simulated/mineral/floor/light
 	icon_state = "sand-light"
 	sand_icon_state = "sand-light"
 
-turf/simulated/mineral/floor/light_border
+/turf/simulated/mineral/floor/icey
+	icon_state = "sand-icey"
+	sand_icon_state = "sand-icey" // to be replaced
+
+/turf/simulated/mineral/floor/light_border
 	icon_state = "sand-light-border"
 	sand_icon_state = "sand-light-border"
 
-turf/simulated/mineral/floor/light_nub
+/turf/simulated/mineral/floor/light_nub
 	icon_state = "sand-light-nub"
 	sand_icon_state = "sand-light-nub"
 
-turf/simulated/mineral/floor/light_corner
+/turf/simulated/mineral/floor/light_corner
 	icon_state = "sand-light-corner"
 	sand_icon_state = "sand-light-corner"
 
@@ -117,16 +163,17 @@ turf/simulated/mineral/floor/light_corner
 /turf/simulated/mineral/proc/make_floor()
 	if(!density && !opacity)
 		return
-	density = 0
+	density = FALSE
 	opacity = 0
 	blocks_air = 0
 	can_build_into_floor = TRUE
+	clear_ore_effects()
 	update_general()
 
 /turf/simulated/mineral/proc/make_wall()
 	if(density && opacity)
 		return
-	density = 1
+	density = TRUE
 	opacity = 1
 	blocks_air = 1
 	can_build_into_floor = FALSE
@@ -134,11 +181,11 @@ turf/simulated/mineral/floor/light_corner
 
 /turf/simulated/mineral/proc/update_general()
 	update_icon(1)
-	recalc_atom_opacity()
+	recalculate_directional_opacity()
 	if(ticker && ticker.current_state == GAME_STATE_PLAYING)
 		reconsider_lights()
-		if(air_master)
-			air_master.mark_for_update(src)
+		if(SSair)
+			SSair.mark_for_update(src)
 
 /turf/simulated/mineral/proc/get_cached_border(var/cache_id, var/direction, var/icon_file, var/icon_state, var/offset = 32)
 	//Cache miss
@@ -187,7 +234,7 @@ turf/simulated/mineral/floor/light_corner
 		else
 			name = "rock"
 
-		icon = 'icons/turf/walls.dmi'
+		icon = rock_icon_path
 		icon_state = rock_icon_state
 
 		//Apply overlays if we should have borders
@@ -204,8 +251,8 @@ turf/simulated/mineral/floor/light_corner
 
 	//We are a sand floor
 	else
-		name = "sand"
-		icon = 'icons/turf/flooring/asteroid.dmi'
+		name = floor_name
+		icon = sand_icon_path
 		icon_state = sand_icon_state
 
 		if(sand_dug)
@@ -220,10 +267,10 @@ turf/simulated/mineral/floor/light_corner
 			else
 				var/turf/T = get_step(src, direction)
 				if(istype(T) && T.density)
-					add_overlay(get_cached_border(rock_side_icon_state,direction,'icons/turf/walls.dmi',rock_side_icon_state))
+					add_overlay(get_cached_border(rock_side_icon_state,direction,rock_icon_path,rock_side_icon_state))
 
 		if(overlay_detail)
-			add_overlay('icons/turf/flooring/decals.dmi',overlay_detail)
+			add_overlay(overlay_detail_icon_path,overlay_detail)
 
 		if(update_neighbors)
 			for(var/direction in alldirs)
@@ -282,13 +329,13 @@ turf/simulated/mineral/floor/light_corner
 
 	if(istype(AM,/mob/living/carbon/human))
 		var/mob/living/carbon/human/H = AM
-		var/obj/item/weapon/pickaxe/P = H.get_inactive_hand()
+		var/obj/item/pickaxe/P = H.get_inactive_hand()
 		if(istype(P))
 			src.attackby(P, H)
 
 	else if(istype(AM,/mob/living/silicon/robot))
 		var/mob/living/silicon/robot/R = AM
-		if(istype(R.module_active,/obj/item/weapon/pickaxe))
+		if(istype(R.module_active,/obj/item/pickaxe))
 			attackby(R.module_active,R)
 
 	else if(istype(AM,/obj/mecha))
@@ -314,119 +361,147 @@ turf/simulated/mineral/floor/light_corner
 	update_icon()
 
 //Not even going to touch this pile of spaghetti
-/turf/simulated/mineral/attackby(obj/item/weapon/W as obj, mob/user as mob)
+/turf/simulated/mineral/attackby(obj/item/W as obj, mob/user as mob)
 
-	if (!(istype(usr, /mob/living/carbon/human) || ticker) && ticker.mode.name != "monkey")
-		to_chat(user, "<span class='warning'>You don't have the dexterity to do this!</span>")
+	if (!user.IsAdvancedToolUser())
+		to_chat(user, span_warning("You don't have the dexterity to do this!"))
 		return
 
 	if(!density)
 		var/valid_tool = 0
 		var/digspeed = 30 //YAWN change. 30 from 40
 
-		if(istype(W, /obj/item/weapon/shovel))
-			var/obj/item/weapon/shovel/S = W
+		if(istype(W, /obj/item/shovel))
+			var/obj/item/shovel/S = W
 			valid_tool = 1
 			digspeed = S.digspeed
 
-		if(istype(W, /obj/item/weapon/pickaxe))
-			var/obj/item/weapon/pickaxe/P = W
+		if(istype(W, /obj/item/pickaxe))
+			var/obj/item/pickaxe/P = W
 			if(P.sand_dig)
 				valid_tool = 1
 				digspeed = P.digspeed
 
-
 		if(valid_tool)
 			if (sand_dug)
-				to_chat(user, "<span class='warning'>This area has already been dug.</span>")
+				to_chat(user, span_warning("This area has already been dug."))
 				return
 
 			var/turf/T = user.loc
 			if (!(istype(T)))
 				return
 
-			to_chat(user, "<span class='notice'>You start digging.</span>")
+			to_chat(user, span_notice("You start digging."))
 			playsound(user, 'sound/effects/rustle1.ogg', 50, 1)
 
 			if(!do_after(user,digspeed)) return
 
-			to_chat(user, "<span class='notice'>You dug a hole.</span>")
+			to_chat(user, span_notice("You dug a hole."))
 			GetDrilled()
 
-		else if(istype(W,/obj/item/weapon/storage/bag/ore))
-			var/obj/item/weapon/storage/bag/ore/S = W
+		else if(istype(W,/obj/item/storage/bag/ore))
+			var/obj/item/storage/bag/ore/S = W
 			if(S.collection_mode)
-				for(var/obj/item/weapon/ore/O in contents)
+				for(var/obj/item/ore/O in contents)
 					O.attackby(W,user)
 					return
 
-		else if(istype(W,/obj/item/weapon/storage/bag/fossils))
-			var/obj/item/weapon/storage/bag/fossils/S = W
+		else if(istype(W,/obj/item/storage/bag/fossils))
+			var/obj/item/storage/bag/fossils/S = W
 			if(S.collection_mode)
-				for(var/obj/item/weapon/fossil/F in contents)
+				for(var/obj/item/fossil/F in contents)
 					F.attackby(W,user)
 					return
 
-		else if(istype(W, /obj/item/stack/rods))
-			var/obj/structure/lattice/L = locate(/obj/structure/lattice, src)
-			if(L)
-				return
-			var/obj/item/stack/rods/R = W
-			if (R.use(1))
-				to_chat(user, "<span class='notice'>Constructing support lattice ...</span>")
-				playsound(src, 'sound/weapons/Genhit.ogg', 50, 1)
-				new /obj/structure/lattice(get_turf(src))
-
 		else if(istype(W, /obj/item/stack/tile/floor))
-			var/obj/structure/lattice/L = locate(/obj/structure/lattice, src)
-			if(L)
-				var/obj/item/stack/tile/floor/S = W
-				if (S.get_amount() < 1)
-					return
-				qdel(L)
-				playsound(src, 'sound/weapons/Genhit.ogg', 50, 1)
-				ChangeTurf(/turf/simulated/floor)
-				S.use(1)
+			var/obj/item/stack/tile/floor/S = W
+			if (S.get_amount() < 1)
 				return
-			else
-				to_chat(user, "<span class='warning'>The plating is going to need some support.</span>")
-				return
+			playsound(src, 'sound/weapons/Genhit.ogg', 50, 1)
+			ChangeTurf(/turf/simulated/floor)
+			S.use(1)
+			return
 
 
 	else
-		if (istype(W, /obj/item/device/core_sampler))
+		if (istype(W, /obj/item/core_sampler))
 			geologic_data.UpdateNearbyArtifactInfo(src)
-			var/obj/item/device/core_sampler/C = W
+			var/obj/item/core_sampler/C = W
 			C.sample_item(src, user)
 			return
 
-		if (istype(W, /obj/item/device/depth_scanner))
-			var/obj/item/device/depth_scanner/C = W
+		if (istype(W, /obj/item/depth_scanner))
+			var/obj/item/depth_scanner/C = W
 			C.scan_atom(user, src)
 			return
 
-		if (istype(W, /obj/item/device/measuring_tape))
-			var/obj/item/device/measuring_tape/P = W
-			user.visible_message("<span class='notice'>\The [user] extends \a [P] towards \the [src].</span>","<span class='notice'>You extend \the [P] towards \the [src].</span>")
+		if (istype(W, /obj/item/measuring_tape))
+			var/obj/item/measuring_tape/P = W
+			user.visible_message(span_infoplain(span_bold("\The [user]") + " extends \a [P] towards \the [src]."),span_notice("You extend \the [P] towards \the [src]."))
 			if(do_after(user, 15))
-				to_chat(user, "<span class='notice'>\The [src] has been excavated to a depth of [excavation_level]cm.</span>")
+				to_chat(user, span_notice("\The [src] has been excavated to a depth of [excavation_level]cm."))
 			return
 
-		if(istype(W, /obj/item/device/xenoarch_multi_tool))
-			var/obj/item/device/xenoarch_multi_tool/C = W
+		if(istype(W, /obj/item/xenoarch_multi_tool))
+			var/obj/item/xenoarch_multi_tool/C = W
 			if(C.mode) //Mode means scanning
 				C.depth_scanner.scan_atom(user, src)
 			else
-				user.visible_message("<span class='notice'>\The [user] extends \the [C] over \the [src], a flurry of red beams scanning \the [src]'s surface!</span>", "<span class='notice'>You extend \the [C] over \the [src], a flurry of red beams scanning \the [src]'s surface!</span>")
+				user.visible_message(span_infoplain(span_bold("\The [user]") + " extends \the [C] over \the [src], a flurry of red beams scanning \the [src]'s surface!"), span_notice("You extend \the [C] over \the [src], a flurry of red beams scanning \the [src]'s surface!"))
 				if(do_after(user, 15))
-					to_chat(user, "<span class='notice'>\The [src] has been excavated to a depth of [excavation_level]cm.</span>")
+					to_chat(user, span_notice("\The [src] has been excavated to a depth of [excavation_level]cm."))
 			return
 
-		if (istype(W, /obj/item/weapon/pickaxe))
+		if (istype(W, /obj/item/melee/shock_maul))
 			if(!istype(user.loc, /turf))
 				return
 
-			var/obj/item/weapon/pickaxe/P = W
+			var/obj/item/melee/shock_maul/S = W
+			if(!S.wielded || !S.status)	//if we're not wielded OR not powered up, do nothing
+				to_chat(user, span_warning("\The [src] must be wielded in two hands and powered on to be used for mining!"))
+				return
+
+			var/newDepth = excavation_level + S.excavation_amount // Used commonly below
+
+			//handle any archaeological finds we might uncover
+			var/fail_message = ""
+			if(finds && finds.len)
+				var/datum/find/F = finds[1]
+				if(newDepth > F.excavation_required) // Digging too deep can break the item. At least you won't summon a Balrog (probably)
+					fail_message = ". <b>[pick("There is a crunching noise","[S] collides with some different rock","Part of the rock face crumbles away","Something breaks under [S]")]</b>"
+					wreckfinds(S.destroy_artefacts)
+
+			to_chat(user, span_notice("You smash through \the [src][fail_message]."))
+
+			if(newDepth >= 200) // This means the rock is mined out fully
+				if(S.destroy_artefacts)
+					GetDrilled(0)
+				else
+					excavate_turf()
+				return
+
+			excavation_level += S.excavation_amount
+			update_archeo_overlays(S.excavation_amount)
+
+			//drop some rocks
+			next_rock += S.excavation_amount
+			while(next_rock > 50)
+				next_rock -= 50
+				var/obj/item/ore/O = new(src)
+				geologic_data.UpdateNearbyArtifactInfo(src)
+				O.geologic_data = geologic_data
+
+			user.visible_message(span_warning("\The [src] discharges with a thunderous, hair-raising crackle!"))
+			playsound(src, 'sound/weapons/resonator_blast.ogg', 100, 1, -1)
+			S.deductcharge()
+			S.status = 0
+			S.update_held_icon()
+
+		if (istype(W, /obj/item/pickaxe))
+			if(!istype(user.loc, /turf))
+				return
+
+			var/obj/item/pickaxe/P = W
 			if(last_act + P.digspeed > world.time)//prevents message spam
 				return
 			last_act = world.time
@@ -441,7 +516,7 @@ turf/simulated/mineral/floor/light_corner
 				if(newDepth > F.excavation_required) // Digging too deep can break the item. At least you won't summon a Balrog (probably)
 					fail_message = ". <b>[pick("There is a crunching noise","[W] collides with some different rock","Part of the rock face crumbles away","Something breaks under [W]")]</b>"
 					wreckfinds(P.destroy_artefacts)
-			to_chat(user, "<span class='notice'>You start [P.drill_verb][fail_message].</span>")
+			to_chat(user, span_notice("You start [P.drill_verb][fail_message]."))
 
 			if(do_after(user,P.digspeed))
 
@@ -452,7 +527,7 @@ turf/simulated/mineral/floor/light_corner
 					else if(newDepth > F.excavation_required - F.clearance_range) // Not quite right but you still extract your find, the closer to the bottom the better, but not above 80%
 						excavate_find(prob(80 * (F.excavation_required - newDepth) / F.clearance_range), F)
 
-				to_chat(user, "<span class='notice'>You finish [P.drill_verb] \the [src].</span>")
+				to_chat(user, span_notice("You finish [P.drill_verb] \the [src]."))
 
 				if(newDepth >= 200) // This means the rock is mined out fully
 					if(P.destroy_artefacts)
@@ -468,7 +543,7 @@ turf/simulated/mineral/floor/light_corner
 				next_rock += P.excavation_amount
 				while(next_rock > 50)
 					next_rock -= 50
-					var/obj/item/weapon/ore/O = new(src)
+					var/obj/item/ore/O = new(src)
 					geologic_data.UpdateNearbyArtifactInfo(src)
 					O.geologic_data = geologic_data
 			return
@@ -531,7 +606,7 @@ turf/simulated/mineral/floor/light_corner
 	if(!mineral)
 		return
 	clear_ore_effects()
-	var/obj/item/weapon/ore/O = new mineral.ore (src)
+	var/obj/item/ore/O = new mineral.ore (src)
 	if(istype(O))
 		geologic_data.UpdateNearbyArtifactInfo(src)
 		O.geologic_data = geologic_data
@@ -563,7 +638,7 @@ turf/simulated/mineral/floor/light_corner
 		if(!sand_dug)
 			sand_dug = 1
 			for(var/i=0;i<5;i++)
-				new/obj/item/weapon/ore/glass(src)
+				new/obj/item/ore/glass(src)
 			update_icon()
 		return
 
@@ -582,7 +657,7 @@ turf/simulated/mineral/floor/light_corner
 		if(prob(50))
 			pain = 1
 		for(var/mob/living/M in range(src, 200))
-			to_chat(M, "<span class='danger'>[pick("A high-pitched [pick("keening","wailing","whistle")]","A rumbling noise like [pick("thunder","heavy machinery")]")] somehow penetrates your mind before fading away!</span>")
+			to_chat(M, span_danger("[pick("A high-pitched [pick("keening","wailing","whistle")]","A rumbling noise like [pick("thunder","heavy machinery")]")] somehow penetrates your mind before fading away!"))
 			if(pain)
 				flick("pain",M.pain)
 				if(prob(50))
@@ -592,10 +667,10 @@ turf/simulated/mineral/floor/light_corner
 				if(prob(50))
 					M.Stun(5)
 			SSradiation.flat_radiate(src, 25, 100)
-			if(prob(25))
-				excavate_find(prob(5), finds[1])
+		if(prob(25))
+			excavate_find(prob(5), finds[1])
 	else if(rand(1,500) == 1)
-		visible_message("<span class='notice'>An old dusty crate was buried within!</span>")
+		visible_message(span_notice("An old dusty crate was buried within!"))
 		new /obj/structure/closet/crate/secure/loot(src)
 
 	make_floor()
@@ -604,16 +679,16 @@ turf/simulated/mineral/floor/light_corner
 /turf/simulated/mineral/proc/excavate_find(var/is_clean = 0, var/datum/find/F)
 	//with skill and luck, players can cleanly extract finds
 	//otherwise, they come out inside a chunk of rock
-	var/obj/item/weapon/X
+	var/obj/item/X
 	if(is_clean)
-		X = new /obj/item/weapon/archaeological_find(src, new_item_type = F.find_type)
+		X = new /obj/item/archaeological_find(src, new_item_type = F.find_type)
 	else
-		X = new /obj/item/weapon/strangerock(src, inside_item_type = F.find_type)
+		X = new /obj/item/strangerock(src, inside_item_type = F.find_type)
 		geologic_data.UpdateNearbyArtifactInfo(src)
-		var/obj/item/weapon/strangerock/SR = X
+		var/obj/item/strangerock/SR = X
 		SR.geologic_data = geologic_data
 
-	//some find types delete the /obj/item/weapon/archaeological_find and replace it with something else, this handles when that happens
+	//some find types delete the /obj/item/archaeological_find and replace it with something else, this handles when that happens
 	//yuck
 	var/display_name = "Something"
 	if(!X)
@@ -626,14 +701,14 @@ turf/simulated/mineral/floor/light_corner
 		var/obj/effect/suspension_field/S = locate() in src
 		if(!S)
 			if(X)
-				visible_message("<span class='danger'>\The [pick("[display_name] crumbles away into dust","[display_name] breaks apart")].</span>")
+				visible_message(span_danger("\The [pick("[display_name] crumbles away into dust","[display_name] breaks apart")]."))
 				qdel(X)
 
 	finds.Remove(F)
 
 /turf/simulated/mineral/proc/artifact_debris(var/severity = 0)
 	//cael's patented random limited drop componentized loot system!
-	//sky's patented not-fucking-retarded overhaul!
+	//sky's patented non-mischievious overhaul!
 
 	//Give a random amount of loot from 1 to 3 or 5, varying on severity.
 	for(var/j in 1 to rand(1, 3 + max(min(severity, 1), 0) * 2))
@@ -648,10 +723,10 @@ turf/simulated/mineral/floor/light_corner
 				new /obj/item/stack/material/plasteel(src, rand(5,25))
 			if(5)
 				for(var/i=1 to rand(1,3))
-					new /obj/item/weapon/material/shard(src)
+					new /obj/item/material/shard(src)
 			if(6)
 				for(var/i=1 to rand(1,3))
-					new /obj/item/weapon/material/shard/phoron(src)
+					new /obj/item/material/shard/phoron(src)
 			if(7)
 				new /obj/item/stack/material/uranium(src, rand(5,25))
 
@@ -661,12 +736,35 @@ turf/simulated/mineral/floor/light_corner
 
 	var/mineral_name
 	if(rare_ore)
-		mineral_name = pickweight(list("marble" = 5,/* "quartz" = 15,*/ "copper" = 10, /*"tin" = 5,*/ "bauxite" = 5, "uranium" = 15, "platinum" = 20, "hematite" = 15, "rutile" = 20, "carbon" = 15, "diamond" = 3, "gold" = 15, "silver" = 15, "phoron" = 25, "lead" = 5,/* "void opal" = 1,*/ "verdantium" = 2/*, "painite" = 1*/))
+		mineral_name = pickweight(list("marble" = 5,/* "quartz" = 15, "copper" = 10, "tin" = 5, "bauxite" = 5*/, "uranium" = 15, "platinum" = 20, "hematite" = 15, "rutile" = 20, "carbon" = 15, "diamond" = 3, "gold" = 15, "silver" = 15, "phoron" = 25, "lead" = 5,/* "void opal" = 1,*/ "verdantium" = 2/*, "painite" = 1*/))
 
 	else
-		mineral_name = pickweight(list("marble" = 3,/* "quartz" = 10,*/ "copper" = 20, /*"tin" = 15,*/ "bauxite" = 15, "uranium" = 10, "platinum" = 10, "hematite" = 70, "rutile" = 15, "carbon" = 70, "diamond" = 2, "gold" = 10, "silver" = 10, "phoron" = 20, "lead" = 3,/* "void opal" = 1,*/ "verdantium" = 1/*, "painite" = 1*/))
+		mineral_name = pickweight(list("marble" = 3,/* "quartz" = 10, "copper" = 20, "tin" = 15, "bauxite" = 15*/, "uranium" = 10, "platinum" = 10, "hematite" = 70, "rutile" = 15, "carbon" = 70, "diamond" = 2, "gold" = 10, "silver" = 10, "phoron" = 20, "lead" = 3,/* "void opal" = 1,*/ "verdantium" = 1/*, "painite" = 1*/))
 
 	if(mineral_name && (mineral_name in GLOB.ore_data))
 		mineral = GLOB.ore_data[mineral_name]
 		UpdateMineral()
 	update_icon()
+
+// V5 turfs
+
+/turf/simulated/mineral/icey/v5
+	temperature = 202
+	oxygen = 8
+	nitrogen = 17
+	carbon_dioxide = 75
+	ignore_cavegen = TRUE
+
+/turf/simulated/mineral/crystal/v5
+	temperature = 202
+	oxygen = 8
+	nitrogen = 17
+	carbon_dioxide = 75
+	ignore_cavegen = TRUE
+
+/turf/simulated/mineral/crystal_shiny/v5
+	temperature = 202
+	oxygen = 8
+	nitrogen = 17
+	carbon_dioxide = 75
+	ignore_cavegen = TRUE

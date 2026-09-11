@@ -69,11 +69,12 @@
 	icon_dead = "guard_dead"
 	has_eye_glow = TRUE
 	minbodytemp = 175 //yw edit, Makes mobs survive cryogaia temps
-	faction = "awaymission" //yw edit, Makes away mobs be on the same fuckin' side.
+	faction = "awaymission" //yw edit, Makes away mobs be on the same fuckin' side. -Radiant
+	faction = FACTION_SPIDERS
 	maxHealth = 200
 	health = 200
 	pass_flags = PASSTABLE
-	movement_cooldown = 10
+	movement_cooldown = 3
 	movement_sound = 'sound/effects/spider_loop.ogg'
 	poison_resist = 0.5
 
@@ -83,9 +84,12 @@
 	response_disarm = "gently pushes aside"
 	response_harm   = "punches"
 
+	organ_names = /decl/mob_organ_names/spider
+
+
 	melee_damage_lower = 18
 	melee_damage_upper = 30
-	attack_sharp = 1
+	attack_sharp = TRUE
 	attack_edge = 1
 	attack_sound = 'sound/weapons/bite.ogg'
 
@@ -95,15 +99,15 @@
 
 	speak_emote = list("chitters")
 
-	meat_amount = 1
-	meat_type = /obj/item/weapon/reagent_containers/food/snacks/xenomeat/spidermeat
+	meat_amount = 5
+	meat_type = /obj/item/reagent_containers/food/snacks/xenomeat/spidermeat
 
 	say_list_type = /datum/say_list/spider
 
 	tame_items = list(
-	/obj/item/weapon/reagent_containers/food/snacks/xenomeat = 10,
-	/obj/item/weapon/reagent_containers/food/snacks/meat/crab = 40,
-	/obj/item/weapon/reagent_containers/food/snacks/meat = 20
+	/obj/item/reagent_containers/food/snacks/xenomeat = 10,
+	/obj/item/reagent_containers/food/snacks/crabmeat = 40,
+	/obj/item/reagent_containers/food/snacks/meat = 20
 	)
 
 	var/poison_type = "spidertoxin"	// The reagent that gets injected when it attacks.
@@ -113,6 +117,8 @@
 	butchery_loot = list(\
 		/obj/item/stack/material/chitin = 1\
 		)
+
+	allow_mind_transfer = TRUE
 
 /mob/living/simple_mob/animal/giant_spider/apply_melee_effects(var/atom/A)
 	if(isliving(A))
@@ -125,7 +131,7 @@
 // Does actual poison injection, after all checks passed.
 /mob/living/simple_mob/animal/giant_spider/proc/inject_poison(mob/living/L, target_zone)
 	if(prob(poison_chance))
-		to_chat(L, "<span class='warning'>You feel a tiny prick.</span>")
+		to_chat(L, span_warning("You feel a tiny prick."))
 		L.reagents.add_reagent(poison_type, poison_per_bite)
 
 /mob/living/simple_mob/animal/giant_spider/proc/make_spiderling()
@@ -141,3 +147,6 @@
 
 	if(poison_per_bite)
 		poison_per_bite *= 1.3
+
+/decl/mob_organ_names/spider
+	hit_zones = list("cephalothorax", "abdomen", "left forelegs", "right forelegs", "left hind legs", "right hind legs", "pedipalp", "mouthparts")
